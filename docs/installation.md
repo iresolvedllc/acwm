@@ -1,125 +1,23 @@
 ---
 title: Installation
-description: Install mangowm on AerynOS, Arch, Fedora, Gentoo, Guix System, NixOS, PikaOS, or build from source.
+description: Install acwm on AerynOS, Arch, Fedora, Gentoo, Guix System, NixOS, PikaOS, or build from source.
 ---
 
 ## Package Installation
 
-mangowm is available as a pre-built package on several distributions. Choose your distribution below.
+acwm can be installed by building from source or via the NixOS flake. Pre-built distribution packages are not available yet.
 
 ---
 
-### AerynOS
+### Install from source or Nix
 
-mangowm is available in the **AerynOS package repository**.
+There are currently no distribution packages for acwm. Use one of the following methods:
 
-You can install it using the `moss` package manager:
-
-```bash
-sudo moss install mangowm
-```
-* The Default config will be located at `/usr/share/defaults/mango`.
+- [Build from source](#building-from-source)
+- [NixOS flake](#nixos)
 
 ---
 
-### Arch Linux
-
-mangowm is available in the **Arch Package repository** and the **Arch User Repository (AUR)**.
-
-You can install it using the `pacman` package manager:
-
-```bash
-sudo pacman -S mangowm
-```
-
-You can also install it using an AUR helper like `yay` or `paru`:
-
-```bash
-yay -S mangowm-git
-```
-
-> **Tip:** This package pulls the latest git version, ensuring you have the newest features and fixes.
-
----
-
-### Fedora
-
-The package is in the third-party **Terra repository**. First, add the Terra Repository.
-
-> **Warning:** Both commands require root privileges. Use `sudo` if needed.
-
-```bash
-dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
-```
-
-Then, install the package:
-
-```bash
-dnf install mangowm
-```
-
----
-
-### Gentoo
-
-The package is hosted in the community-maintained **GURU** repository.
-
-1. **Add the GURU repository**
-
-   ```bash
-   emerge --ask --verbose eselect-repository
-   eselect repository enable guru
-   emerge --sync guru
-   ```
-
-2. **Unmask packages**
-   Add the required packages to your `package.accept_keywords` file:
-   - `gui-libs/scenefx`
-   - `gui-wm/mangowm`
-
-3. **Install mango**
-   ```bash
-   emerge --ask --verbose gui-wm/mangowm
-   ```
-
----
-
-### Guix System
-
-The package definition is described in the source repository.
-
-1. **Add mango channel**
-   Add to `$HOME/.config/guix/channels.scm`:
-
-   ```scheme
-   (cons (channel
-           (name 'mangowm)
-           (url "https://github.com/mangowm/mango.git")
-           (branch "main"))
-         %default-channels)
-   ```
-
-2. **Install**
-   After running `guix pull`, you can install mangowm:
-
-   ```bash
-   guix install mangowm
-   ```
-
-   Or add it to your system configuration using the mangowm module:
-
-   ```scheme
-   (use-modules (mangowm))
-
-   (packages (cons*
-               mangowm-git
-               ... ;; Other packages
-               %base-packages))
-   ```
-
-> **Tip:** For more information, see the [Guix System documentation](https://guix.gnu.org/manual/devel/en/html_node/Channels.html).
-
----
 
 ### NixOS
 
@@ -132,8 +30,8 @@ The repository provides a Flake with a NixOS module.
    {
      inputs = {
        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-       mangowm = {
-         url = "github:mangowm/mango";
+       acwm = {
+         url = "github:iresolvedllc/acwm";
          inputs.nixpkgs.follows = "nixpkgs";
        };
        # other inputs ...
@@ -149,7 +47,7 @@ The repository provides a Flake with a NixOS module.
    # configuration.nix (or any other file that you import)
    {inputs, ...}: {
      imports = [
-       inputs.mangowm.nixosModules.mango
+       inputs.acwm.nixosModules.acwm
        # .. other imports ...
      ];
 
@@ -164,13 +62,13 @@ The repository provides a Flake with a NixOS module.
    {
      # ...
 
-     outputs = { self, nixpkgs, mangowm, ...}@inputs: let
+     outputs = { self, nixpkgs, acwm, ...}@inputs: let
        inherit (nixpkgs) lib;
        # ...
      in {
        nixosConfigurations.YourHostName = lib.nixosSystem {
          modules = [
-           mangowm.nixosModules.mango # or inputs.mangowm.nixosModules.mango
+           acwm.nixosModules.acwm # or inputs.acwm.nixosModules.acwm
            # other imports ...
          ];
        };
@@ -183,11 +81,11 @@ The repository provides a Flake with a NixOS module.
    ```nix
    # configuration.nix (or any other file that you import)
    {
-     programs.mango.enable = true;
+     programs.acwm.enable = true;
    }
    ```
 
-4. **Start mango on login**
+4. **Start acwm on login**
 
    The following are common examples. Refer to the official NixOS documentation for full configuration options.
 
@@ -198,22 +96,22 @@ The repository provides a Flake with a NixOS module.
      enable = true;
      settings = {
        initial_session = {
-         command = "mango";
+         command = "acwm";
          user = "your-username"; # auto-login on first start, no password required
        };
        default_session = {
-         command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd mango";
+         command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd acwm";
          user = "greeter";
        };
      };
    };
    ```
 
-   **Option B — Display manager autologin:** Autologin via an existing display manager (e.g. SDDM, GDM). [`addLoginEntry`](/docs/nix-options#addloginentry) (default: `true`) automatically registers mango as a session.
+   **Option B — Display manager autologin:** Autologin via an existing display manager (e.g. SDDM, GDM). [`addLoginEntry`](/docs/nix-options#addloginentry) (default: `true`) automatically registers acwm as a session.
 
    ```nix
    services.displayManager = {
-     defaultSession = "mango"; # derived from mango.desktop filename
+     defaultSession = "acwm"; # derived from acwm.desktop filename
      autoLogin = {
        enable = true;
        user = "your-username";
@@ -221,7 +119,7 @@ The repository provides a Flake with a NixOS module.
    };
    ```
 
-   **Option C — getty autologin:** No login screen, boots directly into mango on TTY1.
+   **Option C — getty autologin:** No login screen, boots directly into acwm on TTY1.
 
    For bash/zsh:
 
@@ -229,7 +127,7 @@ The repository provides a Flake with a NixOS module.
    services.getty.autologinUser = "your-username";
 
    environment.loginShellInit = ''
-     [ "$(tty)" = /dev/tty1 ] && exec mango
+     [ "$(tty)" = /dev/tty1 ] && exec acwm
    '';
    ```
 
@@ -240,7 +138,7 @@ The repository provides a Flake with a NixOS module.
 
    programs.fish.loginShellInit = ''
      if test (tty) = /dev/tty1
-         exec mango
+         exec acwm
      end
    '';
    ```
@@ -251,21 +149,9 @@ The repository provides a Flake with a NixOS module.
 
 ---
 
-### PikaOS
-
-mangowm is available in the **PikaOS package repository**.
-
-You can install it using the `pikman` package manager:
-
-```bash
-pikman install mangowm
-```
-
----
-
 ## Building from Source
 
-If your distribution isn't listed above, or you want the latest unreleased changes, you can build mangowm from source.
+If your distribution isn't listed above, or you want the latest unreleased changes, you can build acwm from source.
 
 > **Info:** Ensure the following dependencies are installed before proceeding:
 >
@@ -308,11 +194,11 @@ You will need to build `wlroots` and `scenefx` manually as well.
    sudo ninja -C build install
    ```
 
-3. **Build mangowm**
+3. **Build acwm**
    Finally, compile the compositor itself.
    ```bash
-   git clone https://github.com/mangowm/mango.git
-   cd mango
+   git clone https://github.com/iresolvedllc/acwm.git
+   cd acwm
    meson build -Dprefix=/usr
    sudo ninja -C build install
    ```

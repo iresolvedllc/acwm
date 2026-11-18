@@ -3,7 +3,7 @@ title: TOML Conversion
 description: How each conf construct is written in TOML.
 ---
 
-mangowm reads `.conf` and `.toml` with the same option names and values; only
+acwm reads `.conf` and `.toml` with the same option names and values; only
 the syntax differs. This page only explains how to move a conf file to TOML, not
 what each option does — see the other configuration pages for that.
 

@@ -1,5 +1,5 @@
-project('mango', ['c'],
-  version : '0.18.0',
+project('acwm', ['c'],
+  version : '0.1.0',
 )
 
 subdir('protocols')
@@ -106,17 +106,17 @@ endif
 
 # Auto-include every .c file under src/ (recursively) so new source files
 # are picked up at `meson setup` time without editing this file.
-# NOTE: mmsg/mmsg.c lives outside src/ on purpose (separate binary, own main()).
+# NOTE: acwm-msg/acwm-msg.c lives outside src/ on purpose (separate binary, own main()).
 find = find_program('find')
-mango_sources = files(run_command(find, 'src', '-name', '*.c', check: true).stdout().split())
+acwm_sources = files(run_command(find, 'src', '-name', '*.c', check: true).stdout().split())
 
-mango_inc = include_directories('.', 'include')
+acwm_inc = include_directories('.', 'include')
 
-executable('mango',
-  mango_sources,
+executable('acwm',
+  acwm_sources,
 
   wayland_sources,
-  include_directories : mango_inc,
+  include_directories : acwm_inc,
   dependencies : [
     libm,
     libdrm,
@@ -140,7 +140,7 @@ executable('mango',
   link_args : link_args,
 )
 
-# build mmsg
+# build acwm-msg
 
 wayland_scanner_client_header = generator(
   wayland_scanner,
@@ -154,16 +154,16 @@ wayland_scanner_private_code = generator(
   arguments: ['private-code', '@INPUT@', '@OUTPUT@']
 )
 
-# use generator in mmsg target
-executable('mmsg',
-  'mmsg/mmsg.c',
+# use generator in acwm-msg target
+executable('acwm-msg',
+  'acwm-msg/acwm-msg.c',
   'src/config/error_store.c',
   'src/common/log.c',
   'src/common/util.c',
 
   wayland_sources,
 
-  include_directories : mango_inc,
+  include_directories : acwm_inc,
 
   dependencies: [
     libwayland_client_dep,
@@ -184,40 +184,40 @@ executable('mmsg',
   ],
 )
 
-# build mangonag (layer-shell nag/notification client)
+# build acwm-nag (layer-shell nag/notification client)
 
-mangonag_proto_h = custom_target('mangonag-layer-shell-client-proto',
+acwm_nag_proto_h = custom_target('acwm-nag-layer-shell-client-proto',
   input : 'protocols/wlr-layer-shell-unstable-v1.xml',
   output : 'wlr-layer-shell-unstable-v1-client-protocol.h',
   command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
 )
 
-mangonag_proto_c = custom_target('mangonag-layer-shell-private-code',
+acwm_nag_proto_c = custom_target('acwm-nag-layer-shell-private-code',
   input : 'protocols/wlr-layer-shell-unstable-v1.xml',
   output : 'wlr-layer-shell-unstable-v1-protocol.c',
   command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
 )
 
-mangonag_xdg_proto_h = custom_target('mangonag-xdg-shell-client-proto',
+acwm_nag_xdg_proto_h = custom_target('acwm-nag-xdg-shell-client-proto',
   input : wl_protocol_dir + '/stable/xdg-shell/xdg-shell.xml',
   output : 'xdg-shell-client-protocol.h',
   command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
 )
 
-mangonag_xdg_proto_c = custom_target('mangonag-xdg-shell-private-code',
+acwm_nag_xdg_proto_c = custom_target('acwm-nag-xdg-shell-private-code',
   input : wl_protocol_dir + '/stable/xdg-shell/xdg-shell.xml',
   output : 'xdg-shell-protocol.c',
   command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
 )
 
-executable('mangonag',
-  'mangonag/mangonag.c',
-  mangonag_proto_h,
-  mangonag_proto_c,
-  mangonag_xdg_proto_h,
-  mangonag_xdg_proto_c,
+executable('acwm-nag',
+  'acwm-nag/acwm-nag.c',
+  acwm_nag_proto_h,
+  acwm_nag_proto_c,
+  acwm_nag_xdg_proto_h,
+  acwm_nag_xdg_proto_c,
 
-  include_directories : mango_inc,
+  include_directories : acwm_inc,
 
   dependencies: [
     libwayland_client_dep,
@@ -237,54 +237,54 @@ executable('mangonag',
   ],
 )
 
-# build mlaunch (standalone minimal app-launcher client)
+# build acwm-launch (standalone minimal app-launcher client)
 
-mlaunch_layer_h = custom_target('mlaunch-layer-shell-client-proto',
+acwm_launch_layer_h = custom_target('acwm-launch-layer-shell-client-proto',
   input : 'protocols/wlr-layer-shell-unstable-v1.xml',
-  output : 'mlaunch-layer-shell-client-protocol.h',
+  output : 'acwm-launch-layer-shell-client-protocol.h',
   command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
 )
 
-mlaunch_layer_c = custom_target('mlaunch-layer-shell-private-code',
+acwm_launch_layer_c = custom_target('acwm-launch-layer-shell-private-code',
   input : 'protocols/wlr-layer-shell-unstable-v1.xml',
-  output : 'mlaunch-layer-shell-client-protocol.c',
+  output : 'acwm-launch-layer-shell-client-protocol.c',
   command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
 )
 
-mlaunch_ftl_h = custom_target('mlaunch-foreign-toplevel-client-proto',
+acwm_launch_ftl_h = custom_target('acwm-launch-foreign-toplevel-client-proto',
   input : 'protocols/wlr-foreign-toplevel-management-unstable-v1.xml',
-  output : 'mlaunch-foreign-toplevel-client-protocol.h',
+  output : 'acwm-launch-foreign-toplevel-client-protocol.h',
   command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
 )
 
-mlaunch_ftl_c = custom_target('mlaunch-foreign-toplevel-private-code',
+acwm_launch_ftl_c = custom_target('acwm-launch-foreign-toplevel-private-code',
   input : 'protocols/wlr-foreign-toplevel-management-unstable-v1.xml',
-  output : 'mlaunch-foreign-toplevel-client-protocol.c',
+  output : 'acwm-launch-foreign-toplevel-client-protocol.c',
   command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
 )
 
-mlaunch_xdg_h = custom_target('mlaunch-xdg-shell-client-proto',
+acwm_launch_xdg_h = custom_target('acwm-launch-xdg-shell-client-proto',
   input : wl_protocol_dir + '/stable/xdg-shell/xdg-shell.xml',
-  output : 'mlaunch-xdg-shell-client-protocol.h',
+  output : 'acwm-launch-xdg-shell-client-protocol.h',
   command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
 )
 
-mlaunch_xdg_c = custom_target('mlaunch-xdg-shell-private-code',
+acwm_launch_xdg_c = custom_target('acwm-launch-xdg-shell-private-code',
   input : wl_protocol_dir + '/stable/xdg-shell/xdg-shell.xml',
-  output : 'mlaunch-xdg-shell-client-protocol.c',
+  output : 'acwm-launch-xdg-shell-client-protocol.c',
   command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
 )
 
-executable('mlaunch',
-  'mlaunch/mlaunch.c',
-  mlaunch_layer_h,
-  mlaunch_layer_c,
-  mlaunch_ftl_h,
-  mlaunch_ftl_c,
-  mlaunch_xdg_h,
-  mlaunch_xdg_c,
+executable('acwm-launch',
+  'acwm-launch/acwm-launch.c',
+  acwm_launch_layer_h,
+  acwm_launch_layer_c,
+  acwm_launch_ftl_h,
+  acwm_launch_ftl_c,
+  acwm_launch_xdg_h,
+  acwm_launch_xdg_c,
 
-  include_directories : mango_inc,
+  include_directories : acwm_inc,
 
   dependencies: [
     libwayland_client_dep,
@@ -308,55 +308,167 @@ executable('mlaunch',
 )
 
 mandir = get_option('mandir')
+
+# build acwm-portal (screenshot portal backend: sd-bus service + screencopy
+# client). Requires libsystemd for the session bus; shares the dep resolved
+# for the SNI tray above.
+if libsystemd_dep.found()
+  portal_screencopy_h = custom_target('acwm-portal-screencopy-client-proto',
+    input : 'protocols/wlr-screencopy-unstable-v1.xml',
+    output : 'wlr-screencopy-unstable-v1-client-protocol.h',
+    command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
+  )
+
+  portal_screencopy_c = custom_target('acwm-portal-screencopy-private-code',
+    input : 'protocols/wlr-screencopy-unstable-v1.xml',
+    output : 'wlr-screencopy-unstable-v1-client-protocol.c',
+    command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
+  )
+
+  executable('acwm-portal',
+    'acwm-portal/acwm-portal.c',
+    portal_screencopy_h,
+    portal_screencopy_c,
+
+    include_directories : acwm_inc,
+
+    dependencies: [
+      libwayland_client_dep,
+      cjson_dep,
+      dependency('cairo'),
+      libsystemd_dep,
+    ],
+
+    install : true,
+
+    c_args: [
+      '-g',
+      '-O2',
+      '-U_FORTIFY_SOURCE',
+      '-Wno-unused-function',
+      '-Wno-unused-parameter',
+      '-DWLR_USE_UNSTABLE',
+      '-D_POSIX_C_SOURCE=200809L',
+    ],
+  )
+
+  # systemd user unit + dbus alias + portal registration files, mirroring the
+  # layout upstream portal backends install.
+  portal_unit_conf = configuration_data()
+  portal_unit_conf.set('bindir', join_paths(prefix, get_option('bindir')))
+
+  configure_file(
+    input : 'assets/acwm-portal.service.in',
+    output : 'acwm-portal.service',
+    configuration : portal_unit_conf,
+    install_dir : join_paths(prefix, 'lib/systemd/user'),
+  )
+  install_symlink(
+    'dbus-org.freedesktop.impl.portal.desktop.acwm.service',
+    pointing_to : 'acwm-portal.service',
+    install_dir : join_paths(prefix, 'lib/systemd/user'),
+  )
+
+  install_data('assets/org.freedesktop.impl.portal.desktop.acwm.service',
+    install_dir : join_paths(prefix, 'share/dbus-1/services'))
+  install_data('assets/acwm.portal',
+    install_dir : join_paths(prefix, 'share/xdg-desktop-portal/portals'))
+endif
+
+# build acwm-greeter (greetd client: layer-shell overlay + pangocairo UI).
+# Reuses the layer-shell protocol objects generated for acwm-launch.
+executable('acwm-greeter',
+  'acwm-greeter/acwm-greeter.c',
+  acwm_launch_layer_h,
+  acwm_launch_layer_c,
+  acwm_launch_xdg_h,
+  acwm_launch_xdg_c,
+
+  include_directories : acwm_inc,
+
+  dependencies: [
+    libwayland_client_dep,
+    cjson_dep,
+    dependency('cairo'),
+    pangocairo_dep,
+    dependency('xkbcommon'),
+  ],
+
+  install : true,
+
+  c_args: [
+    '-g',
+    '-O2',
+    '-U_FORTIFY_SOURCE',
+    '-Wno-unused-function',
+    '-Wno-unused-parameter',
+    '-DWLR_USE_UNSTABLE',
+    '-D_POSIX_C_SOURCE=200809L',
+  ],
+)
+
+# generate the acwm-portal man page at build time so the version always
+# matches the project version
+acwm_portal_man_conf = configuration_data()
+acwm_portal_man_conf.set('VERSION', meson.project_version())
+install_data(
+  configure_file(
+    input : 'acwm-portal/acwm-portal.1.in',
+    output : 'acwm-portal.1',
+    configuration : acwm_portal_man_conf,
+  ),
+  install_dir : join_paths(mandir, 'man1'),
+)
+
 desktop_install_dir = join_paths(prefix, 'share/wayland-sessions')
 portal_install_dir = join_paths(prefix, 'share/xdg-desktop-portal')
-install_data('assets/mango.desktop', install_dir : desktop_install_dir)
-install_data('assets/mango-portals.conf', install_dir : portal_install_dir)
-install_data('assets/config.conf', install_dir : join_paths(sysconfdir, 'mango'))
-install_data('assets/config.toml', install_dir : join_paths(sysconfdir, 'mango'))
+install_data('assets/acwm.desktop', install_dir : desktop_install_dir)
+install_data('assets/acwm-portals.conf', install_dir : portal_install_dir)
+install_data('assets/config.conf', install_dir : join_paths(sysconfdir, 'acwm'))
+install_data('assets/config.toml', install_dir : join_paths(sysconfdir, 'acwm'))
 
-# Ship mango-session.target so that systemd user services declaring
+# Ship acwm-session.target so that systemd user services declaring
 # WantedBy=graphical-session.target (portals, panels, ...) are started together
-# with the session. mango activates the target itself, see
+# with the session. acwm activates the target itself, see
 # set_activation_env() in src/main.c
-install_data('assets/mango-session.target',
+install_data('assets/acwm-session.target',
   install_dir : join_paths(prefix, 'lib/systemd/user'))
 
-# generate the mmsg man page at build time so the version always
+# generate the acwm-msg man page at build time so the version always
 # matches the project version
-mmsg_man_conf = configuration_data()
-mmsg_man_conf.set('VERSION', meson.project_version())
+acwm_msg_man_conf = configuration_data()
+acwm_msg_man_conf.set('VERSION', meson.project_version())
 install_data(
   configure_file(
-    input : 'mmsg/mmsg.1.in',
-    output : 'mmsg.1',
-    configuration : mmsg_man_conf,
+    input : 'acwm-msg/acwm-msg.1.in',
+    output : 'acwm-msg.1',
+    configuration : acwm_msg_man_conf,
   ),
   install_dir : join_paths(mandir, 'man1'),
 )
 
-# generate the mangonag man page at build time so the version always
+# generate the acwm-nag man page at build time so the version always
 # matches the project version
-mangonag_man_conf = configuration_data()
-mangonag_man_conf.set('VERSION', meson.project_version())
+acwm_nag_man_conf = configuration_data()
+acwm_nag_man_conf.set('VERSION', meson.project_version())
 install_data(
   configure_file(
-    input : 'mangonag/mangonag.1.in',
-    output : 'mangonag.1',
-    configuration : mangonag_man_conf,
+    input : 'acwm-nag/acwm-nag.1.in',
+    output : 'acwm-nag.1',
+    configuration : acwm_nag_man_conf,
   ),
   install_dir : join_paths(mandir, 'man1'),
 )
 
-# generate the mlaunch man page at build time so the version always
+# generate the acwm-launch man page at build time so the version always
 # matches the project version
-mlaunch_man_conf = configuration_data()
-mlaunch_man_conf.set('VERSION', meson.project_version())
+acwm_launch_man_conf = configuration_data()
+acwm_launch_man_conf.set('VERSION', meson.project_version())
 install_data(
   configure_file(
-    input : 'mlaunch/mlaunch.1.in',
-    output : 'mlaunch.1',
-    configuration : mlaunch_man_conf,
+    input : 'acwm-launch/acwm-launch.1.in',
+    output : 'acwm-launch.1',
+    configuration : acwm_launch_man_conf,
   ),
   install_dir : join_paths(mandir, 'man1'),
 )

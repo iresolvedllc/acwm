@@ -1,9 +1,9 @@
-#include "mango/ext-protocol/tearing.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/tearing.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 
 void handle_controller_set_hint(struct wl_listener *listener, void *data) {
 	struct tearing_controller *controller =
@@ -36,7 +36,7 @@ void handle_tearing_new_object(struct wl_listener *listener, void *data) {
 	enum wp_tearing_control_v1_presentation_hint hint =
 		wlr_tearing_control_manager_v1_surface_hint_from_surface(
 			server.tearing_control, new_tearing_control->surface);
-	mango_error(true, WLR_DEBUG,
+	acwm_error(true, WLR_DEBUG,
 				"New presentation hint %d received for surface %p", hint,
 				new_tearing_control->surface);
 

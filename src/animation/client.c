@@ -1,14 +1,14 @@
-#include "mango/animation/client.h"
-#include "mango/animation/common.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/overview/overview.h"
+#include "acwm/animation/client.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/overview/overview.h"
 #include <math.h>
 #include <scenefx/types/wlr_scene.h>
 #include <stdint.h>
@@ -389,10 +389,10 @@ void client_draw_shadow(Client *c, struct ivec2 offsets) {
 		top = GEZERO(c->mon->m.y - absolute_shadow_box.y);
 	}
 
-	left = MANGO_MIN(left, shadow_box.width);
-	right = MANGO_MIN(right, shadow_box.width);
-	top = MANGO_MIN(top, shadow_box.height);
-	bottom = MANGO_MIN(bottom, shadow_box.height);
+	left = ACWM_MIN(left, shadow_box.width);
+	right = ACWM_MIN(right, shadow_box.width);
+	top = ACWM_MIN(top, shadow_box.height);
+	bottom = ACWM_MIN(bottom, shadow_box.height);
 
 	wlr_scene_node_set_position(&c->shadow->node, shadow_box.x + left,
 								shadow_box.y + top);
@@ -532,12 +532,12 @@ void client_draw_dim(Client *c, struct ivec2 clip_box) {
 	}
 
 	if (c->isfullscreen) {
-		mango_dim_node_set_enabled(c->dim_node, false);
+		acwm_dim_node_set_enabled(c->dim_node, false);
 		return;
 	}
 
 	if (!config.dim_enable) {
-		mango_dim_node_set_enabled(c->dim_node, false);
+		acwm_dim_node_set_enabled(c->dim_node, false);
 		return;
 	}
 
@@ -559,7 +559,7 @@ void client_draw_dim(Client *c, struct ivec2 clip_box) {
 	}
 
 	if (dim_width <= 0 || dim_height <= 0) {
-		mango_dim_node_set_enabled(c->dim_node, false);
+		acwm_dim_node_set_enabled(c->dim_node, false);
 		return;
 	}
 
@@ -569,9 +569,9 @@ void client_draw_dim(Client *c, struct ivec2 clip_box) {
 		radius = config.border_radius;
 	}
 
-	mango_dim_node_set_radius(c->dim_node, radius);
-	mango_dim_node_set_enabled(c->dim_node, true);
-	mango_dim_node_set_box(c->dim_node, dim_x, dim_y, dim_width, dim_height);
+	acwm_dim_node_set_radius(c->dim_node, radius);
+	acwm_dim_node_set_enabled(c->dim_node, true);
+	acwm_dim_node_set_box(c->dim_node, dim_x, dim_y, dim_width, dim_height);
 }
 
 void client_draw_blur(Client *c, struct ivec2 clip_box) {
@@ -621,7 +621,7 @@ void global_draw_group_bar(Client *c, int32_t x, int32_t y, int32_t width,
 		return;
 
 	wlr_scene_node_set_position(&c->group_bar->scene->node, x, y);
-	mango_bar_decoration_set_size(c->group_bar, width, height);
+	acwm_bar_decoration_set_size(c->group_bar, width, height);
 }
 void client_draw_split_border(Client *c, bool hit_no_border,
 							  struct ivec2 offsets) {
@@ -737,10 +737,10 @@ void client_draw_border(Client *c, struct ivec2 offsets) {
 	if (top > c->bw)
 		inner_surface_height = inner_surface_height - top + bw;
 	if (right > 0)
-		inner_surface_width = MANGO_MIN(cur.width, inner_surface_width + right);
+		inner_surface_width = ACWM_MIN(cur.width, inner_surface_width + right);
 	if (bottom > 0)
 		inner_surface_height =
-			MANGO_MIN(cur.height, inner_surface_height + bottom);
+			ACWM_MIN(cur.height, inner_surface_height + bottom);
 
 	struct clipped_region clipped_region = {
 		.area = {inner_surface_x, inner_surface_y, inner_surface_width,
@@ -1196,7 +1196,7 @@ void fadeout_client_animation_next_tick(Client *c) {
 		find_animation_curve_at(animation_passed, OPAFADEOUT);
 	double percent = config.fadeout_begin_opacity -
 					 (opacity_eased_progress * config.fadeout_begin_opacity);
-	double opacity = MANGO_MAX(percent, 0);
+	double opacity = ACWM_MAX(percent, 0);
 
 	if (config.animation_fade_out && !c->no_fade_out)
 		wlr_scene_node_for_each_buffer(&c->scene->node,
@@ -1525,8 +1525,8 @@ void resize(Client *c, struct wlr_box geo, ResizeOpts opts) {
 	if (is_scroller_layout(c->mon) &&
 		(!c->isfloating || c == server.grab_client)) {
 		c->geom = geo;
-		c->geom.width = MANGO_MAX(1 + 2 * (int32_t)c->bw, c->geom.width);
-		c->geom.height = MANGO_MAX(1 + 2 * (int32_t)c->bw, c->geom.height);
+		c->geom.width = ACWM_MAX(1 + 2 * (int32_t)c->bw, c->geom.width);
+		c->geom.height = ACWM_MAX(1 + 2 * (int32_t)c->bw, c->geom.height);
 	} else {
 		c->geom = geo;
 		client_apply_bounds(c, bbox);

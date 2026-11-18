@@ -1,12 +1,12 @@
-#include "mango/manage/tab.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/draw/text-node.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/draw/text-node.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <stddef.h>
 #include <wlr/types/wlr_scene.h>
 
@@ -159,7 +159,7 @@ void tab_update_input_penetration(Client *c) {
 	for (Client *it = head; it; it = it->tab_next) {
 		if (!it->tab_bar)
 			continue;
-		mango_scene_node_set_ignore_hit(&it->tab_bar->scene->node, ignore_hit);
+		acwm_scene_node_set_ignore_hit(&it->tab_bar->scene->node, ignore_hit);
 	}
 }
 
@@ -336,7 +336,7 @@ void client_add_tab_bar(Client *c) {
 	if (!c || config.tab_bar_height <= 0)
 		return;
 
-	c->tab_bar = mango_bar_decoration_create(
+	c->tab_bar = acwm_bar_decoration_create(
 		c, TabBar, true, server.layers[client_target_layer(c)],
 		config.tabbardata, 0, 0);
 	if (!c->tab_bar)
@@ -349,14 +349,14 @@ void client_add_tab_bar(Client *c) {
 void client_remove_tab_bar(Client *c) {
 	if (!c || !c->tab_bar)
 		return;
-	mango_bar_decoration_destroy(c->tab_bar);
+	acwm_bar_decoration_destroy(c->tab_bar);
 	c->tab_bar = NULL;
 }
 
 void client_update_tab_bar_title(Client *c) {
 	if (!c || !c->tab_bar)
 		return;
-	mango_bar_decoration_update(c->tab_bar, client_get_title(c),
+	acwm_bar_decoration_update(c->tab_bar, client_get_title(c),
 								c->mon ? c->mon->wlr_output->scale
 								: server.selected_monitor
 									? server.selected_monitor->wlr_output->scale
@@ -366,7 +366,7 @@ void client_update_tab_bar_title(Client *c) {
 void client_apply_tab_bar_config(Client *c) {
 	if (!c || !c->tab_bar)
 		return;
-	mango_bar_decoration_apply_config(c->tab_bar, &config.tabbardata);
+	acwm_bar_decoration_apply_config(c->tab_bar, &config.tabbardata);
 }
 
 void global_draw_tab_bar(Client *c, int32_t x, int32_t y, int32_t width,
@@ -375,7 +375,7 @@ void global_draw_tab_bar(Client *c, int32_t x, int32_t y, int32_t width,
 		return;
 
 	wlr_scene_node_set_position(&c->tab_bar->scene->node, x, y);
-	mango_bar_decoration_set_size(c->tab_bar, width, height);
+	acwm_bar_decoration_set_size(c->tab_bar, width, height);
 }
 
 void client_draw_tabbar(Client *c, struct ivec2 offsets) {
@@ -442,7 +442,7 @@ void client_draw_tabbar(Client *c, struct ivec2 offsets) {
 			continue;
 		int32_t w = bar_w + (i < rem ? 1 : 0);
 		global_draw_tab_bar(cur, x, tab_y, w, th);
-		mango_bar_decoration_set_focus(cur->tab_bar, cur->is_tab_focus);
+		acwm_bar_decoration_set_focus(cur->tab_bar, cur->is_tab_focus);
 		x += w;
 		i++;
 	}

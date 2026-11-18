@@ -55,13 +55,16 @@ description: Advanced settings for XWayland, focus behavior, and system integrat
 | `smart_gaps` | `0` | Disable gaps when only one window is present. |
 | `idle_inhibit_ignore_visible` | `0` | Allow invisible clients (e.g., background audio players) to inhibit idle. |
 | `idle_inhibit_when_fullscreen` | `0` | Keep idle inhibited while a fullscreen window is focused. |
+| `idle_after` | `0` | Seconds of inactivity before running `idle_command` (`0` disables the idle timer). |
+| `idle_command` | *(unset)* | Shell command run when the idle timeout fires — e.g. `acwm-msg dpms off`, a lock command, or a suspend. |
+| `resume_command` | *(unset)* | Shell command run on the first user activity after the idle timeout fired. |
 | `tag_carousel` | `0` | Enable tag carousel (cycling through tags). |
 | `enable_border_resize` | `1` | Change the cursor when hovering a window border and start an interactive resize with a plain left click, like sway. Floating windows expose every edge; tiled windows only expose edges shared with a neighbor. |
 | `border_resize_size` | `10` | Thickness in pixels of the resize grab strip measured inward from a window's edge (`0` uses the window border width). Set it larger for an easier-to-hit grip, which also works for borderless windows. |
 
 ## Config errors
 
-When the config file contains errors, mango shows a `mangonag` bar at the top of
+When the config file contains errors, acwm shows a `acwm-nag` bar at the top of
 the focused output.
 
 - **Close** dismisses the bar.

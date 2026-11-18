@@ -1,9 +1,9 @@
-#include "mango/ext-protocol/foreign-toplevel.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/arrange.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_xdg_shell.h>

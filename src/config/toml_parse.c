@@ -1,5 +1,5 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mango/common/log.h"
+#include "acwm/common/log.h"
 
 typedef struct {
 	char name[256];
@@ -278,7 +278,7 @@ static bool toml_section_add(TomlSection *section, const char *subkey,
 	if (section->pairs_len + subkey_len + value_len + 2 >=
 		sizeof(section->pairs)) {
 		free(expanded);
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Toml section is too long: "
 					"\033[1m\033[31m%s\033[0m\n",
 					section->name);
@@ -362,7 +362,7 @@ static bool toml_section_begin(Config *config, TomlSection *section,
 	} else if (strncmp(name, "rule.", 5) == 0) {
 		const char *type = name + 5;
 		if (!toml_is_rule_type(type)) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Unknown toml rule type: "
 						"\033[1m\033[31m%s\033[0m\n",
 						type);
@@ -376,7 +376,7 @@ static bool toml_section_begin(Config *config, TomlSection *section,
 		section->kind = TOML_SECTION_RULE;
 		snprintf(section->name, sizeof(section->name), "%.255s", name);
 	} else {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Unknown toml section: \033[1m\033[31m%s\033[0m\n", name);
 		report_config_line_error(full_path, line_number, stmt);
 		section->skip = true;
@@ -409,7 +409,7 @@ static bool toml_section_begin(Config *config, TomlSection *section,
 		} else {
 			int flag = toml_bind_flag_char(tok);
 			if (flag == 0) {
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Unknown bind flag: "
 							"\033[1m\033[31m%s\033[0m\n",
 							tok);
@@ -425,7 +425,7 @@ static bool toml_section_begin(Config *config, TomlSection *section,
 	}
 
 	if (depth == 0) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Bind keymode is required, e.g. "
 					"\033[1m\033[31m[%s.default]\033[0m\n",
 					base);
@@ -649,7 +649,7 @@ static bool toml_process_statement(Config *config, const char *stmt,
 
 	const char *eq = strchr(stmt, '=');
 	if (eq == NULL) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Invalid toml line format: "
 					"\033[1m\033[31m%s\033[0m\n",
 					stmt);
@@ -713,7 +713,7 @@ bool parse_toml_stream(Config *config, FILE *file, const char *full_path) {
 
 		size_t raw_len = strlen(raw);
 		if (stmt_len + raw_len + 2 >= sizeof(stmt)) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Config line too long in "
 						"\033[1m\033[31m%s\033[0m\n",
 						full_path);

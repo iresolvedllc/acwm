@@ -1,10 +1,10 @@
-#include "mango/layout/horizontal.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
+#include "acwm/layout/horizontal.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
 
 static void tile_core(Monitor *m, const LayoutContext *ctx);
 static void right_tile_core(Monitor *m, const LayoutContext *ctx);
@@ -78,7 +78,7 @@ static void tile_core(Monitor *m, const LayoutContext *ctx) {
 		if (!VISIBLEON(c, m) || !ISFAKETILED(c))
 			continue;
 		if (i < m->pertag->nmasters[get_mon_curtag(m)]) {
-			r = MANGO_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
+			r = ACWM_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
 			if (c->master_inner_per > 0.0f) {
 				h = master_surplus_height * c->master_inner_per /
 					master_surplus_ratio;
@@ -197,7 +197,7 @@ static void right_tile_core(Monitor *m, const LayoutContext *ctx) {
 		if (!VISIBLEON(c, m) || !ISFAKETILED(c))
 			continue;
 		if (i < m->pertag->nmasters[get_mon_curtag(m)]) {
-			r = MANGO_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
+			r = ACWM_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
 			if (c->master_inner_per > 0.0f) {
 				h = master_surplus_height * c->master_inner_per /
 					master_surplus_ratio;
@@ -388,7 +388,7 @@ static void center_tile_core(Monitor *m, const LayoutContext *ctx) {
 
 		if (i < nmasters) {
 			// Master-area windows.
-			r = MANGO_MIN(n, nmasters) - i;
+			r = ACWM_MIN(n, nmasters) - i;
 			if (c->master_inner_per > 0.0f) {
 				h = master_surplus_height * c->master_inner_per /
 					master_surplus_ratio;
@@ -584,7 +584,7 @@ static void deck_core(Monitor *m, const LayoutContext *ctx) {
 		if (i < nmasters) {
 			c->master_mfact_per = mfact;
 			int32_t h = (m->w.height - 2 * cur_gappov - my) /
-						(MANGO_MIN(n, nmasters) - i);
+						(ACWM_MIN(n, nmasters) - i);
 			client_tile_resize(c,
 							   (struct wlr_box){.x = m->w.x + cur_gappoh,
 												.y = m->w.y + cur_gappov + my,

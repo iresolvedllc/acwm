@@ -1,0 +1,7 @@
+.{
+    .name = .acwm,
+    .version = "0.1.0",
+    .fingerprint = 0xbb32c8d72d17f174,
+    .minimum_zig_version = "0.17.0",
+    .paths = .{""},
+}

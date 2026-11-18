@@ -7,10 +7,28 @@ description: Set up screen sharing, clipboard, keyring, and file pickers using X
 
 You can customize portal settings via the following paths:
 
-- **User Configuration (Priority):** `~/.config/xdg-desktop-portal/mango-portals.conf`
-- **System Fallback:** `/usr/share/xdg-desktop-portal/mango-portals.conf`
+- **User Configuration (Priority):** `~/.config/xdg-desktop-portal/acwm-portals.conf`
+- **System Fallback:** `/usr/share/xdg-desktop-portal/acwm-portals.conf`
 
-> **Warning:** If you previously added `dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots` to your config, remove it. Mango now handles this automatically.
+> **Warning:** If you previously added `dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots` to your config, remove it. ACWM now handles this automatically.
+
+## Screenshots
+
+acwm ships its own screenshot portal backend (`acwm-portal`), so screenshot
+requests from sandboxed and portal-using applications work out of the box —
+no extra packages needed. It captures the output under the pointer and hands
+the requesting app a `file://` URI to a PNG under
+`$XDG_RUNTIME_DIR/acwm-portal/`.
+
+To capture a specific output instead, set the override in the session
+environment before the portal starts:
+
+```bash
+ACWM_PORTAL_OUTPUT=eDP-1
+```
+
+Screenshots taken manually (keybind → command) can use the same backend or
+any standalone tool (`grim`, `satty`, …).
 
 ## Screen Sharing
 
@@ -43,7 +61,7 @@ To enable screen sharing (OBS, Discord, WebRTC), you need `xdg-desktop-portal-wl
   chooser_type=none
   ```
 
-  Replace `eDP-1` with your output name (see `mmsg get all-monitors`). The configuration is only read when the portal starts, so restart it afterwards (a re-login or reboot works too):
+  Replace `eDP-1` with your output name (see `acwm-msg get all-monitors`). The configuration is only read when the portal starts, so restart it afterwards (a re-login or reboot works too):
 
   ```bash
   systemctl --user restart xdg-desktop-portal-wlr
@@ -51,7 +69,7 @@ To enable screen sharing (OBS, Discord, WebRTC), you need `xdg-desktop-portal-wl
 
   This applies to every application: screen sharing always captures that output and never asks. Applications that do wait for the reply (OBS, Firefox, Chromium) also work with the default chooser, so only add this if you need it. Tencent Meeting additionally only gets the first share attempt per app start right, so restart it before sharing.
 
-- **Window screen sharing:** Some applications may have issues sharing individual windows. See [#184](https://github.com/mangowm/mango/pull/184) for workarounds.
+- **Window screen sharing:** Some applications may have issues sharing individual windows. See [#184](https://github.com/mangowm/acwm/pull/184) for workarounds.
 
 - **Screen recording lag:** If you experience stuttering during screen recording, see [xdg-desktop-portal-wlr#351](https://github.com/emersion/xdg-desktop-portal-wlr/issues/351).
 
@@ -71,20 +89,24 @@ wl-clip-persist --clipboard regular --reconnect-tries 0 &
 wl-paste --type text --watch cliphist store &
 ```
 
-## GNOME Keyring
+## GNOME Keyring / oo7
 
-If you need to store passwords or secrets (e.g., for VS Code or Minecraft launchers), install `gnome-keyring`.
+For passwords and secrets (VS Code, browsers, Git credential helpers), use
+[oo7](/docs/configuration/secrets) — the modern Secret Service provider that
+replaces `gnome-keyring`. The oo7 daemon, its secret portal backend and
+login-time keyring unlock are fully wired by the acwm NixOS module.
 
-**Configuration:**
+If you prefer `gnome-keyring`, install it and use the fallback entry shown
+below.
 
-Add the following to `~/.config/xdg-desktop-portal/mango-portals.conf`:
+**Configuration** (`~/.config/xdg-desktop-portal/acwm-portals.conf`):
 
 ```ini
 [preferred]
 default=gtk
 org.freedesktop.impl.portal.ScreenCast=wlr
-org.freedesktop.impl.portal.Screenshot=wlr
-org.freedesktop.impl.portal.Secret=gnome-keyring
+org.freedesktop.impl.portal.Screenshot=acwm;wlr;
+org.freedesktop.impl.portal.Secret=oo7;gnome-keyring;
 org.freedesktop.impl.portal.Inhibit=none
 ```
 

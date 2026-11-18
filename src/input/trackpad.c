@@ -1,24 +1,24 @@
 /* Trackpad gestures (swipe / pinch / hold). */
-#include "mango/input/trackpad.h"
-#include "mango/animation/client.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/layout/scroll.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/input/trackpad.h"
+#include "acwm/animation/client.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/switcher/switcher.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_cursor.h>
@@ -265,7 +265,7 @@ static void swipe_drive_log_state(Monitor *m, const char *why, bool sel_changed,
 		}
 	}
 
-	mango_error(true, WLR_DEBUG,
+	acwm_error(true, WLR_DEBUG,
 				"swipe drive: %s (vis=%d tiled=%d run=%d geom=%d "
 				"sel_changed=%d sel_before=%p sel_now=%p)\n",
 				why, visible, tiled, running, geometry, sel_changed,
@@ -519,7 +519,7 @@ static bool swipe_drive_begin(uint32_t fingers) {
 		swipe_drive_unfreeze();
 		swipe_drive_log_state(m, "fired but no transition",
 							  m->sel != sel_before, sel_before);
-		mango_error(true, WLR_DEBUG,
+		acwm_error(true, WLR_DEBUG,
 					"swipe drive: %s fired but produced no transition\n",
 					binding->func == toggle_overview   ? "toggle_overview"
 					: binding->func == enter_overview  ? "enter_overview"
@@ -533,7 +533,7 @@ static bool swipe_drive_begin(uint32_t fingers) {
 	swipe_drive_apply(m, 0.0);
 	swipe_drive_log_state(m, "driving transition", m->sel != sel_before,
 						  sel_before);
-	mango_error(true, WLR_DEBUG,
+	acwm_error(true, WLR_DEBUG,
 				"swipe drive: driving transition, motion=%u fingers=%u\n",
 				swipe_drive.motion, swipe_drive.fingers);
 	return true;
@@ -712,7 +712,7 @@ static void swipe_drive_end(void) {
 			}
 
 			if (target && target != swipe_drive.start_sel) {
-				mango_error(true, WLR_DEBUG,
+				acwm_error(true, WLR_DEBUG,
 							"swipe drive: pan commit, offset=%.0f target=%p\n",
 							offset, (void *)target);
 
@@ -733,7 +733,7 @@ static void swipe_drive_end(void) {
 				client_focus(target, 1);
 				arrange(m, false, false);
 			} else {
-				mango_error(true, WLR_DEBUG,
+				acwm_error(true, WLR_DEBUG,
 							"swipe drive: pan revert, offset=%.0f\n", offset);
 				arrange(m, false, false);
 			}
@@ -768,7 +768,7 @@ static void swipe_drive_end(void) {
 
 		if (commit) {
 			Client *c = NULL;
-			mango_error(true, WLR_DEBUG,
+			acwm_error(true, WLR_DEBUG,
 						"swipe drive: commit, p=%.2f speed=%.1f\n", p,
 						swipe_drive.avg_speed);
 			wl_list_for_each(c, &server.clients, link) {
@@ -786,7 +786,7 @@ static void swipe_drive_end(void) {
 			if (!config.animations)
 				pointer_process_motion(0, NULL, 0, 0, 0, 0);
 		} else {
-			mango_error(true, WLR_DEBUG,
+			acwm_error(true, WLR_DEBUG,
 						"swipe drive: revert, p=%.2f speed=%.1f\n", p,
 						swipe_drive.avg_speed);
 			swipe_drive_fire_opposite();

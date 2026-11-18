@@ -60,7 +60,7 @@ You can divide key bindings into named modes. Rules:
 
 > **Info:** Key modes also apply to the other input bindings — `mousebind`, `axisbind`, `gesturebind` and `switchbind` — which share the exact same `key_mode` rules as `bind`.
 
-Use `setkeymode` to switch modes, and `mmsg get keymode` to query the current mode.
+Use `setkeymode` to switch modes, and `acwm-msg get keymode` to query the current mode.
 
 ```ini
 # Binds in 'common' apply in every mode
@@ -118,7 +118,7 @@ bindr=Super,Super_L,spawn,rofi -show run
 
 | Command | Param | Description |
 | :--- | :--- | :--- |
-| `focusid` | - | Focus window (can target any window via IPC: `mmsg dispatch focusid client,<id>`) |
+| `focusid` | - | Focus window (can target any window via IPC: `acwm-msg dispatch focusid client,<id>`) |
 | `focusdir` | `left/right/up/down` | Focus window in direction. |
 | `focus_window_or_workspace` | `left/right/up/down` | Focus window in direction; otherwise jump to the nearest adjacent tag that has clients, falling back to the next/previous tag if none. |
 | `focusstack` | `next/prev` | Cycle focus within the stack. |
@@ -195,7 +195,7 @@ It is formed by tag numbers `1`–`9`, optionally combined with `|`.
 | `spawn_on_empty` | `cmd, tagmask` | Open command on empty tag.Accepts a cmd string and [tagmask](/docs/bindings/keys#tag-mask-format) |
 | `reload_config` | - | Hot-reload configuration. Does not support keybind conflict (`c` flag). |
 | `load_config_file` | `file path` | Load configuration from the specified file. Empty path resets to default config location. Does not support keybind conflict (`c` flag). |
-| `quit` | - | Exit mangowm. |
+| `quit` | - | Exit acwm. |
 | `toggleoverview` | `[1]` | Toggle overview mode. Passing `1` only shows the current tagset's windows in the overview instead of all tags. |
 | `enteroverview` | - | Enter overview mode. |
 | `leaveoverview` | - | Leave overview mode. |

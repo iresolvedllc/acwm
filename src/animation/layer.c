@@ -1,10 +1,10 @@
-#include "mango/animation/layer.h"
-#include "mango/animation/common.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/monitor.h"
+#include "acwm/animation/layer.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/monitor.h"
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_output.h>
@@ -368,7 +368,7 @@ void fadeout_layer_animation_next_tick(LayerSurface *l) {
 	double percent = config.fadeout_begin_opacity -
 					 (opacity_eased_progress * config.fadeout_begin_opacity);
 
-	double opacity = MANGO_MAX(percent, 0.0f);
+	double opacity = ACWM_MAX(percent, 0.0f);
 
 	if (config.animation_fade_out)
 		wlr_scene_node_for_each_buffer(&l->scene->node,
@@ -410,7 +410,7 @@ void layer_animation_next_tick(LayerSurface *l) {
 	double opacity_eased_progress =
 		find_animation_curve_at(animation_passed, OPAFADEIN);
 
-	double opacity = MANGO_MIN(config.fadein_begin_opacity +
+	double opacity = ACWM_MIN(config.fadein_begin_opacity +
 								   opacity_eased_progress *
 									   (1.0 - config.fadein_begin_opacity),
 							   1.0f);

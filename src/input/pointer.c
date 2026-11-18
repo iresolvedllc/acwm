@@ -1,26 +1,26 @@
-#include "mango/input/pointer.h"
-#include "mango/animation/client.h"
-#include "mango/bar/bar.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/trackpad.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/layout/scroll.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/input/pointer.h"
+#include "acwm/animation/client.h"
+#include "acwm/bar/bar.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/trackpad.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/switcher/switcher.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_cursor.h>
@@ -76,8 +76,8 @@ static void pointer_region_closest_point(pixman_region32_t *region, double x,
 	*cx = x;
 	*cy = y;
 	for (int i = 0; i < nrects; i++) {
-		double px = MANGO_MIN(MANGO_MAX(x, rects[i].x1), rects[i].x2 - 1);
-		double py = MANGO_MIN(MANGO_MAX(y, rects[i].y1), rects[i].y2 - 1);
+		double px = ACWM_MIN(ACWM_MAX(x, rects[i].x1), rects[i].x2 - 1);
+		double py = ACWM_MIN(ACWM_MAX(y, rects[i].y1), rects[i].y2 - 1);
 		double dist = (px - x) * (px - x) + (py - y) * (py - y);
 		if (i == 0 || dist < best_dist) {
 			best_dist = dist;
@@ -415,7 +415,7 @@ handle_cursor_axis(struct wl_listener *listener, void *data) {
 	double target_scroll_factor;
 	// IDLE_NOTIFY_ACTIVITY;
 	pointer_cursor_activity();
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	if (check_trackpad_disabled(event->pointer)) {
 		return;
@@ -876,8 +876,8 @@ static uint32_t client_resize_edge_at(Client *c, struct wlr_surface *surface,
 	if (x < g->x || x >= g->x + g->width || y < g->y || y >= g->y + g->height)
 		return 0;
 
-	t = MANGO_MIN(t, g->width / 2);
-	t = MANGO_MIN(t, g->height / 2);
+	t = ACWM_MIN(t, g->width / 2);
+	t = ACWM_MIN(t, g->height / 2);
 
 	uint32_t edge = 0;
 	if (x < g->x + t)
@@ -1152,23 +1152,23 @@ static Client *group_bar_target_at(double x, double y, Client *ignore) {
 	bool scene_hit = false, bar_hit = false;
 
 	if (ignore) {
-		scene_hit = mango_scene_node_get_ignore_hit(&ignore->scene->node);
-		mango_scene_node_set_ignore_hit(&ignore->scene->node, true);
+		scene_hit = acwm_scene_node_get_ignore_hit(&ignore->scene->node);
+		acwm_scene_node_set_ignore_hit(&ignore->scene->node, true);
 		if (ignore->group_bar) {
-			bar_hit = mango_scene_node_get_ignore_hit(
+			bar_hit = acwm_scene_node_get_ignore_hit(
 				&ignore->group_bar->scene->node);
-			mango_scene_node_set_ignore_hit(&ignore->group_bar->scene->node,
+			acwm_scene_node_set_ignore_hit(&ignore->group_bar->scene->node,
 											true);
 		}
 	}
 
-	MangoBarDecoration *bar = NULL;
+	AcwmBarDecoration *bar = NULL;
 	node_at_point(x, y, NULL, NULL, NULL, &bar, NULL, NULL);
 
 	if (ignore) {
-		mango_scene_node_set_ignore_hit(&ignore->scene->node, scene_hit);
+		acwm_scene_node_set_ignore_hit(&ignore->scene->node, scene_hit);
 		if (ignore->group_bar)
-			mango_scene_node_set_ignore_hit(&ignore->group_bar->scene->node,
+			acwm_scene_node_set_ignore_hit(&ignore->group_bar->scene->node,
 											bar_hit);
 	}
 
@@ -1184,7 +1184,7 @@ void pointer_process_motion(uint32_t time, struct wlr_input_device *device,
 	Client *c = NULL, *w = NULL;
 	Client *closet_drop_client = NULL;
 	LayerSurface *l = NULL;
-	MangoBarDecoration *bar = NULL;
+	AcwmBarDecoration *bar = NULL;
 	struct wlr_surface *surface = NULL;
 	bool should_lock = false;
 
@@ -1250,15 +1250,15 @@ void pointer_process_motion(uint32_t time, struct wlr_input_device *device,
 			if (max_y < min_y) {
 				max_y = min_y;
 			}
-			dx = MANGO_MIN(MANGO_MAX(server.cursor->x + dx, min_x), max_x) -
+			dx = ACWM_MIN(ACWM_MAX(server.cursor->x + dx, min_x), max_x) -
 				 server.cursor->x;
-			dy = MANGO_MIN(MANGO_MAX(server.cursor->y + dy, min_y), max_y) -
+			dy = ACWM_MIN(ACWM_MAX(server.cursor->y + dy, min_y), max_y) -
 				 server.cursor->y;
 		}
 
 		wlr_cursor_move(server.cursor, device, dx, dy);
 		pointer_cursor_activity();
-		wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+		acwm_notify_activity(server.seat);
 
 		/* Update selected_monitor (even while dragging a window) */
 		if (config.sloppyfocus) {
@@ -1276,19 +1276,19 @@ void pointer_process_motion(uint32_t time, struct wlr_input_device *device,
 
 	/* While a grab owns the pointer the bar under it is not really hovered. */
 	if (server.cursor_mode != CurMove && server.cursor_mode != CurResize) {
-		MangoBarDecoration *hover = NULL;
+		AcwmBarDecoration *hover = NULL;
 		if (bar) {
 			double lx = server.cursor->x - bar->scene->node.x;
 			double ly = server.cursor->y - bar->scene->node.y;
-			if (mango_bar_decoration_close_contains(bar, lx, ly))
+			if (acwm_bar_decoration_close_contains(bar, lx, ly))
 				hover = bar;
 		}
 		if (server.group_bar_hover != hover) {
 			if (server.group_bar_hover)
-				mango_bar_decoration_set_close_hover(server.group_bar_hover,
+				acwm_bar_decoration_set_close_hover(server.group_bar_hover,
 													 false);
 			if (hover)
-				mango_bar_decoration_set_close_hover(hover, true);
+				acwm_bar_decoration_set_close_hover(hover, true);
 			server.group_bar_hover = hover;
 		}
 	}
@@ -1716,7 +1716,7 @@ bool pointer_process_button_press(struct wlr_pointer_button_event *event) {
 	uint32_t mods;
 	Client *c = NULL;
 	LayerSurface *l = NULL;
-	MangoBarDecoration *bar = NULL;
+	AcwmBarDecoration *bar = NULL;
 	struct wlr_surface *surface;
 	int32_t ji;
 	const MouseBinding *m;
@@ -1724,7 +1724,7 @@ bool pointer_process_button_press(struct wlr_pointer_button_event *event) {
 		server.seat->pointer_state.focused_surface;
 
 	pointer_cursor_activity();
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	if (event->pointer && check_trackpad_disabled(event->pointer)) {
 		return true;
@@ -1803,7 +1803,7 @@ bool pointer_process_button_press(struct wlr_pointer_button_event *event) {
 			double lx = server.cursor->x - bar->scene->node.x;
 			double ly = server.cursor->y - bar->scene->node.y;
 
-			if (mango_bar_decoration_close_contains(bar, lx, ly)) {
+			if (acwm_bar_decoration_close_contains(bar, lx, ly)) {
 				pending_kill_client(tc);
 				return true;
 			}

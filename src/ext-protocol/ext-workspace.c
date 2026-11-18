@@ -1,10 +1,10 @@
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 
 static struct wl_list workspaces;
 
@@ -98,7 +98,7 @@ void refresh_monitors_workspaces_status(Monitor *m) {
 		}
 	}
 
-	mango_ext_workspace_printstatus(m);
+	acwm_ext_workspace_printstatus(m);
 }
 void workspaces_init() {
 	server.ext_workspace_manager =
@@ -135,7 +135,7 @@ void handle_ext_commit(struct wl_listener *listener, void *data) {
 			}
 
 			goto_workspace(workspace);
-			mango_error(true, WLR_INFO, "ext activating workspace %d",
+			acwm_error(true, WLR_INFO, "ext activating workspace %d",
 						workspace->tag);
 			break;
 		}
@@ -158,7 +158,7 @@ void handle_ext_commit(struct wl_listener *listener, void *data) {
 			}
 
 			toggle_workspace(workspace);
-			mango_error(true, WLR_INFO, "ext deactivating workspace %d",
+			acwm_error(true, WLR_INFO, "ext deactivating workspace %d",
 						workspace->tag);
 			break;
 		}
@@ -168,7 +168,7 @@ void handle_ext_commit(struct wl_listener *listener, void *data) {
 	}
 }
 
-void mango_ext_workspace_printstatus(Monitor *m) {
+void acwm_ext_workspace_printstatus(Monitor *m) {
 	struct workspace *w;
 	uint32_t tag_status = 0;
 
@@ -244,5 +244,5 @@ void sync_workspaces_to_tag_num(Monitor *m) {
 		}
 	}
 
-	mango_ext_workspace_printstatus(m);
+	acwm_ext_workspace_printstatus(m);
 }

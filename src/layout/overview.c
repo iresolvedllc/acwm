@@ -1,9 +1,9 @@
-#include "mango/layout/overview.h"
-#include "mango/common/server.h"
-#include "mango/config/parse.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
-#include "mango/overview/overview.h"
+#include "acwm/layout/overview.h"
+#include "acwm/common/server.h"
+#include "acwm/config/parse.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/overview/overview.h"
 #include <math.h>
 #include <stdbool.h>
 
@@ -555,7 +555,7 @@ void create_jump_hints(Monitor *m) {
 			find_keycodes_for_char(c_char, &c->jump_keycodes);
 
 			char label_text[2] = {c_char, '\0'};
-			mango_jump_label_node_update(c->jump_label_node, label_text,
+			acwm_jump_label_node_update(c->jump_label_node, label_text,
 										 m->wlr_output->scale);
 			overview_update_jump_label(c);
 			label_idx++;

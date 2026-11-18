@@ -1,11 +1,11 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mango/common/log.h"
+#include "acwm/common/log.h"
 
 static ConfigVar *find_config_var(const char *name) {
 	for (int32_t i = 0; i < config.vars_count; i++) {

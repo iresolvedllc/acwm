@@ -1,5 +1,5 @@
-#include "mango/config/parse.h"
-#include "mango/config/preset.h"
+#include "acwm/config/parse.h"
+#include "acwm/config/preset.h"
 
 #include <ctype.h>
 #include <math.h>
@@ -9,9 +9,9 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/manage/client.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/manage/client.h"
 
 // Helper function to trim whitespace from start and end of a string
 void trim_whitespace(char *str) {
@@ -92,14 +92,14 @@ int32_t parse_double_array(const char *input, double *output,
 		char *endptr;
 		double val = strtod(token, &endptr);
 		if (endptr == token || *endptr != '\0') {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid number in array: \033[1m\033[31m%s\033[0m\n",
 						token);
 			free(dup);
 			return -1;
 		}
 		if (val < 0.0) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid number in array (must be non-negative): "
 						"\033[1m\033[31m%s\033[0m\n",
 						token);
@@ -143,7 +143,7 @@ bool starts_with_ignore_case(const char *str, const char *prefix) {
 
 void report_config_line_error(const char *full_path, int line_number,
 							  const char *line) {
-	mango_error_untagged(WLR_INFO,
+	acwm_error_untagged(WLR_INFO,
 						 "\033[1;31m╰─\033[1;33m[Index]\033[0m "
 						 "\033[1;36m%s\033[0m:\033[1;35m%d\033[0m\n"
 						 "   \033[1;36m╰─\033[0;33m%s\033[0m\n\n",

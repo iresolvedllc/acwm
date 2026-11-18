@@ -8,8 +8,8 @@
 
 #include <wlr/util/log.h>
 
-#include "mango/common/log.h"
-#include "mango/common/util.h"
+#include "acwm/common/log.h"
+#include "acwm/common/util.h"
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -82,7 +82,7 @@ int32_t regex_match(const char *pattern, const char *str) {
 	if (!re) {
 		PCRE2_UCHAR errbuf[256];
 		pcre2_get_error_message(errnum, errbuf, sizeof(errbuf));
-		mango_error(false, WLR_ERROR, "PCRE2 error: %s at offset %zu\n", errbuf,
+		acwm_error(false, WLR_ERROR, "PCRE2 error: %s at offset %zu\n", errbuf,
 					erroffset);
 		return 0;
 	}

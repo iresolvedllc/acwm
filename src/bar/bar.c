@@ -1,4 +1,4 @@
-#include "mango/bar/bar.h"
+#include "acwm/bar/bar.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -6,18 +6,18 @@
 #include <string.h>
 #include <time.h>
 
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/parse.h"
-#include "mango/dispatch/bind.h"
-#include "mango/draw/text-node.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/monitor.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/parse.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/draw/text-node.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/monitor.h"
 
 #if defined(__has_include) && __has_include(<scenefx/types/fx/clipped_region.h>)
 #include <scenefx/types/fx/clipped_region.h>
@@ -28,7 +28,7 @@
 
 #define BAR_GAP 4 /* gap between widgets, px */
 
-static void bar_destroy_internal(struct MangoBar *bar);
+static void bar_destroy_internal(struct AcwmBar *bar);
 
 static struct wl_event_source *bar_clock_source = NULL;
 static struct wl_event_source *bar_status_source = NULL;
@@ -48,23 +48,23 @@ static void bar_plain_draw_data(DecorateDrawData *out) {
 
 /* Status widgets are one level of abstraction above tag buttons: they never
  * render the focused palette; the floating-bar bg is drawn by bar->bg. */
-static void bar_status_label_init(MangoJumpLabel **slot,
+static void bar_status_label_init(AcwmJumpLabel **slot,
 								  struct wlr_scene_tree *parent) {
 	DecorateDrawData plain;
 	bar_plain_draw_data(&plain);
-	*slot = mango_jump_label_node_create(parent, plain);
+	*slot = acwm_jump_label_node_create(parent, plain);
 	if (*slot)
-		mango_jump_label_node_set_background(*slot, 0.0f, 0.0f, 0.0f, 0.0f);
+		acwm_jump_label_node_set_background(*slot, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-static void bar_label_update(MangoJumpLabel *label, const char *text,
+static void bar_label_update(AcwmJumpLabel *label, const char *text,
 							 float scale) {
 	if (!label)
 		return;
-	mango_jump_label_node_update(label, text, scale > 0.0f ? scale : 1.0f);
+	acwm_jump_label_node_update(label, text, scale > 0.0f ? scale : 1.0f);
 }
 
-static void bar_label_move(MangoJumpLabel *label, int32_t x, int32_t y) {
+static void bar_label_move(AcwmJumpLabel *label, int32_t x, int32_t y) {
 	if (!label || !label->scene)
 		return;
 	wlr_scene_node_set_position(&label->scene->node, x, y);
@@ -92,7 +92,7 @@ static bool bar_visible_for(Monitor *m) {
 }
 
 static void bar_layout(Monitor *m) {
-	struct MangoBar *bar = m->bar;
+	struct AcwmBar *bar = m->bar;
 	if (!bar || !bar->tree)
 		return;
 
@@ -116,7 +116,7 @@ static void bar_layout(Monitor *m) {
 #if BAR_CORNER_RADIUS
 	if (bar->bg) {
 		int32_t radius = (int32_t)config.bar_corner_radius;
-		radius = MANGO_MIN(radius, MANGO_MIN(width, height) / 2);
+		radius = ACWM_MIN(radius, ACWM_MIN(width, height) / 2);
 		if (radius < 0)
 			radius = 0;
 		wlr_scene_rect_set_corner_radii(bar->bg, corner_radii_all(radius));
@@ -132,10 +132,10 @@ static void bar_layout(Monitor *m) {
 	/* Left group: tag buttons */
 	int32_t cx = pad;
 	for (int32_t i = 0; i < bar->tag_count; i++) {
-		MangoJumpLabel *label = bar->tags[i];
+		AcwmJumpLabel *label = bar->tags[i];
 		if (!label)
 			continue;
-		int32_t y = MANGO_MAX(0, (height - label->logical_height) / 2);
+		int32_t y = ACWM_MAX(0, (height - label->logical_height) / 2);
 		bar_label_move(label, cx, y);
 		cx += label->logical_width + BAR_GAP;
 		if (cx < 0)
@@ -156,7 +156,7 @@ static void bar_layout(Monitor *m) {
 			rx = 0;
 		wlr_scene_node_set_position(
 			&node->node, rx,
-			MANGO_MAX(0, (height - (int32_t)config.bar_tray_icon_size) / 2));
+			ACWM_MAX(0, (height - (int32_t)config.bar_tray_icon_size) / 2));
 		rx -= BAR_GAP;
 	}
 
@@ -166,7 +166,7 @@ static void bar_layout(Monitor *m) {
 			rx = 0;
 		bar_label_move(
 			bar->battery, rx,
-			MANGO_MAX(0, (height - bar->battery->logical_height) / 2));
+			ACWM_MAX(0, (height - bar->battery->logical_height) / 2));
 		rx -= BAR_GAP;
 	}
 	if (bar->clock) {
@@ -174,7 +174,7 @@ static void bar_layout(Monitor *m) {
 		if (rx < 0)
 			rx = 0;
 		bar_label_move(bar->clock, rx,
-					   MANGO_MAX(0, (height - bar->clock->logical_height) / 2));
+					   ACWM_MAX(0, (height - bar->clock->logical_height) / 2));
 	}
 }
 
@@ -194,7 +194,7 @@ void bar_refresh_tags(void) {
 	Monitor *m = NULL;
 
 	wl_list_for_each(m, &server.monitors, link) {
-		struct MangoBar *bar = m->bar;
+		struct AcwmBar *bar = m->bar;
 		if (!bar)
 			continue;
 
@@ -205,7 +205,7 @@ void bar_refresh_tags(void) {
 		char text[16];
 
 		for (int32_t i = 0; i < bar->tag_count; i++) {
-			MangoJumpLabel *label = bar->tags[i];
+			AcwmJumpLabel *label = bar->tags[i];
 			if (!label)
 				continue;
 			if (i < config.tag_num) {
@@ -216,22 +216,22 @@ void bar_refresh_tags(void) {
 				bar_tag_text(i + 1, text, sizeof(text));
 				/* focused palette drives the text color */
 				bar_label_update(label, text, scale);
-				mango_jump_label_node_set_focus(label, is_active);
+				acwm_jump_label_node_set_focus(label, is_active);
 				/* the bg rect is set explicitly, so state transitions
 				 * (urgent / active / idle) always end up with the right
 				 * color */
 				if (status == 2) {
-					mango_jump_label_node_set_background(
+					acwm_jump_label_node_set_background(
 						label, config.urgentcolor[0], config.urgentcolor[1],
 						config.urgentcolor[2], config.urgentcolor[3]);
 				} else if (is_active) {
-					mango_jump_label_node_set_background(
+					acwm_jump_label_node_set_background(
 						label, config.bardata.focus_bg_color[0],
 						config.bardata.focus_bg_color[1],
 						config.bardata.focus_bg_color[2],
 						config.bardata.focus_bg_color[3]);
 				} else {
-					mango_jump_label_node_set_background(
+					acwm_jump_label_node_set_background(
 						label, config.bardata.bg_color[0],
 						config.bardata.bg_color[1], config.bardata.bg_color[2],
 						0.0f); /* idle tags are transparent */
@@ -240,7 +240,7 @@ void bar_refresh_tags(void) {
 				/* special-workspace button */
 				wlr_scene_node_set_enabled(&label->scene->node, special_used);
 				bar_label_update(label, "S", scale);
-				mango_jump_label_node_set_focus(label, special_active);
+				acwm_jump_label_node_set_focus(label, special_active);
 			}
 		}
 
@@ -402,7 +402,7 @@ static void bar_stop_timers(void) {
 /* ---------------- creation / destruction ---------------- */
 
 static bool bar_create(Monitor *m) {
-	struct MangoBar *bar = calloc(1, sizeof(*bar));
+	struct AcwmBar *bar = calloc(1, sizeof(*bar));
 	if (!bar)
 		return false;
 
@@ -419,7 +419,7 @@ static bool bar_create(Monitor *m) {
 	}
 
 	bar->tag_count = config.tag_num + 1; /* + special button */
-	bar->tags = calloc(bar->tag_count, sizeof(MangoJumpLabel *));
+	bar->tags = calloc(bar->tag_count, sizeof(AcwmJumpLabel *));
 	bar->tag_btns = calloc(bar->tag_count, sizeof(BarButton));
 	if (!bar->tags || !bar->tag_btns) {
 		bar_destroy_internal(bar);
@@ -430,7 +430,7 @@ static bool bar_create(Monitor *m) {
 		DecorateDrawData data;
 		bar_plain_draw_data(&data);
 
-		bar->tags[i] = mango_jump_label_node_create(bar->tree, data);
+		bar->tags[i] = acwm_jump_label_node_create(bar->tree, data);
 		if (!bar->tags[i])
 			continue;
 
@@ -438,7 +438,7 @@ static bool bar_create(Monitor *m) {
 			i < config.tag_num ? BarNodeTypeTag : BarNodeTypeSpecial;
 		bar->tag_btns[i].tag = i < config.tag_num ? i + 1 : 0;
 		bar->tag_btns[i].item = NULL;
-		mango_scene_node_set(&bar->tags[i]->scene->node, bar->tag_btns[i].type,
+		acwm_scene_node_set(&bar->tags[i]->scene->node, bar->tag_btns[i].type,
 							 &bar->tag_btns[i]);
 	}
 
@@ -464,7 +464,7 @@ void bar_monitor_create(Monitor *m) {
 	}
 }
 
-void bar_destroy_internal(struct MangoBar *bar) {
+void bar_destroy_internal(struct AcwmBar *bar) {
 	if (!bar)
 		return;
 
@@ -473,16 +473,16 @@ void bar_destroy_internal(struct MangoBar *bar) {
 	if (bar->tags) {
 		for (int32_t i = 0; i < bar->tag_count; i++) {
 			if (bar->tags[i])
-				mango_jump_label_node_destroy(bar->tags[i]);
+				acwm_jump_label_node_destroy(bar->tags[i]);
 		}
 		free(bar->tags);
 	}
 	free(bar->tag_btns);
 
 	if (bar->battery)
-		mango_jump_label_node_destroy(bar->battery);
+		acwm_jump_label_node_destroy(bar->battery);
 	if (bar->clock)
-		mango_jump_label_node_destroy(bar->clock);
+		acwm_jump_label_node_destroy(bar->clock);
 
 	if (bar->tree)
 		wlr_scene_node_destroy(&bar->tree->node);
@@ -492,7 +492,7 @@ void bar_destroy_internal(struct MangoBar *bar) {
 void bar_monitor_destroy(Monitor *m) {
 	if (!m || !m->bar)
 		return;
-	struct MangoBar *bar = m->bar;
+	struct AcwmBar *bar = m->bar;
 	m->bar = NULL;
 	bar_destroy_internal(bar);
 }
@@ -533,12 +533,12 @@ bool bar_handle_button_press(double x, double y, uint32_t button) {
 	if (!config.bar_enable)
 		return false;
 
-	struct wlr_scene_node *node = mango_scene_node_at(
+	struct wlr_scene_node *node = acwm_scene_node_at(
 		&server.layers_wrap[LyrBar]->node, x, y, NULL, NULL);
 	if (!node)
 		return false;
 
-	MangoSceneNode *data = mango_scene_node_find(node);
+	AcwmSceneNode *data = acwm_scene_node_find(node);
 	if (data && data->owner) {
 		BarButton *btn = data->owner;
 

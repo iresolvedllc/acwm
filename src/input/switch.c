@@ -1,8 +1,8 @@
-#include "mango/input/switch.h"
-#include "mango/common/server.h"
-#include "mango/config/parse.h"
-#include "mango/input/device.h"
-#include "mango/ipc/ipc.h"
+#include "acwm/input/switch.h"
+#include "acwm/common/server.h"
+#include "acwm/config/parse.h"
+#include "acwm/input/device.h"
+#include "acwm/ipc/ipc.h"
 #include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_switch.h>

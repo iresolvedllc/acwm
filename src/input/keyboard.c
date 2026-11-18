@@ -1,17 +1,17 @@
-#include "mango/input/keyboard.h"
+#include "acwm/input/keyboard.h"
 #include "ctype.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/text-input.h"
-#include "mango/input/device.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/input/device.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/switcher/switcher.h"
 #include <wlr/backend/libinput.h>
 #include <wlr/interfaces/wlr_keyboard.h>
 #include <wlr/types/wlr_compositor.h>
@@ -273,7 +273,7 @@ void handle_keyboard_shortcuts_inhibitor_destroy(struct wl_listener *listener,
 	KeyboardShortcutsInhibitor *inhibitor =
 		wl_container_of(listener, inhibitor, destroy);
 
-	mango_error(true, WLR_DEBUG, "Removing keyboard shortcuts inhibitor");
+	acwm_error(true, WLR_DEBUG, "Removing keyboard shortcuts inhibitor");
 
 	wl_list_remove(&inhibitor->link);
 	wl_list_remove(&inhibitor->destroy.link);
@@ -302,7 +302,7 @@ void handle_keyboard_shortcuts_inhibit_new_inhibitor(
 		return;
 	}
 
-	mango_error(true, WLR_DEBUG, "Adding keyboard shortcuts inhibitor");
+	acwm_error(true, WLR_DEBUG, "Adding keyboard shortcuts inhibitor");
 
 	KeyboardShortcutsInhibitor *kbsinhibitor =
 		calloc(1, sizeof(KeyboardShortcutsInhibitor));
@@ -321,7 +321,7 @@ void handle_keyboard_shortcuts_inhibit_new_inhibitor(
 int32_t keyboard_sync_keymap(void *data) {
 	reset_keyboard_layout();
 	// we only need to sync keymap once
-	mango_error(true, WLR_INFO, "timer to synckeymap done");
+	acwm_error(true, WLR_INFO, "timer to synckeymap done");
 	wl_event_source_timer_update(server.sync_keymap, 0);
 	return 0;
 }
@@ -341,7 +341,7 @@ void standalone_keyboard_apply_config(KeyboardGroup *group,
 
 	struct xkb_keymap *keymap = compile_rule_keymap(rule);
 	if (!keymap && rule) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Failed to compile devicerule keymap for %s, "
 					"falling back to the global layout",
 					group->keyboard->base.name ? group->keyboard->base.name
@@ -477,7 +477,7 @@ KeyboardGroup *keyboard_group_create(void) {
 	keymap = xkb_keymap_new_from_names(context, &config.xkb_rules,
 									   XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if (!keymap) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Failed to compile keymap (layout=\"%s\" variant=\"%s\" "
 					"options=\"%s\"), falling back to the default layout",
 					config.xkb_rules.layout ? config.xkb_rules.layout : "",
@@ -680,7 +680,7 @@ void handle_keyboard_key(struct wl_listener *listener, void *data) {
 	int32_t handled = 0;
 	uint32_t mods = wlr_keyboard_get_modifiers(group->keyboard);
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	// In overcircle mode, releasing the mode key exits overview.
 	if (server.selected_monitor && server.selected_monitor->ov_tab_layout &&
@@ -771,7 +771,7 @@ void handle_keyboard_key(struct wl_listener *listener, void *data) {
 	if (hit_global) {
 		return;
 	}
-	if (!mango_im_keyboard_grab_forward_key(group, event)) {
+	if (!acwm_im_keyboard_grab_forward_key(group, event)) {
 		// prev_seat_keyboard records the keyboard that owned the seat before
 		// this one took over, so the seat can be returned to it on destroy.
 		// Only update it when this keyboard does not already own the seat; an
@@ -799,7 +799,7 @@ void handle_keyboard_modifiers(struct wl_listener *listener, void *data) {
 	if (!group->keyboard->xkb_state)
 		return;
 
-	if (!mango_im_keyboard_grab_forward_modifiers(group)) {
+	if (!acwm_im_keyboard_grab_forward_modifiers(group)) {
 
 		// prev_seat_keyboard records the keyboard that owned the seat before
 		// this one took over, so the seat can be returned to it on destroy.
@@ -828,13 +828,13 @@ void handle_keyboard_modifiers(struct wl_listener *listener, void *data) {
 void reset_keyboard_layout(void) {
 	if (!server.keyboard_group || !server.keyboard_group->wlr_group ||
 		!server.seat) {
-		mango_error(true, WLR_ERROR, "Invalid keyboard group or seat");
+		acwm_error(true, WLR_ERROR, "Invalid keyboard group or seat");
 		return;
 	}
 
 	struct wlr_keyboard *keyboard = server.keyboard_group->keyboard;
 	if (!keyboard || !keyboard->keymap) {
-		mango_error(true, WLR_ERROR, "Invalid keyboard or keymap");
+		acwm_error(true, WLR_ERROR, "Invalid keyboard or keymap");
 		return;
 	}
 
@@ -843,21 +843,21 @@ void reset_keyboard_layout(void) {
 		keyboard->xkb_state, XKB_STATE_LAYOUT_EFFECTIVE);
 	const int32_t num_layouts = xkb_keymap_num_layouts(keyboard->keymap);
 	if (num_layouts < 1) {
-		mango_error(true, WLR_INFO, "No layouts available");
+		acwm_error(true, WLR_INFO, "No layouts available");
 		return;
 	}
 
 	// Create context
 	struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 	if (!context) {
-		mango_error(true, WLR_ERROR, "Failed to create XKB context");
+		acwm_error(true, WLR_ERROR, "Failed to create XKB context");
 		return;
 	}
 
 	struct xkb_keymap *new_keymap = xkb_keymap_new_from_names(
 		context, &config.xkb_rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if (!new_keymap) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to compile keymap (invalid layout?), keeping the "
 					"current keymap");
 		goto cleanup_context;
@@ -866,14 +866,14 @@ void reset_keyboard_layout(void) {
 	// Validates that the new keymap has layouts.
 	const int32_t new_num_layouts = xkb_keymap_num_layouts(new_keymap);
 	if (new_num_layouts < 1) {
-		mango_error(true, WLR_ERROR, "New keymap has no layouts");
+		acwm_error(true, WLR_ERROR, "New keymap has no layouts");
 		xkb_keymap_unref(new_keymap);
 		goto cleanup_context;
 	}
 
 	// Ensures the current layout index is valid in the new keymap.
 	if (current >= new_num_layouts) {
-		mango_error(true, WLR_INFO,
+		acwm_error(true, WLR_INFO,
 					"Current layout index %u out of range for new keymap, "
 					"resetting to 0",
 					current);

@@ -1,8 +1,8 @@
-#include "mango/switcher/switcher.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/switcher/switcher.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/types/wlr_alpha_modifier_v1.h>
 #include <wlr/types/wlr_color_management_v1.h>
@@ -214,8 +214,8 @@ void switcher_tile_create(struct switcher_tile *tile, Client *c) {
 	float src_w, src_h;
 	switcher_content_size(c, &src_w, &src_h);
 	float aspect = src_w > 0 && src_h > 0 ? src_w / src_h : 1.0f;
-	aspect = MANGO_MAX(SW_ASPECT_MIN, MANGO_MIN(aspect, SW_ASPECT_MAX));
-	tile->cw = MANGO_MAX(1, (int)(switcher_state.tile_h * aspect));
+	aspect = ACWM_MAX(SW_ASPECT_MIN, ACWM_MIN(aspect, SW_ASPECT_MAX));
+	tile->cw = ACWM_MAX(1, (int)(switcher_state.tile_h * aspect));
 
 	tile->tree = wlr_scene_tree_create(switcher_state.tree);
 	tile->frame = wlr_scene_rect_create(tile->tree, 1, 1, config.bordercolor);
@@ -228,7 +228,7 @@ void switcher_tile_create(struct switcher_tile *tile, Client *c) {
 
 void switcher_layout(void) {
 	int frame_h = switcher_state.tile_h + 2 * SW_PAD;
-	int maxrow_w = MANGO_MAX(
+	int maxrow_w = ACWM_MAX(
 		1, (int)(switcher_state.mon->m.width * SW_PANEL_FRAC) - 2 * SW_MARGIN);
 
 	int nrows = 1;
@@ -244,7 +244,7 @@ void switcher_layout(void) {
 			row_w = row_w == 0 ? fw : row_w + SW_GAP + fw;
 		}
 		tile->row = nrows - 1;
-		content_w = MANGO_MAX(content_w, row_w);
+		content_w = ACWM_MAX(content_w, row_w);
 	}
 
 	int *rowsw = ecalloc(nrows, sizeof(*rowsw));
@@ -409,9 +409,9 @@ void switcher_open(int scope, int dir) {
 		int h_by_h =
 			(max_panel_h - 2 * SW_MARGIN - (rows - 1) * SW_GAP) / rows -
 			2 * SW_PAD;
-		int h = MANGO_MIN((int)(switcher_state.mon->m.height * SW_TILE_FRAC),
-						  MANGO_MIN(h_by_w, h_by_h));
-		switcher_state.tile_h = MANGO_MAX(switcher_state.tile_h, h);
+		int h = ACWM_MIN((int)(switcher_state.mon->m.height * SW_TILE_FRAC),
+						  ACWM_MIN(h_by_w, h_by_h));
+		switcher_state.tile_h = ACWM_MAX(switcher_state.tile_h, h);
 	}
 
 	switcher_state.tree =

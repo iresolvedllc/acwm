@@ -1,11 +1,11 @@
 ---
 title: Status Bar
-description: Configure mangobar and Waybar for mangowm.
+description: Configure mangobar and Waybar for acwm.
 ---
 
 ## Recommended: mangobar
 
-We recommend [mangobar](https://github.com/mangowm/mangobar), a dedicated status bar for mangowm built on `wlr-layer-shell`. It integrates directly with mangowm over IPC, so it stays in sync with your tags, layouts and windows. It ships with built-in modules for workspaces, layout, window title, keymode, keyboard layout, CPU/memory, brightness, volume, clock, network, battery, system tray, and user-defined `custom/<name>` modules.
+We recommend [mangobar](https://github.com/mangowm/mangobar), a dedicated status bar for acwm built on `wlr-layer-shell`. It integrates directly with acwm over IPC, so it stays in sync with your tags, layouts and windows. It ships with built-in modules for workspaces, layout, window title, keymode, keyboard layout, CPU/memory, brightness, volume, clock, network, battery, system tray, and user-defined `custom/<name>` modules.
 
 On Arch Linux, install the AUR package [`mangobar-git`](https://aur.archlinux.org/packages/mangobar-git):
 
@@ -21,7 +21,7 @@ cd mangobar
 ./build.sh
 ```
 
-Start `mangobar` in your mangowm configuration:
+Start `mangobar` in your acwm configuration:
 
 ```bash
 exec_once=mangobar
@@ -31,7 +31,7 @@ It reads its configuration from `$MANGOBAR_CONFIG` or `~/.config/mangobar/config
 
 ## Alternative: the built-in bar
 
-mango ships a minimal floating bar rendered by the compositor itself (no extra
+acwm ships a minimal floating bar rendered by the compositor itself (no extra
 process). It shows tag buttons on the left, and the SNI system tray, battery and
 a clock on the right. It is off by default; enable it with:
 
@@ -86,7 +86,7 @@ sudo ninja -C build install
 
 ### Usage
 
-Start `mangobar` in your mangowm configuration:
+Start `mangobar` in your acwm configuration:
 
 ```ini
 exec_once=mangobar
@@ -105,36 +105,36 @@ Add the following to your Waybar configuration:
 ```jsonc
 {
   "modules-left": [
-    "mango/workspaces",
-    "mango/layout",
-    "mango/window"
+    "acwm/workspaces",
+    "acwm/layout",
+    "acwm/window"
   ],
   "modules-right": [
-    "mango/language",
-    "mango/keymode",
+    "acwm/language",
+    "acwm/keymode",
   ],
-  "mango/workspaces": {
+  "acwm/workspaces": {
       "format": "{icon}",
       "hide-empty": true,
       "on-click": "activate",
       "on-click-right": "toggle",
       "overview-label": "OVERVIEW",
   },
-  "mango/keymode": {
+  "acwm/keymode": {
   	"format": "{}",
   	// "format-default": " Default",
     // "format-test": " Test",
   },
-  "mango/window": {
+  "acwm/window": {
     "format": "{}",
 	  "icon-size": 20
   },
-  "mango/layout": {
+  "acwm/layout": {
       "format": "{}",
       // "format-S": "Scroller",
       // "format-T": "Tile",
   },
-  "mango/language": {
+  "acwm/language": {
   "format": "{short}",
   },
 }
@@ -215,4 +215,4 @@ window#waybar.empty #window {
 
 ## Complete Configuration Example
 
-> **Tip:** You can find a complete Waybar configuration for mangowm at [waybar-config](https://github.com/DreamMaoMao/waybar-config).
+> **Tip:** You can find a complete Waybar configuration for acwm at [waybar-config](https://github.com/DreamMaoMao/waybar-config).

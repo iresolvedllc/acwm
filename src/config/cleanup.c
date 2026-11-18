@@ -1,10 +1,10 @@
-#include "mango/config/parse.h"
+#include "acwm/config/parse.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "mango/common/log.h"
-#include "mango/common/server.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
 
 void free_circle_layout(Config *config) {
 	if (config->circle_layout) {
@@ -333,6 +333,16 @@ void free_config(void) {
 	if (config.bar_clock_format) {
 		free(config.bar_clock_format);
 		config.bar_clock_format = NULL;
+	}
+
+	if (config.idle_command) {
+		free(config.idle_command);
+		config.idle_command = NULL;
+	}
+
+	if (config.resume_command) {
+		free(config.resume_command);
+		config.resume_command = NULL;
 	}
 
 	if (config.jump_labels) {

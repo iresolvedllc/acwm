@@ -1,18 +1,20 @@
-#include "mango/manage/misc.h"
-#include "mango/bar/bar.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/data/static_keymap.h"
-#include "mango/input/pointer.h"
-#include "mango/layout/arrange.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/monitor.h"
+#include "acwm/manage/misc.h"
+#include "acwm/bar/bar.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/data/static_keymap.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/input/pointer.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/monitor.h"
 
 #include <ctype.h>
 #include <drm_fourcc.h>
+#include <time.h>
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/backend/session.h>
 #include <wlr/render/wlr_renderer.h>
@@ -221,13 +223,13 @@ bool layer_ignores_focus(LayerSurface *l) {
 }
 
 void node_at_point(double x, double y, struct wlr_surface **psurface,
-				   Client **pc, LayerSurface **pl, MangoBarDecoration **bar,
+				   Client **pc, LayerSurface **pl, AcwmBarDecoration **bar,
 				   double *nx, double *ny) {
 	struct wlr_scene_node *node = NULL;
 	struct wlr_surface *surface = NULL;
 	Client *c = NULL;
 	LayerSurface *l = NULL;
-	MangoBarDecoration *mangobar = NULL;
+	AcwmBarDecoration *bar_deco = NULL;
 	int32_t layer;
 	Client *ovc = NULL;
 
@@ -247,11 +249,11 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 		/* Only layers_wrap carries the real layer stacking order;
 		 * layers[] are the content nodes that get inserted dynamically. */
 		node =
-			mango_scene_node_at(&server.layers_wrap[layer]->node, x, y, nx, ny);
+			acwm_scene_node_at(&server.layers_wrap[layer]->node, x, y, nx, ny);
 		if (!node)
 			continue;
 
-		MangoSceneNode *data = mango_scene_node_find(node);
+		AcwmSceneNode *data = acwm_scene_node_find(node);
 
 		Monitor *cm = monitor_at_point(x, y);
 		if (cm && cm->special_dim_rect && cm->special_dim_rect->node.enabled &&
@@ -259,7 +261,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 			c = NULL;
 			l = NULL;
 			surface = NULL;
-			mangobar = NULL;
+			bar_deco = NULL;
 			break;
 		}
 
@@ -279,7 +281,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 			if (data->type == LayerShell) {
 				l = data->owner;
 			} else if (data->type == GroupBar || data->type == TabBar) {
-				mangobar = data->owner;
+				bar_deco = data->owner;
 			} else if (data->type == XDGShell || data->type == X11) {
 				c = data->owner;
 			}
@@ -305,7 +307,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 	if (pl)
 		*pl = l;
 	if (bar)
-		*bar = mangobar;
+		*bar = bar_deco;
 
 	if (server.selected_monitor && server.selected_monitor->isoverview) {
 		ovc = client_at_point(x, y);
@@ -355,6 +357,8 @@ void check_idle_inhibitor(struct wlr_surface *exclude) {
 	}
 
 	wlr_idle_notifier_v1_set_inhibited(server.idle_notifier, inhibited);
+	server.idle_inhibited = inhibited;
+	rearm_idle_check();
 }
 
 void handle_xdg_decoration_destroy(struct wl_listener *listener, void *data) {
@@ -570,7 +574,7 @@ void handle_session_destroy(struct wl_listener *listener, void *data) {
 		}
 	}
 
-	mango_error(true, WLR_DEBUG, "Capture session ended, active count: %d",
+	acwm_error(true, WLR_DEBUG, "Capture session ended, active count: %d",
 				server.active_capture_count);
 	free(tracker);
 }
@@ -608,7 +612,7 @@ capture_source_add_shm_format(struct wlr_ext_image_capture_source_v1 *source,
 	uint32_t *formats = realloc(
 		source->shm_formats, (source->shm_formats_len + 1) * sizeof(*formats));
 	if (formats == NULL) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to allocate capture source shm formats");
 		return false;
 	}
@@ -661,7 +665,7 @@ void handle_ext_image_copy_capture_new_session(struct wl_listener *listener,
 
 	struct capture_session_tracker *tracker = calloc(1, sizeof(*tracker));
 	if (!tracker) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to allocate capture session tracker");
 		return;
 	}
@@ -680,7 +684,7 @@ void handle_ext_image_copy_capture_new_session(struct wl_listener *listener,
 		}
 	}
 
-	mango_error(true, WLR_DEBUG,
+	acwm_error(true, WLR_DEBUG,
 				"New capture session started, active count: %d",
 				server.active_capture_count);
 }
@@ -709,7 +713,7 @@ void handle_drm_lease_request(struct wl_listener *listener, void *data) {
 	struct wlr_drm_lease_v1 *lease = wlr_drm_lease_request_v1_grant(req);
 
 	if (!lease) {
-		mango_error(true, WLR_ERROR, "Failed to grant lease request");
+		acwm_error(true, WLR_ERROR, "Failed to grant lease request");
 		wlr_drm_lease_request_v1_reject(req);
 	}
 }
@@ -767,7 +771,7 @@ primary_selection_policy(struct wl_client *client) {
 	return policy;
 }
 
-bool mango_global_filter(const struct wl_client *client,
+bool acwm_global_filter(const struct wl_client *client,
 						 const struct wl_global *global, void *data) {
 	if (client == NULL)
 		return true;
@@ -789,7 +793,7 @@ bool mango_global_filter(const struct wl_client *client,
 void handle_request_set_selection(struct wl_listener *listener, void *data) {
 	/* This event is raised by the seat when a client wants to set the
 	 * selection, usually when the user copies something. wlroots allows
-	 * compositors to ignore such requests if they so choose, but in mango we
+	 * compositors to ignore such requests if they so choose, but in acwm we
 	 * always honor
 	 */
 	struct wlr_seat_request_set_selection_event *event = data;
@@ -839,6 +843,89 @@ int32_t idle_keep_inhibit(void *data) {
 		wl_event_source_timer_update(server.keep_idle_inhibit_source, 1000);
 	}
 	return 1;
+}
+
+/*
+ * Built-in idle handling: config-driven timeouts running `idle_command` after
+ * `idle_after` seconds of no input and `resume_command` on the first activity
+ * afterwards. Activity tracking piggybacks on the wlroots idle notifier that
+ * input handlers already feed, so there is no separate daemon.
+ */
+static int64_t idle_now_ms(void) {
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+void acwm_idle_init(void) {
+	server.last_activity_ms = idle_now_ms();
+	server.idle_triggered = false;
+	rearm_idle_check();
+}
+
+void acwm_notify_activity(struct wlr_seat *seat) {
+	bool was_idle = server.idle_triggered;
+
+	server.last_activity_ms = idle_now_ms();
+	server.idle_triggered = false;
+
+	if (server.idle_notifier)
+		wlr_idle_notifier_v1_notify_activity(server.idle_notifier, seat);
+
+	if (was_idle && config.resume_command && *config.resume_command) {
+		const Arg arg = {.v = config.resume_command};
+		spawn_shell(&arg);
+	}
+
+	rearm_idle_check();
+}
+
+void rearm_idle_check(void) {
+	int64_t idle_ms, remaining;
+
+	if (!server.idle_check_source)
+		return;
+
+	idle_ms = (int64_t)config.idle_after * 1000;
+	if (idle_ms <= 0) {
+		wl_event_source_timer_update(server.idle_check_source, 0);
+		return;
+	}
+
+	remaining = idle_ms - (idle_now_ms() - server.last_activity_ms);
+	wl_event_source_timer_update(server.idle_check_source,
+								 remaining > 0 ? (uint32_t)remaining : 1);
+}
+
+int32_t idle_check(void *data) {
+	int64_t idle_ms = (int64_t)config.idle_after * 1000;
+	if (idle_ms <= 0 || server.idle_triggered)
+		return 1;
+
+	/* Locked or actively inhibited: poll instead of triggering. */
+	if (server.idle_inhibited || (server.session && server.session->active)) {
+		wl_event_source_timer_update(server.idle_check_source, 1000);
+		return 1;
+	}
+
+	if (idle_now_ms() - server.last_activity_ms >= idle_ms) {
+		server.idle_triggered = true;
+		wl_event_source_timer_update(server.idle_check_source, 0);
+		if (config.idle_command && *config.idle_command) {
+			const Arg arg = {.v = config.idle_command};
+			spawn_shell(&arg);
+		}
+		return 1;
+	}
+
+	rearm_idle_check();
+	return 1;
+}
+
+/* Accessor for the Zig config-parsing port (value_parse.zig): the C global
+ * server struct is not imported into Zig, so expose just the tagmask. */
+uint32_t acwm_current_tagmask(void) {
+	return server.tagmask;
 }
 
 void handle_session_lock_unlock(struct wl_listener *listener, void *data) {

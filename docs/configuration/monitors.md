@@ -102,13 +102,13 @@ name:xxx&&make:xxx&&model:xxx&&serial:xxx
 
 ```bash
 # By name (shorthand)
-mmsg dispatch toggle_monitor,eDP-1
+acwm-msg dispatch toggle_monitor,eDP-1
 
 # By make and model
-mmsg dispatch toggle_monitor,make:Chimei Innolux Corporation&&model:0x15F5
+acwm-msg dispatch toggle_monitor,make:Chimei Innolux Corporation&&model:0x15F5
 
 # By serial
-mmsg dispatch toggle_monitor,serial:12345678
+acwm-msg dispatch toggle_monitor,serial:12345678
 ```
 
 ---
@@ -129,7 +129,7 @@ Tearing allows games to bypass the compositor's VSync for lower latency.
 | `hdr_depth` | `2`| Set the hdr depth for the current display. `0` is Default, `1` is HDR8, `2` is HDR10. |
 
 - you should enable HDR in monitor_rule first, refer to [Monitors — Monitor Rules](/docs/configuration/monitors#monitor-rules)
-- you must set `env=WLR_RENDERER,vulkan` before mango starts.
+- you must set `env=WLR_RENDERER,vulkan` before acwm starts.
 
 #### for example(must relogin once after setting):
 ```ini
@@ -143,10 +143,10 @@ monitor_rule=name:eDP-1,model:0x15F5,width:1920,height:1080,refresh:60,x:0,y:0,s
 reload, the way sway's `output <name> hdr on|off|toggle` does.
 
 ```sh
-mmsg dispatch togglehdr              # toggle the focused monitor
-mmsg dispatch togglehdr,on           # force on
-mmsg dispatch togglehdr,off,eDP-1    # a named output
-mmsg dispatch togglehdr,toggle,all   # every output at once
+acwm-msg dispatch togglehdr              # toggle the focused monitor
+acwm-msg dispatch togglehdr,on           # force on
+acwm-msg dispatch togglehdr,off,eDP-1    # a named output
+acwm-msg dispatch togglehdr,toggle,all   # every output at once
 ```
 
 With no argument it toggles the focused monitor. Reloading the config re-applies
@@ -218,9 +218,9 @@ window_rule=force_tearing:1,title:vkcube
 
 ### Graphics Card Compatibility
 
-> **Warning:** Some graphics cards require setting the `WLR_DRM_NO_ATOMIC` environment variable before mango starts to successfully enable tearing.
+> **Warning:** Some graphics cards require setting the `WLR_DRM_NO_ATOMIC` environment variable before acwm starts to successfully enable tearing.
 
-Add this to config and relogin mango:
+Add this to config and relogin acwm:
 ```
 env=WLR_DRM_NO_ATOMIC,1
 ```
@@ -229,14 +229,14 @@ env=WLR_DRM_NO_ATOMIC,1
 
 ## GPU Compatibility
 
-If mango cannot display correctly or shows a black screen, try selecting a specific GPU:
+If acwm cannot display correctly or shows a black screen, try selecting a specific GPU:
 
 ```bash
 # Use a single GPU
-WLR_DRM_DEVICES=/dev/dri/card1 mango
+WLR_DRM_DEVICES=/dev/dri/card1 acwm
 
 # Use multiple GPUs
-WLR_DRM_DEVICES=/dev/dri/card0:/dev/dri/card1 mango
+WLR_DRM_DEVICES=/dev/dri/card0:/dev/dri/card1 acwm
 ```
 
 Some GPUs have compatibility issues with `sync_obj_enable=1` — it may crash apps like `kitty` that use syncobj. Set `env=WLR_DRM_NO_ATOMIC,1` in `config.conf` and relogin to resolve this.
@@ -245,28 +245,28 @@ Some GPUs have compatibility issues with `sync_obj_enable=1` — it may crash ap
 
 ## Power Management
 
-You can control monitor power using the `mmsg` IPC tool.
+You can control monitor power using the `acwm-msg` IPC tool.
 > Notice: This sleep command does not remove the monitor, it only turns the power off.
 
 ```bash
 # Turn power off
-mmsg dispatch sleep_monitor,eDP-1
+acwm-msg dispatch sleep_monitor,eDP-1
 
 # Turn power on
-mmsg dispatch wakeup_monitor,eDP-1
+acwm-msg dispatch wakeup_monitor,eDP-1
 
 # Toggle power
-mmsg dispatch sleep_toggle_monitor,eDP-1
+acwm-msg dispatch sleep_toggle_monitor,eDP-1
 ```
 
 You can also use `wlr-randr` for monitor management:
 
 ```bash
 # remove a monitor
-mmsg dispatch disable_monitor,eDP-1
+acwm-msg dispatch disable_monitor,eDP-1
 
 # add a monitor
-mmsg dispatch enable_monitor,eDP-1
+acwm-msg dispatch enable_monitor,eDP-1
 
 # Show all monitors spec
 wlr-randr
@@ -308,10 +308,10 @@ You can create and manage virtual displays through IPC commands:
 
 ```bash
 # Create virtual output
-mmsg dispatch create_virtual_output
+acwm-msg dispatch create_virtual_output
 
 # Destroy all virtual outputs
-mmsg dispatch destroy_all_virtual_output
+acwm-msg dispatch destroy_all_virtual_output
 ```
 
 You can configure virtual monitors using `wlr-randr`:

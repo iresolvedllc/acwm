@@ -1,13 +1,13 @@
-#include "mango/input/touch.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
+#include "acwm/input/touch.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
 #include <wayland-client-core.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_compositor.h>
@@ -53,7 +53,7 @@ void touch_apply_monitor_mapping(struct wlr_touch *touch) {
 
 	wlr_cursor_map_input_to_output(server.cursor, &touch->base,
 								   target->wlr_output);
-	mango_error(true, WLR_DEBUG, "Mapping touch %s to output %s",
+	acwm_error(true, WLR_DEBUG, "Mapping touch %s to output %s",
 				touch->base.name, target->wlr_output->name);
 }
 
@@ -163,7 +163,7 @@ void handle_cursor_touch_down(struct wl_listener *listener, void *data) {
 
 	touch_apply_monitor_mapping(event->touch);
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	point->surface = touch_get_coords(event->touch, event->x, event->y,
 									  &x_offset, &y_offset, &c);
@@ -232,7 +232,7 @@ void handle_cursor_touch_motion(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each(point, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)
@@ -271,7 +271,7 @@ void handle_cursor_touch_up(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each_safe(point, tmp, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)
@@ -310,7 +310,7 @@ void handle_cursor_touch_cancel(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each_safe(point, tmp, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)

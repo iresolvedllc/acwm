@@ -241,7 +241,7 @@ You can set all parameters in one line. Target "layer shell" surfaces like statu
 layer_rule=layer_name:Values,Parameter:Values,Parameter:Values
 ```
 
-> **Tip:** You can use `mmsg get last_open_surface` to get the last open layer name for debugging.
+> **Tip:** You can use `acwm-msg get last_open_surface` to get the last open layer name for debugging.
 
 | Parameter | Type | Values | Description |
 | :--- | :--- | :--- | :--- |

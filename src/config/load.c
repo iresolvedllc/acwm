@@ -1,5 +1,5 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <ctype.h>
 #include <libgen.h>
@@ -10,28 +10,28 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mango/animation/common.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/error_nag.h"
-#include "mango/config/error_store.h"
-#include "mango/config/watcher.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/hdr.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/error_nag.h"
+#include "acwm/config/error_store.h"
+#include "acwm/config/watcher.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/hdr.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/switcher/switcher.h"
 #include <scenefx/types/wlr_scene.h>
 #include <unistd.h>
 #include <wlr/backend/libinput.h>
@@ -86,14 +86,14 @@ bool parse_config_line(Config *config, const char *line, int line_number) {
 
 	char key[256], value[256];
 	if (sscanf(processed_line, "%255[^=]=%255[^\n]", key, value) != 2) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Invalid line format: \033[1m\033[31m%s\033[0m\n", line);
 		return false;
 	}
 
 	char *equals = strchr(processed_line, '=');
 	if (equals && strcspn(equals + 1, "\n") >= sizeof(value)) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Configuration value exceeds %zu bytes: "
 					"\033[1m\033[31m%s\033[0m\n",
 					sizeof(value) - 1, line);
@@ -162,17 +162,17 @@ static bool resolve_config_path(const char *file_path, char *full_path,
 		} else {
 			const char *home = getenv("HOME");
 			if (!home) {
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"HOME environment variable not set.\n");
 				return false;
 			}
-			snprintf(full_path, size, "%s/.config/mango/%s", home, rel);
+			snprintf(full_path, size, "%s/.config/acwm/%s", home, rel);
 		}
 	} else if (file_path[0] == '~' &&
 			   (file_path[1] == '/' || file_path[1] == '\0')) {
 		const char *home = getenv("HOME");
 		if (!home) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"HOME environment variable not set.\n");
 			return false;
 		}
@@ -204,7 +204,7 @@ bool parse_config_file(Config *config, const char *file_path, bool must_exist) {
 	if (!file) {
 		current_file_index = saved_file_index;
 		if (must_exist) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to open "
 						"config file: \033[1m\033[31m%s\033[0m\n",
 						file_path);
@@ -251,7 +251,7 @@ static void resolve_keybinding_layout(struct xkb_keymap *keymap,
 	char name[64] = {0};
 
 	xkb_keysym_get_name(binding->keysymcode.keysym, name, sizeof(name));
-	mango_error(false, WLR_ERROR,
+	acwm_error(false, WLR_ERROR,
 				"Key '\033[1m\033[31m%s\033[0m' has no keycode in the "
 				"configured layouts; it is matched by keysym, which depends "
 				"on the active layout\n",
@@ -270,7 +270,7 @@ static void resolve_bindings_to_configured_layouts(Config *config) {
 	}
 
 	if (config->keymap == NULL) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Invalid xkb_rules_* layout; key names are resolved with "
 					"the us layout\n");
 
@@ -385,6 +385,9 @@ bool parse_config(void) {
 	config.groupbardata.font_desc = NULL;
 	config.bardata.font_desc = NULL;
 	config.bar_clock_format = NULL;
+	config.idle_after = 0;
+	config.idle_command = NULL;
+	config.resume_command = NULL;
 	config.jump_labels = NULL;
 	strcpy(config.keymode, "default");
 
@@ -400,18 +403,18 @@ bool parse_config(void) {
 			config_error_store_end();
 			return false;
 		}
-		snprintf(filename, sizeof(filename), "%s/.config/mango/config.conf",
+		snprintf(filename, sizeof(filename), "%s/.config/acwm/config.conf",
 				 homedir);
 		if (access(filename, F_OK) != 0) {
-			snprintf(filename, sizeof(filename), "%s/.config/mango/config.toml",
+			snprintf(filename, sizeof(filename), "%s/.config/acwm/config.toml",
 					 homedir);
 		}
 
 		if (access(filename, F_OK) != 0) {
-			snprintf(filename, sizeof(filename), "%s/mango/config.conf",
+			snprintf(filename, sizeof(filename), "%s/acwm/config.conf",
 					 SYSCONFDIR);
 			if (access(filename, F_OK) != 0) {
-				snprintf(filename, sizeof(filename), "%s/mango/config.toml",
+				snprintf(filename, sizeof(filename), "%s/acwm/config.toml",
 						 SYSCONFDIR);
 			}
 		}

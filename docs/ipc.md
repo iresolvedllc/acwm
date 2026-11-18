@@ -1,22 +1,22 @@
 ---
 title: IPC
-description: Control mangowm programmatically using mmsg.
+description: Control acwm programmatically using acwm-msg.
 ---
 
-# mmsg(1) - User Manual
+# acwm-msg(1) - User Manual
 
-`mmsg` is the command-line interface for the Mango compositor's Inter-Process Communication (IPC) system. It allows users and scripts to query the state of the compositor or subscribe to real-time events.
+`acwm-msg` is the command-line interface for the ACWM compositor's Inter-Process Communication (IPC) system. It allows users and scripts to query the state of the compositor or subscribe to real-time events.
 
 ## SYNOPSIS
-`mmsg <command> [arguments...]`
+`acwm-msg <command> [arguments...]`
 
 ## DESCRIPTION
-`mmsg` acts as a client that connects to the Mango compositor via a Unix domain socket defined by the `MANGO_INSTANCE_SIGNATURE` environment variable. It supports two primary modes of operation:
+`acwm-msg` acts as a client that connects to the ACWM compositor via a Unix domain socket defined by the `ACWM_INSTANCE_SIGNATURE` environment variable. It supports two primary modes of operation:
 1. **One-shot Request (`get`)**: Sends a query to the compositor, receives a single JSON response, and terminates.
 2. **Persistent Stream (`watch`)**: Subscribes to a specific state, receiving continuous JSON updates whenever that state changes.
 
 ## ENVIRONMENT VARIABLES
-* **`MANGO_INSTANCE_SIGNATURE`**: Must be set to the path of the Unix socket created by the running Mango instance. This is typically handled automatically when running `mmsg` from within a terminal spawned by the compositor.
+* **`ACWM_INSTANCE_SIGNATURE`**: Must be set to the path of the Unix socket created by the running ACWM instance. This is typically handled automatically when running `acwm-msg` from within a terminal spawned by the compositor.
 
 ## COMMANDS
 
@@ -41,12 +41,12 @@ description: Control mangowm programmatically using mmsg.
 
 *Example:*
 ```bash
-mmsg get monitor eDP-1
-mmsg get all-clients
-mmsg get all-monitors
-mmsg get all-devices
-mmsg get all-layers
-mmsg get cursorpos
+acwm-msg get monitor eDP-1
+acwm-msg get all-clients
+acwm-msg get all-monitors
+acwm-msg get all-devices
+acwm-msg get all-layers
+acwm-msg get cursorpos
 ```
 
 ### WATCH (Event Subscription)
@@ -67,9 +67,9 @@ Subscribes the client to real-time updates. When the state changes, the server p
 *Example:*
 ```bash
 # watch all monitors
-mmsg watch all-monitors
+acwm-msg watch all-monitors
 # watch all tags
-mmsg watch all-tags
+acwm-msg watch all-tags
 ```
 
 ### DISPATCH
@@ -79,7 +79,7 @@ Allows sending commands to the compositor to alter its state.
 *Example:* 
 ```bash   
 # operate specific client by id
-mmsg dispatch exchange_client,left client,375
+acwm-msg dispatch exchange_client,left client,375
 # operate current client
-mmsg dispatch exchange_client,left
+acwm-msg dispatch exchange_client,left
 ````

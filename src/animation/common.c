@@ -1,9 +1,9 @@
-#include "mango/animation/common.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/config/parse.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/config/parse.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -197,7 +197,7 @@ bool scene_node_snapshot(struct wlr_scene_node *node, int32_t lx, int32_t ly,
 		// node is destroyed
 		meta->destroy.notify = handle_snapshot_meta_destroy;
 		wl_signal_add(&wrapper->node.events.destroy, &meta->destroy);
-		mango_scene_node_set(&wrapper->node, Snapshot, meta);
+		acwm_scene_node_set(&wrapper->node, Snapshot, meta);
 
 		// attach the real buffer underneath the wrapper (relative coordinates
 		// 0,0)
@@ -210,7 +210,7 @@ bool scene_node_snapshot(struct wlr_scene_node *node, int32_t lx, int32_t ly,
 
 		/*
 		 * Do not copy the source node's payload onto the snapshot buffer. A
-		 * MangoSceneNode is owned by (and freed together with) its original
+		 * AcwmSceneNode is owned by (and freed together with) its original
 		 * node, so aliasing it here would dangle once that node is destroyed
 		 * and would make an ancestor lookup resolve to the wrong root. The
 		 * wrapping tree already carries its own Snapshot payload, so walking

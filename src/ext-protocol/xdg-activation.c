@@ -1,8 +1,8 @@
-#include "mango/ext-protocol/xdg-activation.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
+#include "acwm/ext-protocol/xdg-activation.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_compositor.h>
 
@@ -13,7 +13,7 @@ static struct wl_listener activation_destroy_listener;
 
 void handle_xdg_activation_token_destroy(struct wl_listener *listener,
 										 void *data) {
-	struct mango_xdg_activation_token *token =
+	struct acwm_xdg_activation_token *token =
 		wl_container_of(listener, token, destroy);
 	wl_list_remove(&token->destroy.link);
 	free(token);
@@ -22,7 +22,7 @@ void handle_xdg_activation_token_destroy(struct wl_listener *listener,
 void handle_xdg_activation_new_token(struct wl_listener *listener, void *data) {
 	struct wlr_xdg_activation_token_v1 *wlr_token = data;
 
-	struct mango_xdg_activation_token *token = ecalloc(1, sizeof(*token));
+	struct acwm_xdg_activation_token *token = ecalloc(1, sizeof(*token));
 	if (!token)
 		return;
 
@@ -39,7 +39,7 @@ bool xdg_activation_token_can_activate(
 	struct wlr_xdg_activation_token_v1 *wlr_token) {
 	if (!wlr_token)
 		return false;
-	struct mango_xdg_activation_token *token = wlr_token->data;
+	struct acwm_xdg_activation_token *token = wlr_token->data;
 	if (token && token->internal)
 		return true;
 	if (!wlr_token->seat)
@@ -109,7 +109,7 @@ const char *xdg_activation_v1_export_token(void) {
 	if (!wlr_token)
 		return NULL;
 
-	struct mango_xdg_activation_token *token = ecalloc(1, sizeof(*token));
+	struct acwm_xdg_activation_token *token = ecalloc(1, sizeof(*token));
 	if (!token) {
 		wlr_xdg_activation_token_v1_destroy(wlr_token);
 		return NULL;

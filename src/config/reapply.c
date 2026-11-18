@@ -1,5 +1,5 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <ctype.h>
 #include <libgen.h>
@@ -10,29 +10,29 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mango/animation/common.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/error_nag.h"
-#include "mango/config/error_store.h"
-#include "mango/config/watcher.h"
-#include "mango/bar/bar.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/hdr.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/error_nag.h"
+#include "acwm/config/error_store.h"
+#include "acwm/config/watcher.h"
+#include "acwm/bar/bar.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/hdr.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/switcher/switcher.h"
 #include <wlr/backend/libinput.h>
 #include <wlr/interfaces/wlr_keyboard.h>
 #include <wlr/types/wlr_cursor.h>
@@ -235,7 +235,7 @@ void reapply_monitor_rules(void) {
 		 * adding a still-disabled output re-enters
 		 * handle_output_layout_change and crashes. */
 		if (m->pending.enabled && !m->wlr_output->enabled &&
-			!mango_scene_output_commit(m->scene_output, &m->pending))
+			!acwm_scene_output_commit(m->scene_output, &m->pending))
 			continue;
 
 		if (mr && m->wlr_output->enabled) {
@@ -267,7 +267,7 @@ void reapply_monitor_rules(void) {
 				wlr_damage_ring_add_whole(&m->scene_output->damage_ring);
 		}
 
-		if (!(mango_scene_output_commit(m->scene_output, &m->pending))) {
+		if (!(acwm_scene_output_commit(m->scene_output, &m->pending))) {
 			if (m->hdr_enable) {
 				output_state_setup_hdr(m, true, &m->pending);
 			}
@@ -544,5 +544,6 @@ int32_t reload_config(const Arg *arg) {
 	bar_config_reload();
 	printstatus(IPC_WATCH_ARRANGGE);
 	config_watcher_update();
+	rearm_idle_check();
 	return 1;
 }

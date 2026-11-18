@@ -27,7 +27,7 @@
   debug ? false,
 }:
 stdenv.mkDerivation {
-  pname = "mango";
+  pname = "acwm";
   version = "nightly";
 
   src = lib.cleanSourceWith {
@@ -68,7 +68,7 @@ stdenv.mkDerivation {
     libGL
     libdrm
     systemd # libsystemd → SNI tray for the built-in bar (HAVE_TRAY)
-    gdk-pixbuf # mlaunch client icon loading (.desktop Icon=)
+    gdk-pixbuf # acwm-launch client icon loading (.desktop Icon=)
   ]
   ++ lib.optionals enableXWayland [
     libX11
@@ -77,13 +77,13 @@ stdenv.mkDerivation {
   ];
 
   passthru = {
-    providedSessions = [ "mango" ];
+    providedSessions = [ "acwm" ];
   };
 
   meta = {
-    mainProgram = "mango";
+    mainProgram = "acwm";
     description = "Practical and Powerful wayland compositor (dwm but wayland)";
-    homepage = "https://github.com/mangowm/mango";
+    homepage = "https://github.com/mangowm/acwm";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
