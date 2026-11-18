@@ -1,11 +1,11 @@
 #undef _POSIX_C_SOURCE
 #define _XOPEN_SOURCE 700
-#include "mango/config/error_nag.h"
+#include "acwm/config/error_nag.h"
 
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/error_store.h"
-#include "mango/manage/monitor.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/error_store.h"
+#include "acwm/manage/monitor.h"
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
@@ -60,7 +60,7 @@ static void nag_kill(void) {
 		return;
 
 	/* Tearing down the compositor-side client closes the connection, which
-	 * makes mangonag leave its main loop and exit on its own. The destroy
+	 * makes acwm-nag leave its main loop and exit on its own. The destroy
 	 * listener clears nag_client for us. */
 	wl_client_destroy(nag_client);
 }
@@ -321,17 +321,17 @@ static void nag_spawn(void) {
 		if (server.selected_monitor && server.selected_monitor->wlr_output)
 			out = server.selected_monitor->wlr_output->name;
 		if (out && edit)
-			execlp("mangonag", "mangonag", "-o", out, "-t", "error", "-e",
+			execlp("acwm-nag", "acwm-nag", "-o", out, "-t", "error", "-e",
 				   "top", "-l", "-s", "Close", "-b", "Edit", edit,
 				   (char *)NULL);
 		else if (out)
-			execlp("mangonag", "mangonag", "-o", out, "-t", "error", "-e",
+			execlp("acwm-nag", "acwm-nag", "-o", out, "-t", "error", "-e",
 				   "top", "-l", "-s", "Close", (char *)NULL);
 		else if (edit)
-			execlp("mangonag", "mangonag", "-t", "error", "-e", "top", "-l",
+			execlp("acwm-nag", "acwm-nag", "-t", "error", "-e", "top", "-l",
 				   "-s", "Close", "-b", "Edit", edit, (char *)NULL);
 		else
-			execlp("mangonag", "mangonag", "-t", "error", "-e", "top", "-l",
+			execlp("acwm-nag", "acwm-nag", "-t", "error", "-e", "top", "-l",
 				   "-s", "Close", (char *)NULL);
 		_exit(127);
 	}

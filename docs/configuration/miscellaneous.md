@@ -61,7 +61,7 @@ description: Advanced settings for XWayland, focus behavior, and system integrat
 
 ## Config errors
 
-When the config file contains errors, mango shows a `mangonag` bar at the top of
+When the config file contains errors, acwm shows a `acwm-nag` bar at the top of
 the focused output.
 
 - **Close** dismisses the bar.

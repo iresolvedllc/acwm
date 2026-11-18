@@ -1,16 +1,16 @@
-#include "mango/manage/layer.h"
-#include "mango/bar/bar.h"
-#include "mango/animation/layer.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/ext-protocol/text-input.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/manage/layer.h"
+#include "acwm/bar/bar.h"
+#include "acwm/animation/layer.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
@@ -47,7 +47,7 @@ void layer_focus(LayerSurface *l) {
 		return;
 
 	client_focus(NULL, 0);
-	mango_im_relay_set_focus(server.input_method_relay,
+	acwm_im_relay_set_focus(server.input_method_relay,
 							 l->layer_surface->surface);
 	client_notify_enter(l->layer_surface->surface,
 						wlr_seat_get_keyboard(server.seat));
@@ -401,7 +401,7 @@ bool popup_unconstrain(Popup *popup) {
 
 	struct wlr_scene_node *parent_node = wlr_popup->parent->data;
 	if (!parent_node) {
-		mango_error(true, WLR_ERROR, "Popup parent has no scene node");
+		acwm_error(true, WLR_ERROR, "Popup parent has no scene node");
 		return false;
 	}
 
@@ -538,9 +538,9 @@ void handle_new_layer_surface(struct wl_listener *listener, void *data) {
 		layer_surface->current.layer < ZWLR_LAYER_SHELL_V1_LAYER_TOP
 			? server.layers[LyrTop]
 			: scene_layer);
-	mango_scene_node_set(&l->scene->node, LayerShell, l);
+	acwm_scene_node_set(&l->scene->node, LayerShell, l);
 	/* Popups live in their own tree, so they carry their own payload. */
-	mango_scene_node_set(&l->popups->node, LayerShell, l);
+	acwm_scene_node_set(&l->popups->node, LayerShell, l);
 
 	LISTEN(&l->scene->node.events.destroy, &l->destroy,
 		   handle_layer_node_destroy);

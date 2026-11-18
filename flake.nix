@@ -20,8 +20,8 @@
       ];
 
       flake = {
-        hmModules.mango = import ./nix/hm-modules.nix self;
-        nixosModules.mango = import ./nix/nixos-modules.nix self;
+        hmModules.acwm = import ./nix/hm-modules.nix self;
+        nixosModules.acwm = import ./nix/nixos-modules.nix self;
       };
 
       perSystem =
@@ -32,31 +32,31 @@
         }:
         let
           inherit (pkgs) callPackage;
-          mango = callPackage ./nix {
+          acwm = callPackage ./nix {
             scenefx = inputs.scenefx.packages.${pkgs.stdenv.hostPlatform.system}.default;
           };
         in
         {
-          packages.default = mango;
+          packages.default = acwm;
           overlayAttrs = {
-            inherit (config.packages) mango;
+            inherit (config.packages) acwm;
           };
           packages = {
-            inherit mango;
+            inherit acwm;
             hm-options-json = pkgs.callPackage (import ./nix/generate-options.nix self) {
               module = ./nix/hm-modules.nix;
-              optionPrefix = "wayland.windowManager.mango.";
+              optionPrefix = "wayland.windowManager.acwm.";
             };
             nixos-options-json = pkgs.callPackage (import ./nix/generate-options.nix self) {
               module = ./nix/nixos-modules.nix;
-              optionPrefix = "programs.mango.";
+              optionPrefix = "programs.acwm.";
             };
           };
           devShells.default = pkgs.mkShell {
             # Reuse the package's nativeBuildInputs/buildInputs (meson, ninja,
             # pkg-config, wayland-scanner, wlroots, scenefx, ...) so the shell
             # stays in sync with the build derivation.
-            inputsFrom = [ mango ];
+            inputsFrom = [ acwm ];
 
             packages = with pkgs; [
               clang
@@ -69,7 +69,7 @@
             ];
 
             shellHook = ''
-              echo "mango dev shell"
+              echo "acwm dev shell"
               echo "  meson setup build && meson compile -C build"
               echo "  ./format.sh  # clang-format"
             '';

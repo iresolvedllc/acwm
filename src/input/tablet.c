@@ -1,14 +1,14 @@
-#include "mango/input/tablet.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
+#include "acwm/input/tablet.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
 #include <stdlib.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_compositor.h>
@@ -19,7 +19,7 @@
 void tablet_create(struct wlr_input_device *device) {
 	struct Tablet *tablet = calloc(1, sizeof(struct Tablet));
 	if (!tablet) {
-		mango_error(true, WLR_ERROR, "could not allocate tablet");
+		acwm_error(true, WLR_ERROR, "could not allocate tablet");
 		return;
 	}
 
@@ -115,7 +115,7 @@ void handle_tablet_pad_attach(struct wl_listener *listener, void *data) {
 void tablet_pad_create(struct wlr_input_device *device) {
 	struct TabletPad *tablet_pad = calloc(1, sizeof(struct TabletPad));
 	if (!tablet_pad) {
-		mango_error(true, WLR_ERROR, "could not allocate tablet_pad");
+		acwm_error(true, WLR_ERROR, "could not allocate tablet_pad");
 		return;
 	}
 
@@ -124,7 +124,7 @@ void tablet_pad_create(struct wlr_input_device *device) {
 		wlr_tablet_pad_create(server.tablet_manager, server.seat, device);
 
 	if (!tablet_pad->pad_v2) {
-		mango_error(true, WLR_ERROR, "could not create tablet_pad_v2 wrapper");
+		acwm_error(true, WLR_ERROR, "could not create tablet_pad_v2 wrapper");
 		free(tablet_pad);
 		return;
 	}
@@ -317,7 +317,7 @@ void handle_tablet_tool_proximity(struct wl_listener *listener, void *data) {
 	if (!tool) {
 		tool = calloc(1, sizeof(struct TabletTool));
 		if (!tool) {
-			mango_error(true, WLR_ERROR, "could not allocate tablet_tool");
+			acwm_error(true, WLR_ERROR, "could not allocate tablet_tool");
 			return;
 		}
 		tool->tool_v2 = wlr_tablet_tool_create(server.tablet_manager,
@@ -339,7 +339,7 @@ void handle_tablet_tool_proximity(struct wl_listener *listener, void *data) {
 		if (target) {
 			wlr_cursor_map_input_to_output(server.cursor, &event->tablet->base,
 										   target->wlr_output);
-			mango_error(true, WLR_DEBUG, "Mapping tablet %s to output %s",
+			acwm_error(true, WLR_DEBUG, "Mapping tablet %s to output %s",
 						event->tablet->base.name, target->wlr_output->name);
 		}
 	}

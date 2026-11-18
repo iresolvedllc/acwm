@@ -1,11 +1,11 @@
-#include "mango/animation/tag.h"
-#include "mango/animation/client.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
+#include "acwm/animation/tag.h"
+#include "acwm/animation/client.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
 
 void set_tagin_animation(Monitor *m, Client *c) {
 	if (c->animation.running) {
@@ -32,10 +32,10 @@ void set_tagin_animation(Monitor *m, Client *c) {
 
 		c->animainit_geom.x = config.tag_animation_direction == VERTICAL
 								  ? c->animation.current.x
-								  : MANGO_MAX(c->mon->m.x + c->mon->m.width,
+								  : ACWM_MAX(c->mon->m.x + c->mon->m.width,
 											  c->geom.x + c->mon->m.width);
 		c->animainit_geom.y = config.tag_animation_direction == VERTICAL
-								  ? MANGO_MAX(c->mon->m.y + c->mon->m.height,
+								  ? ACWM_MAX(c->mon->m.y + c->mon->m.height,
 											  c->geom.y + c->mon->m.height)
 								  : c->animation.current.y;
 
@@ -43,10 +43,10 @@ void set_tagin_animation(Monitor *m, Client *c) {
 
 		c->animainit_geom.x = config.tag_animation_direction == VERTICAL
 								  ? c->animation.current.x
-								  : MANGO_MIN(m->m.x - c->geom.width,
+								  : ACWM_MIN(m->m.x - c->geom.width,
 											  c->geom.x - c->mon->m.width);
 		c->animainit_geom.y = config.tag_animation_direction == VERTICAL
-								  ? MANGO_MIN(m->m.y - c->geom.height,
+								  ? ACWM_MIN(m->m.y - c->geom.height,
 											  c->geom.y - c->mon->m.height)
 								  : c->animation.current.y;
 	}
@@ -144,10 +144,10 @@ void set_tagout_animation(Monitor *m, Client *c) {
 		c->pending = c->geom;
 		c->pending.x = config.tag_animation_direction == VERTICAL
 						   ? c->animation.current.x
-						   : MANGO_MIN(c->mon->m.x - c->geom.width,
+						   : ACWM_MIN(c->mon->m.x - c->geom.width,
 									   c->geom.x - c->mon->m.width);
 		c->pending.y = config.tag_animation_direction == VERTICAL
-						   ? MANGO_MIN(c->mon->m.y - c->geom.height,
+						   ? ACWM_MIN(c->mon->m.y - c->geom.height,
 									   c->geom.y - c->mon->m.height)
 						   : c->animation.current.y;
 
@@ -156,10 +156,10 @@ void set_tagout_animation(Monitor *m, Client *c) {
 		c->pending = c->geom;
 		c->pending.x = config.tag_animation_direction == VERTICAL
 						   ? c->animation.current.x
-						   : MANGO_MAX(c->mon->m.x + c->mon->m.width,
+						   : ACWM_MAX(c->mon->m.x + c->mon->m.width,
 									   c->geom.x + c->mon->m.width);
 		c->pending.y = config.tag_animation_direction == VERTICAL
-						   ? MANGO_MAX(c->mon->m.y + c->mon->m.height,
+						   ? ACWM_MAX(c->mon->m.y + c->mon->m.height,
 									   c->geom.y + c->mon->m.height)
 						   : c->animation.current.y;
 		resize(c, c->geom, (ResizeOpts){.interact = 0});

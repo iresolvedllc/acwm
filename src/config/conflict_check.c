@@ -1,13 +1,13 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mango/common/log.h"
-#include "mango/manage/client.h"
+#include "acwm/common/log.h"
+#include "acwm/manage/client.h"
 #include <wlr/types/wlr_keyboard.h>
 
 int compare_keybind_by_key_only(const void *a, const void *b) {
@@ -186,7 +186,7 @@ bool check_key_binding_conflicts(Config *config) {
 							: "(built-in)";
 
 					conflict_found = true;
-					mango_error(false, WLR_INFO,
+					acwm_error(false, WLR_INFO,
 								"Key binding conflict in keymode %s:\n"
 								"  File \"%s\", line %d\n"
 								"  File \"%s\", line %d\n",
@@ -232,7 +232,7 @@ bool check_simple_binding_conflicts(void *arr, size_t count, size_t elem_size,
 										 : "(built-in)";
 
 				conflict_found = true;
-				mango_error(false, WLR_INFO,
+				acwm_error(false, WLR_INFO,
 							"%s conflict in keymode %s:\n"
 							"  File \"%s\", line %d\n"
 							"  File \"%s\", line %d\n",

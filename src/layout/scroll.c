@@ -1,10 +1,10 @@
-#include "mango/layout/scroll.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 
 /* Gets or creates the scroller state for a given tag of the specified monitor.
  */

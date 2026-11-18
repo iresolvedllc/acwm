@@ -7,10 +7,10 @@ description: Set up screen sharing, clipboard, keyring, and file pickers using X
 
 You can customize portal settings via the following paths:
 
-- **User Configuration (Priority):** `~/.config/xdg-desktop-portal/mango-portals.conf`
-- **System Fallback:** `/usr/share/xdg-desktop-portal/mango-portals.conf`
+- **User Configuration (Priority):** `~/.config/xdg-desktop-portal/acwm-portals.conf`
+- **System Fallback:** `/usr/share/xdg-desktop-portal/acwm-portals.conf`
 
-> **Warning:** If you previously added `dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots` to your config, remove it. Mango now handles this automatically.
+> **Warning:** If you previously added `dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots` to your config, remove it. ACWM now handles this automatically.
 
 ## Screen Sharing
 
@@ -43,7 +43,7 @@ To enable screen sharing (OBS, Discord, WebRTC), you need `xdg-desktop-portal-wl
   chooser_type=none
   ```
 
-  Replace `eDP-1` with your output name (see `mmsg get all-monitors`). The configuration is only read when the portal starts, so restart it afterwards (a re-login or reboot works too):
+  Replace `eDP-1` with your output name (see `acwm-msg get all-monitors`). The configuration is only read when the portal starts, so restart it afterwards (a re-login or reboot works too):
 
   ```bash
   systemctl --user restart xdg-desktop-portal-wlr
@@ -51,7 +51,7 @@ To enable screen sharing (OBS, Discord, WebRTC), you need `xdg-desktop-portal-wl
 
   This applies to every application: screen sharing always captures that output and never asks. Applications that do wait for the reply (OBS, Firefox, Chromium) also work with the default chooser, so only add this if you need it. Tencent Meeting additionally only gets the first share attempt per app start right, so restart it before sharing.
 
-- **Window screen sharing:** Some applications may have issues sharing individual windows. See [#184](https://github.com/mangowm/mango/pull/184) for workarounds.
+- **Window screen sharing:** Some applications may have issues sharing individual windows. See [#184](https://github.com/mangowm/acwm/pull/184) for workarounds.
 
 - **Screen recording lag:** If you experience stuttering during screen recording, see [xdg-desktop-portal-wlr#351](https://github.com/emersion/xdg-desktop-portal-wlr/issues/351).
 
@@ -77,7 +77,7 @@ If you need to store passwords or secrets (e.g., for VS Code or Minecraft launch
 
 **Configuration:**
 
-Add the following to `~/.config/xdg-desktop-portal/mango-portals.conf`:
+Add the following to `~/.config/xdg-desktop-portal/acwm-portals.conf`:
 
 ```ini
 [preferred]

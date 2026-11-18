@@ -1,10 +1,10 @@
-#include "mango/layout/vertical.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
+#include "acwm/layout/vertical.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
 
 static void vertical_tile_core(Monitor *m, const LayoutContext *ctx);
 static void vertical_deck_core(Monitor *m, const LayoutContext *ctx);
@@ -71,7 +71,7 @@ static void vertical_tile_core(Monitor *m, const LayoutContext *ctx) {
 		if (!VISIBLEON(c, m) || !ISFAKETILED(c))
 			continue;
 		if (i < m->pertag->nmasters[get_mon_curtag(m)]) {
-			r = MANGO_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
+			r = ACWM_MIN(n, m->pertag->nmasters[get_mon_curtag(m)]) - i;
 			if (c->master_inner_per > 0.0f) {
 				w = master_surplus_width * c->master_inner_per /
 					master_surplus_ratio;
@@ -171,7 +171,7 @@ static void vertical_deck_core(Monitor *m, const LayoutContext *ctx) {
 		if (i < nmasters) {
 			c->master_mfact_per = mfact;
 			int32_t w = (m->w.width - 2 * cur_gappoh - mx) /
-						(MANGO_MIN(n, nmasters) - i);
+						(ACWM_MIN(n, nmasters) - i);
 			client_tile_resize(c,
 							   (struct wlr_box){.x = m->w.x + cur_gappoh + mx,
 												.y = m->w.y + cur_gappov,

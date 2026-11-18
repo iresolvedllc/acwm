@@ -1,4 +1,4 @@
-#include "mango/common/scene_node.h"
+#include "acwm/common/scene_node.h"
 #include <scenefx/types/wlr_scene.h>
 #include <stdlib.h>
 #include <wlr/util/box.h>
@@ -6,12 +6,12 @@
 
 static void handle_scene_node_destroy(struct wl_listener *listener,
 									  void *data) {
-	MangoSceneNode *node = wl_container_of(listener, node, destroy);
+	AcwmSceneNode *node = wl_container_of(listener, node, destroy);
 	wl_list_remove(&node->destroy.link);
 	free(node);
 }
 
-MangoSceneNode *mango_scene_node_set(struct wlr_scene_node *node, uint32_t type,
+AcwmSceneNode *acwm_scene_node_set(struct wlr_scene_node *node, uint32_t type,
 									 void *owner) {
 	if (!node)
 		return NULL;
@@ -20,13 +20,13 @@ MangoSceneNode *mango_scene_node_set(struct wlr_scene_node *node, uint32_t type,
 	 * A node owns at most one payload. Drop an existing one so a repeated
 	 * call cannot leave a stale listener behind.
 	 */
-	MangoSceneNode *old = node->data;
+	AcwmSceneNode *old = node->data;
 	if (old) {
 		wl_list_remove(&old->destroy.link);
 		free(old);
 	}
 
-	MangoSceneNode *data = calloc(1, sizeof(*data));
+	AcwmSceneNode *data = calloc(1, sizeof(*data));
 	if (!data)
 		return NULL;
 
@@ -38,7 +38,7 @@ MangoSceneNode *mango_scene_node_set(struct wlr_scene_node *node, uint32_t type,
 	return data;
 }
 
-MangoSceneNode *mango_scene_node_find(struct wlr_scene_node *node) {
+AcwmSceneNode *acwm_scene_node_find(struct wlr_scene_node *node) {
 	for (; node; node = node->parent ? &node->parent->node : NULL) {
 		if (node->data) {
 			return node->data;
@@ -47,19 +47,19 @@ MangoSceneNode *mango_scene_node_find(struct wlr_scene_node *node) {
 	return NULL;
 }
 
-void mango_scene_node_set_ignore_hit(struct wlr_scene_node *node,
+void acwm_scene_node_set_ignore_hit(struct wlr_scene_node *node,
 									 bool ignore_hit) {
 	if (!node || !node->data) {
 		return;
 	}
-	((MangoSceneNode *)node->data)->ignore_hit = ignore_hit;
+	((AcwmSceneNode *)node->data)->ignore_hit = ignore_hit;
 }
 
-bool mango_scene_node_get_ignore_hit(struct wlr_scene_node *node) {
+bool acwm_scene_node_get_ignore_hit(struct wlr_scene_node *node) {
 	if (!node || !node->data) {
 		return false;
 	}
-	return ((MangoSceneNode *)node->data)->ignore_hit;
+	return ((AcwmSceneNode *)node->data)->ignore_hit;
 }
 
 /* Size of a scene node, mirroring wlroots' internal scene_node_get_size() for
@@ -145,7 +145,7 @@ static bool scene_node_search(struct wlr_scene_node *node, double px, double py,
 		return false;
 	}
 
-	MangoSceneNode *data = node->data;
+	AcwmSceneNode *data = node->data;
 	if (data && data->ignore_hit) {
 		return false;
 	}
@@ -183,7 +183,7 @@ static bool scene_node_search(struct wlr_scene_node *node, double px, double py,
 	return true;
 }
 
-struct wlr_scene_node *mango_scene_node_at(struct wlr_scene_node *node,
+struct wlr_scene_node *acwm_scene_node_at(struct wlr_scene_node *node,
 										   double lx, double ly, double *nx,
 										   double *ny) {
 	struct wlr_scene_node *result = NULL;

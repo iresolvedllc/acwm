@@ -1,6 +1,6 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
-#include "mango/config/preset.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
+#include "acwm/config/preset.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -9,12 +9,12 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/dispatch/bind.h"
-#include "mango/input/pointer.h"
-#include "mango/manage/client.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/input/pointer.h"
+#include "acwm/manage/client.h"
+#include "acwm/switcher/switcher.h"
 #include <wlr/types/wlr_keyboard.h>
 
 static struct xkb_keymap *reference_keymap_instance = NULL;
@@ -84,7 +84,7 @@ void parse_bind_flags(const char *str, KeyBinding *kb) {
 			kb->isallowconflict = true;
 			break;
 		default:
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Unknown bind flag: \033[1m\033[31m%c\033[0m\n",
 						suffix[i]);
 			break;
@@ -164,7 +164,7 @@ uint32_t parse_mod(const char *mod_str) {
 					match_success = true;
 					break;
 				default:
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"unknown modifier keycode: "
 								"\033[1m\033[31m%s\033[0m\n",
 								token);
@@ -207,7 +207,7 @@ uint32_t parse_mod(const char *mod_str) {
 
 	if (!match_success) {
 		mod = UINT32_MAX;
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Unknown modifier: "
 					"\033[1m\033[31m%s\033[0m\n",
 					mod_str);
@@ -359,7 +359,7 @@ KeySymCode parse_key(const char *key_str, bool isbindsym) {
 		// Unparseable key name.
 		kc.type = KEY_TYPE_SYM;
 		kc.keysym = XKB_KEY_NoSymbol;
-		mango_error(false, WLR_ERROR, "Unknown key: \033[1m\033[31m%s\033[0m\n",
+		acwm_error(false, WLR_ERROR, "Unknown key: \033[1m\033[31m%s\033[0m\n",
 					key_str);
 		// keycode field stays 0.
 	}
@@ -388,7 +388,7 @@ uint32_t parse_button(const char *str) {
 		if (endptr != numStart && *endptr == '\0' && val <= UINT32_MAX) {
 			return (uint32_t)val;
 		} else {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid code format: "
 						"\033[1m\033[31m%s\033[0m\n",
 						str);
@@ -414,7 +414,7 @@ uint32_t parse_button(const char *str) {
 	} else if (strcmp(lowerStr, "btn_task") == 0) {
 		return BTN_TASK;
 	} else {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Unknown button: "
 					"\033[1m\033[31m%s\033[0m\n",
 					str);

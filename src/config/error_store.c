@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "mango/config/error_store.h"
+#include "acwm/config/error_store.h"
 
 #include <fcntl.h>
 #include <limits.h>
@@ -43,12 +43,12 @@ const char *config_error_store_path(void) {
 
 		const char *runtime = getenv("XDG_RUNTIME_DIR");
 		if (runtime && runtime[0] == '/') {
-			snprintf(dir, sizeof(dir), "%s/mango", runtime);
+			snprintf(dir, sizeof(dir), "%s/acwm", runtime);
 			if (!store_dir_prepare(dir))
 				dir[0] = '\0';
 		}
 		if (dir[0] == '\0') {
-			snprintf(dir, sizeof(dir), "/tmp/mango-%d", (int)getuid());
+			snprintf(dir, sizeof(dir), "/tmp/acwm-%d", (int)getuid());
 			if (!store_dir_prepare(dir))
 				dir[0] = '\0';
 		}

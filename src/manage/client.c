@@ -1,26 +1,26 @@
-#include "mango/manage/client.h"
-#include "mango/animation/client.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/foreign-toplevel.h"
-#include "mango/ext-protocol/text-input.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/layout/scroll.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/manage/xwayland_primary.h"
-#include "mango/overview/overview.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/manage/client.h"
+#include "acwm/animation/client.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/manage/xwayland_primary.h"
+#include "acwm/overview/overview.h"
+#include "acwm/switcher/switcher.h"
 #include <fcntl.h>
 #include <scenefx/render/fx_renderer/fx_renderer.h>
 #include <scenefx/types/fx/blur_data.h>
@@ -325,7 +325,7 @@ void client_set_state_colors(Client *c, const float border_color[4],
 	client_set_border_color(c, border_color);
 
 	if (c->dim_node) {
-		mango_dim_node_set_color(c->dim_node, dim_color);
+		acwm_dim_node_set_color(c->dim_node, dim_color);
 	}
 }
 
@@ -347,7 +347,7 @@ void client_set_scale(struct wlr_surface *s, float scale) {
 /*
  * Clips the XWayland root surface via source_box.
  *
- * The X11 buffer is physical (apps render 1:1) while clip is mango logical
+ * The X11 buffer is physical (apps render 1:1) while clip is acwm logical
  * visibility. wlr_scene_subsurface_tree_set_clip would treat clip as surface
  * logical coordinates (XWayland state width/height is actually physical) and
  * scale up the content. Instead clip xwl_root_buffer directly with source_box +
@@ -455,8 +455,8 @@ void client_update_xwayland_clip(Client *c, struct wlr_box *clip) {
 			src = (struct wlr_fbox){
 				.x = dev.x,
 				.y = dev.y,
-				.width = MANGO_MIN(dev.width, (float)buf->width - dev.x),
-				.height = MANGO_MIN(dev.height, (float)buf->height - dev.y),
+				.width = ACWM_MIN(dev.width, (float)buf->width - dev.x),
+				.height = ACWM_MIN(dev.height, (float)buf->height - dev.y),
 			};
 		}
 	}
@@ -1478,7 +1478,7 @@ void set_float_malposition(Client *tc) {
 	if (!tc || !tc->mon)
 		return;
 
-	offset = MANGO_MIN(tc->mon->w.width / 20, tc->mon->w.height / 20);
+	offset = ACWM_MIN(tc->mon->w.width / 20, tc->mon->w.height / 20);
 
 	wl_list_for_each(c, &server.clients, link) {
 		if (c->isfloating && c != tc && VISIBLEON(c, tc->mon) &&
@@ -1946,7 +1946,7 @@ bool xwayland_scene_buffer_point_accepts_input(struct wlr_scene_buffer *buffer,
 		return false;
 
 	double tx = *sx, ty = *sy;
-	MangoSceneNode *scene_data = mango_scene_node_find(&buffer->node);
+	AcwmSceneNode *scene_data = acwm_scene_node_find(&buffer->node);
 	if (scene_data && scene_data->type == X11) {
 		Client *c = scene_data->owner;
 #ifdef XWAYLAND
@@ -2237,7 +2237,7 @@ void handle_client_map(struct wl_listener *listener, void *data) {
 		c->type == XDGShell
 			? wlr_scene_xdg_surface_create(c->scene, c->surface.xdg)
 			: wlr_scene_subsurface_tree_create(c->scene, client_surface(c));
-	mango_scene_node_set(&c->scene->node, c->type, c);
+	acwm_scene_node_set(&c->scene->node, c->type, c);
 
 	client_init_xwayland(c);
 
@@ -2597,7 +2597,7 @@ void handle_client_unmap(struct wl_listener *listener, void *data) {
 	}
 
 	if (c->jump_label_node) {
-		mango_jump_label_node_destroy(c->jump_label_node);
+		acwm_jump_label_node_destroy(c->jump_label_node);
 		c->jump_label_node = NULL;
 	}
 
@@ -2605,7 +2605,7 @@ void handle_client_unmap(struct wl_listener *listener, void *data) {
 	client_remove_tab_bar(c);
 
 	if (c->dim_node) {
-		mango_dim_node_destroy(c->dim_node);
+		acwm_dim_node_destroy(c->dim_node);
 		c->dim_node = NULL;
 	}
 
@@ -2965,7 +2965,7 @@ void client_focus(Client *c, int32_t lift) {
 		}
 
 		// clear text input focus state
-		mango_im_relay_set_focus(server.input_method_relay, NULL);
+		acwm_im_relay_set_focus(server.input_method_relay, NULL);
 		wlr_seat_keyboard_notify_clear_focus(server.seat);
 		check_vrr_enable(c);
 		if (server.active_constraint) {
@@ -2981,7 +2981,7 @@ void client_focus(Client *c, int32_t lift) {
 	// set text input focus
 	// must before client_notify_enter,
 	// otherwise the position of text_input will be wrong.
-	mango_im_relay_set_focus(server.input_method_relay, client_surface(c));
+	acwm_im_relay_set_focus(server.input_method_relay, client_surface(c));
 
 	/* Have a client, so focus its top-level wlr_surface */
 	client_notify_enter(client_surface(c), wlr_seat_get_keyboard(server.seat));
@@ -3717,12 +3717,12 @@ void client_update_border_color(Client *c) {
 
 void client_add_dim_node(Client *c) {
 	c->dim_node =
-		mango_dim_node_create(c->scene_surface, config.dim_unfocused_color);
+		acwm_dim_node_create(c->scene_surface, config.dim_unfocused_color);
 	if (!c->dim_node) {
 		return;
 	}
 
-	mango_dim_node_set_enabled(c->dim_node, false);
+	acwm_dim_node_set_enabled(c->dim_node, false);
 }
 
 void client_exchange(Client *c1, Client *c2) {
@@ -3819,7 +3819,7 @@ void client_replace(Client *c, Client *w, bool is_group_change_member,
 	tab_replace_client(w, c);
 
 	client_unpark(c, w);
-	mango_bar_decoration_set_focus(c->group_bar,
+	acwm_bar_decoration_set_focus(c->group_bar,
 								   server.selected_monitor &&
 									   c == server.selected_monitor->sel);
 
@@ -4015,8 +4015,8 @@ void client_update_oldmonname_record(Client *c, Monitor *m) {
 
 void client_apply_bounds(Client *c, struct wlr_box *bbox) {
 	/* set minimum possible */
-	c->geom.width = MANGO_MAX(1 + 2 * (int32_t)c->bw, c->geom.width);
-	c->geom.height = MANGO_MAX(1 + 2 * (int32_t)c->bw, c->geom.height);
+	c->geom.width = ACWM_MAX(1 + 2 * (int32_t)c->bw, c->geom.width);
+	c->geom.height = ACWM_MAX(1 + 2 * (int32_t)c->bw, c->geom.height);
 
 	if (c->geom.x >= bbox->x + bbox->width)
 		c->geom.x = bbox->x + bbox->width - c->geom.width;
@@ -4168,7 +4168,7 @@ bool client_should_visible(Client *c) {
  * instead of being flagged one member at a time.
  */
 static void client_update_input_penetration(Client *c) {
-	mango_scene_node_set_ignore_hit(&c->scene->node, c->animation.tagouting);
+	acwm_scene_node_set_ignore_hit(&c->scene->node, c->animation.tagouting);
 	tab_update_input_penetration(c);
 }
 
@@ -4198,7 +4198,7 @@ void client_pending_force_kill(Client *c) {
 
 void client_add_jump_label_node(Client *c) {
 	c->jump_label_node =
-		mango_jump_label_node_create(c->scene, config.jumplabeldata);
+		acwm_jump_label_node_create(c->scene, config.jumplabeldata);
 	if (!c->jump_label_node)
 		return;
 	/* In overview, labels must be displayed above the card tree. */
@@ -4272,13 +4272,13 @@ void client_add_group_bar(Client *c) {
 
 	uint32_t layer = client_target_layer(c);
 
-	c->group_bar = mango_bar_decoration_create(
+	c->group_bar = acwm_bar_decoration_create(
 		c, GroupBar, false, server.layers[layer], config.groupbardata, 0, 0);
 	if (!c->group_bar)
 		return;
 	wlr_scene_node_lower_to_bottom(&c->group_bar->scene->node);
 	wlr_scene_node_set_enabled(&c->group_bar->scene->node, false);
-	mango_bar_decoration_set_close_color(c->group_bar,
+	acwm_bar_decoration_set_close_color(c->group_bar,
 										 config.group_bar_button_color);
 	client_update_group_bar_title(c);
 }
@@ -4286,7 +4286,7 @@ void client_add_group_bar(Client *c) {
 void client_update_group_bar_title(Client *c) {
 	if (!c || !c->group_bar)
 		return;
-	mango_bar_decoration_update(c->group_bar, client_get_title(c),
+	acwm_bar_decoration_update(c->group_bar, client_get_title(c),
 								c->mon ? c->mon->wlr_output->scale
 								: server.selected_monitor
 									? server.selected_monitor->wlr_output->scale
@@ -4296,8 +4296,8 @@ void client_update_group_bar_title(Client *c) {
 void client_apply_group_bar_config(Client *c) {
 	if (!c || !c->group_bar)
 		return;
-	mango_bar_decoration_apply_config(c->group_bar, &config.groupbardata);
-	mango_bar_decoration_set_close_color(c->group_bar,
+	acwm_bar_decoration_apply_config(c->group_bar, &config.groupbardata);
+	acwm_bar_decoration_set_close_color(c->group_bar,
 										 config.group_bar_button_color);
 }
 
@@ -4310,7 +4310,7 @@ void client_remove_group_bar(Client *c) {
 		server.group_bar_drag_client = NULL;
 		server.group_bar_drag_pending = false;
 	}
-	mango_bar_decoration_destroy(c->group_bar);
+	acwm_bar_decoration_destroy(c->group_bar);
 	c->group_bar = NULL;
 }
 
@@ -4330,10 +4330,10 @@ bool client_group_swap_focus(Client *c) {
 	cur_focusing->is_group_focus = false;
 	c->mon = cur_focusing->mon;
 	client_replace(c, cur_focusing, true, false);
-	mango_bar_decoration_set_focus(cur_focusing->group_bar, false);
+	acwm_bar_decoration_set_focus(cur_focusing->group_bar, false);
 
 	c->is_group_focus = true;
-	mango_bar_decoration_set_focus(c->group_bar, true);
+	acwm_bar_decoration_set_focus(c->group_bar, true);
 
 	client_reparent_group(c);
 
@@ -4371,9 +4371,9 @@ void client_check_tab_node_visible(Client *c) {
 		 * group in sync so a hidden member cannot leave a clickable
 		 * segment behind. */
 		wlr_scene_node_set_enabled(&cur->group_bar->scene->node, show);
-		mango_scene_node_set_ignore_hit(&cur->group_bar->scene->node, !show);
-		mango_bar_decoration_set_focus(cur->group_bar, show && focused);
-		mango_bar_decoration_set_close(cur->group_bar, show_close,
+		acwm_scene_node_set_ignore_hit(&cur->group_bar->scene->node, !show);
+		acwm_bar_decoration_set_focus(cur->group_bar, show && focused);
+		acwm_bar_decoration_set_close(cur->group_bar, show_close,
 									   config.group_bar_button_size,
 									   config.group_bar_button_margin);
 		cur = cur->group_next;
@@ -4416,7 +4416,7 @@ void client_reparent_group(Client *c) {
 	}
 }
 
-void client_handle_decorate_click(MangoBarDecoration *bar) {
+void client_handle_decorate_click(AcwmBarDecoration *bar) {
 
 	if (!bar || !bar->node_data)
 		return;
@@ -4442,7 +4442,7 @@ void client_set_group_mon(Client *c, Monitor *m) {
 void client_set_group_config(Client *c) {
 	Client *cur = client_group_head(c);
 	while (cur) {
-		mango_jump_label_node_apply_config(cur->jump_label_node,
+		acwm_jump_label_node_apply_config(cur->jump_label_node,
 										   &config.jumplabeldata);
 		wlr_scene_rect_set_color(cur->droparea, config.dropcolor);
 		wlr_scene_rect_set_color(cur->splitindicator[0], config.splitcolor);
@@ -4539,7 +4539,7 @@ void client_group_replace(Client *old, Client *new) {
 	client_group_mark_dirty(new);
 }
 
-void mango_surface_frame_done(struct wlr_surface *surface, int sx, int sy,
+void acwm_surface_frame_done(struct wlr_surface *surface, int sx, int sy,
 							  void *data) {
 	wlr_surface_send_frame_done(surface, data);
 }
@@ -4553,7 +4553,7 @@ void client_send_frame_done(Client *c, const struct timespec *now) {
 	struct wlr_surface *s = client_surface(c);
 	if (!s)
 		return;
-	wlr_surface_for_each_surface(s, mango_surface_frame_done, (void *)now);
+	wlr_surface_for_each_surface(s, acwm_surface_frame_done, (void *)now);
 }
 
 bool client_force_render(Client *c) {
@@ -4835,7 +4835,7 @@ void handle_xwayland_surface_commit(struct wl_listener *listener, void *data) {
 	/* Overview card nodes are independent scene_surfaces that auto-update on
 	 * commit. */
 
-	/* Compares the acked X11 geometry with the one mango configured. */
+	/* Compares the acked X11 geometry with the one acwm configured. */
 	struct wlr_box xgeo;
 	client_get_x11_geometry(c, &xgeo);
 

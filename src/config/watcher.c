@@ -1,4 +1,4 @@
-#include "mango/config/watcher.h"
+#include "acwm/config/watcher.h"
 
 #include <errno.h>
 #include <stdalign.h>
@@ -10,8 +10,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "mango/common/log.h"
-#include "mango/config/parse.h"
+#include "acwm/common/log.h"
+#include "acwm/config/parse.h"
 
 #if defined(__linux__)
 #define CONFIG_WATCH_INOTIFY 1
@@ -406,14 +406,14 @@ void config_watcher_init(struct wl_event_loop *loop) {
 
 	watch_timer = wl_event_loop_add_timer(loop, on_watch_timer, NULL);
 	if (watch_timer == NULL) {
-		mango_error(
+		acwm_error(
 			false, WLR_ERROR,
 			"config auto reload disabled: no event loop timer available\n");
 		return;
 	}
 
 	if (!backend_init(loop)) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"config auto reload disabled: no filesystem event backend "
 					"available\n");
 		return;

@@ -1,5 +1,5 @@
-#include "mango/config/internal.h"
-#include "mango/config/parse.h"
+#include "acwm/config/internal.h"
+#include "acwm/config/parse.h"
 
 #include <ctype.h>
 #include <libgen.h>
@@ -10,28 +10,28 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mango/animation/common.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/error_nag.h"
-#include "mango/config/error_store.h"
-#include "mango/config/watcher.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/hdr.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/switcher/switcher.h"
+#include "acwm/animation/common.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/error_nag.h"
+#include "acwm/config/error_store.h"
+#include "acwm/config/watcher.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/hdr.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/switcher/switcher.h"
 #include <scenefx/types/wlr_scene.h>
 #include <unistd.h>
 #include <wlr/backend/libinput.h>
@@ -86,7 +86,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_move, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_move: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -96,7 +96,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_open, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_open: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -105,7 +105,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "animation_curve_tag") == 0) {
 		int32_t num = parse_double_array(value, config->animation_curve_tag, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_tag: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -115,7 +115,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_close, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_close: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -125,7 +125,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_focus, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_focus: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -135,7 +135,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_opafadein, 4);
 		if (num != 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to parse "
 						"animation_curve_opafadein: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -145,7 +145,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		int32_t num =
 			parse_double_array(value, config->animation_curve_opafadeout, 4);
 		if (num != 4) {
-			mango_error(
+			acwm_error(
 				false, WLR_ERROR,
 				"Failed to parse "
 				"animation_curve_opafadeout: \033[1m\033[31m%s\033[0m\n",
@@ -310,7 +310,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		config->scroller_proportion_preset =
 			(float *)malloc(float_count * sizeof(float));
 		if (!config->scroller_proportion_preset) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Memory "
 						"allocation failed\n");
 			return false;
@@ -325,7 +325,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		while (token != NULL && i < float_count) {
 			if (sscanf(token, "%f", &value_set) != 1) {
-				mango_error(
+				acwm_error(
 					false, WLR_ERROR,
 					"Invalid float "
 					"value in "
@@ -348,7 +348,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		// 4. Checks that the parsed float count matches.
 		if (i != float_count) {
-			mango_error(
+			acwm_error(
 				false, WLR_ERROR,
 				"Invalid "
 				"scroller_proportion_preset format: \033[1m\033[31m%s\033[0m\n",
@@ -388,7 +388,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		}
 		config->circle_layout = (char **)malloc(string_count * sizeof(char *));
 		if (!config->circle_layout) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Memory "
 						"allocation failed\n");
 			return false;
@@ -406,7 +406,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			cleaned_token = sanitize_string(token);
 			config->circle_layout[i] = strdup(cleaned_token);
 			if (!config->circle_layout[i]) {
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Memory allocation "
 							"failed for "
 							"string: %s\n",
@@ -427,7 +427,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		// 4. Checks that the parsed string count matches.
 		if (i != string_count) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid circle_layout "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -558,7 +558,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_decorate_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"group_bar_decorate_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -570,7 +570,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_decorate_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"group_bar_decorate_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -582,7 +582,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_decorate_focus_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"group_bar_decorate_focus_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -594,7 +594,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_decorate_focus_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"group_bar_decorate_focus_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -606,7 +606,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_decorate_border_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"group_bar_decorate_border_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -630,7 +630,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "tab_bar_decorate_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"tab_bar_decorate_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -642,7 +642,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "tab_bar_decorate_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"tab_bar_decorate_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -654,7 +654,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "tab_bar_decorate_focus_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"tab_bar_decorate_focus_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -666,7 +666,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "tab_bar_decorate_focus_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"tab_bar_decorate_focus_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -678,7 +678,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "tab_bar_decorate_border_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"tab_bar_decorate_border_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -702,7 +702,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "jump_label_decorate_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"jump_label_decorate_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -714,7 +714,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "jump_label_decorate_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"jump_label_decorate_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -726,7 +726,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "jump_label_decorate_focus_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"jump_label_decorate_focus_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -738,7 +738,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "jump_label_decorate_focus_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"jump_label_decorate_focus_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -750,7 +750,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "jump_label_decorate_border_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"jump_label_decorate_border_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -788,7 +788,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "bar_background_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"bar_background_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -804,7 +804,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "bar_decorate_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"bar_decorate_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -816,7 +816,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "bar_decorate_focus_fg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"bar_decorate_focus_fg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -828,7 +828,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "bar_decorate_focus_bg_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"bar_decorate_focus_bg_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -840,7 +840,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "bar_decorate_border_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"bar_decorate_border_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -938,7 +938,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "group_bar_button_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid group_bar_button_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -949,7 +949,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "root_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid rootcolor "
 						"format: "
 						"\033[1m\033[31m%s\033[0m\n",
@@ -962,7 +962,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "shadows_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid shadowscolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -975,7 +975,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "dim_focused_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid dim_focused_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -986,7 +986,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "dim_unfocused_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid dim_unfocused_color "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -997,7 +997,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "border_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid bordercolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1008,7 +1008,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "drop_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid dropcolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1019,7 +1019,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "split_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid splitcolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1030,7 +1030,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "focus_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid focuscolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1041,7 +1041,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "maximized_screen_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"maximizescreencolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -1053,7 +1053,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "urgent_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid urgentcolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1064,7 +1064,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "scratchpad_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid "
 						"scratchpadcolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
@@ -1076,7 +1076,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "global_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid globalcolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1087,7 +1087,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "overlay_color") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid overlaycolor "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1100,7 +1100,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->monitor_rules, (config->monitor_rules_count + 1) *
 											   sizeof(ConfigMonitorRule));
 		if (!config->monitor_rules) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for monitor rules\n");
 			return false;
@@ -1192,7 +1192,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				} else if (strcmp(key, "custom") == 0) {
 					rule->custom = CLAMP_INT(atoi(val), 0, 1);
 				} else {
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"Unknown "
 								"monitor rule "
 								"option:\033[1m\033[31m%s\033[0m\n",
@@ -1204,7 +1204,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		}
 
 		if (!rule->name && !rule->make && !rule->model && !rule->serial) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Monitor rule "
 						"must have at least one of the following "
 						"options: name, make, model, serial\n");
@@ -1215,21 +1215,21 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		bool has_height = rule->height > 0;
 		bool has_refresh = rule->refresh > 0.0f;
 		if (has_width != has_height || has_width != has_refresh) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Monitor rule must set width, height and refresh "
 						"together\n");
 			return false;
 		}
 
 		if (rule->custom && !has_width) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Monitor rule with custom must set width, height and "
 						"refresh\n");
 			return false;
 		}
 
 		if ((rule->x == INT32_MAX) != (rule->y == INT32_MAX)) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Monitor rule must set x and y together\n");
 			return false;
 		}
@@ -1241,7 +1241,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->tag_rules,
 					(config->tag_rules_count + 1) * sizeof(ConfigTagRule));
 		if (!config->tag_rules) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for tag rules\n");
 			return false;
@@ -1319,7 +1319,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 					rule->scroller_ignore_proportion_single =
 						CLAMP_INT(atoi(val), 0, 1);
 				} else {
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"Unknown "
 								"tag rule "
 								"option:\033[1m\033[31m%s\033[0m\n",
@@ -1337,7 +1337,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->layer_rules,
 					(config->layer_rules_count + 1) * sizeof(ConfigLayerRule));
 		if (!config->layer_rules) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for layer rules\n");
 			return false;
@@ -1383,7 +1383,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				} else if (strcmp(key, "no_shadow") == 0) {
 					rule->no_shadow = CLAMP_INT(atoi(val), 0, 1);
 				} else {
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"Unknown "
 								"layer rule "
 								"option:\033[1m\033[31m%s\033[0m\n",
@@ -1407,7 +1407,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->window_rules,
 					(config->window_rules_count + 1) * sizeof(ConfigWinRule));
 		if (!config->window_rules) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for window rules\n");
 			return false;
@@ -1596,7 +1596,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 					char mod_str[256], keysym_str[256];
 					if (sscanf(val, "%255[^-]-%255s", mod_str, keysym_str) !=
 						2) {
-						mango_error(false, WLR_ERROR,
+						acwm_error(false, WLR_ERROR,
 									"Invalid globalkeybinding: "
 									"\033[1m\033[31m%s\033[0m\n",
 									val);
@@ -1617,7 +1617,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 						return false;
 					}
 				} else {
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"Unknown "
 								"window rule "
 								"option:\033[1m\033[31m%s\033[0m\n",
@@ -1634,7 +1634,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->device_rules, (config->device_rules_count + 1) *
 											  sizeof(ConfigDeviceRule));
 		if (!config->device_rules) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for device rules\n");
 			return false;
@@ -1684,7 +1684,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 					 * rules are not silently dropped. */
 					const char *resolved = val;
 					if (strcmp(val, "touchpad") == 0) {
-						mango_error(false, WLR_INFO,
+						acwm_error(false, WLR_INFO,
 									"device rule type "
 									"\033[1;36mtouchpad\033[0m is "
 									"deprecated, use \033[1;36mtrackpad\033[0m "
@@ -1701,7 +1701,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 						snprintf(rule->type, sizeof(rule->type), "%s",
 								 resolved);
 					} else {
-						mango_error(false, WLR_ERROR,
+						acwm_error(false, WLR_ERROR,
 									"Invalid device rule type: "
 									"\033[1m\033[31m%s\033[0m (expected one of "
 									"keyboard, pointer, trackpad, touch, "
@@ -1759,14 +1759,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				} else if (strcmp(key, "map_focus_monitor") == 0) {
 					rule->map_focus_monitor = CLAMP_INT(atoi(val), 0, 1);
 				} else {
-					mango_error(false, WLR_ERROR,
+					acwm_error(false, WLR_ERROR,
 								"Unknown device rule option: "
 								"\033[1m\033[31m%s\033[0m\n",
 								key);
 					parse_error = true;
 				}
 			} else {
-				mango_error(
+				acwm_error(
 					false, WLR_ERROR,
 					"Invalid device rule format: \033[1m\033[31m%s\033[0m\n",
 					token);
@@ -1780,7 +1780,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		char env_type[256], env_value[256];
 		if (sscanf(value, "%255[^,],%255[^\n]", env_type, env_value) < 2) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid bind format: "
 						"\033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1800,7 +1800,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 			if (!home) {
 				free(env);
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"HOME environment "
 							"variable not set.\n");
 				return false;
@@ -1816,7 +1816,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			env->value = malloc(len);
 			if (!env->value) {
 				free(env);
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Failed to "
 							"allocate memory while expanding $HOME\n");
 				return false;
@@ -1847,7 +1847,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			free(env->type);
 			free(env->value);
 			free(env);
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to "
 						"allocate memory for env\n");
 			return false;
@@ -1859,7 +1859,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strcmp(key, "var") == 0) {
 		char *comma = strchr(value, ',');
 		if (!comma) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid variable format (expected "
 						"\033[1mname,value\033[0m): \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -1872,7 +1872,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		trim_whitespace(var_value);
 
 		if (!is_valid_var_name(name)) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid variable name (allowed: "
 						"[A-Za-z_][A-Za-z0-9_]*): \033[1m\033[31m%s\033[0m\n",
 						name);
@@ -1884,7 +1884,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		char **new_exec =
 			realloc(config->exec, (config->exec_count + 1) * sizeof(char *));
 		if (!new_exec) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for exec\n");
 			return false;
@@ -1893,7 +1893,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		config->exec[config->exec_count] = strdup(value);
 		if (!config->exec[config->exec_count]) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to "
 						"duplicate exec string\n");
 			return false;
@@ -1906,7 +1906,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		char **new_exec_once = realloc(
 			config->exec_once, (config->exec_once_count + 1) * sizeof(char *));
 		if (!new_exec_once) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for exec_once\n");
 			return false;
@@ -1915,7 +1915,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 
 		config->exec_once[config->exec_once_count] = strdup(value);
 		if (!config->exec_once[config->exec_once_count]) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to duplicate "
 						"exec_once string\n");
 			return false;
@@ -1928,7 +1928,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->key_bindings,
 					(config->key_bindings_count + 1) * sizeof(KeyBinding));
 		if (!config->key_bindings) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for key bindings\n");
 			return false;
@@ -1949,7 +1949,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				   "^,],%255[^\n]",
 				   mod_str, keysym_str, func_name, arg_value, arg_value2,
 				   arg_value3, arg_value4, arg_value5) < 3) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid bind format: "
 						"\033[1m\033[31m%s\033[0m\n",
 						value);
@@ -2009,7 +2009,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				binding->arg.v3 = NULL;
 			}
 			if (!binding->func)
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Unknown "
 							"dispatch in bind: "
 							"\033[1m\033[31m%s\033[0m\n",
@@ -2024,7 +2024,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->mouse_bindings,
 					(config->mouse_bindings_count + 1) * sizeof(MouseBinding));
 		if (!config->mouse_bindings) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for mouse bindings\n");
 			return false;
@@ -2048,7 +2048,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				   "^,],%255[^\n]",
 				   mod_str, button_str, func_name, arg_value, arg_value2,
 				   arg_value3, arg_value4, arg_value5) < 3) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid mousebind "
 						"format: "
 						"\033[1m\033[31m%s\033[0m\n",
@@ -2096,7 +2096,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			}
 
 			if (!binding->func)
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Unknown "
 							"dispatch in "
 							"mousebind: \033[1m\033[31m%s\033[0m\n",
@@ -2110,7 +2110,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			realloc(config->axis_bindings,
 					(config->axis_bindings_count + 1) * sizeof(AxisBinding));
 		if (!config->axis_bindings) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for axis bindings\n");
 			return false;
@@ -2134,7 +2134,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				   "^,],%255[^\n]",
 				   mod_str, dir_str, func_name, arg_value, arg_value2,
 				   arg_value3, arg_value4, arg_value5) < 3) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid axisbind "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -2174,7 +2174,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				binding->arg.v3 = NULL;
 			}
 			if (!binding->func)
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Unknown "
 							"dispatch in "
 							"axisbind: \033[1m\033[31m%s\033[0m\n",
@@ -2189,7 +2189,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 										  (config->switch_bindings_count + 1) *
 											  sizeof(SwitchBinding));
 		if (!config->switch_bindings) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for switch bindings\n");
 			return false;
@@ -2213,7 +2213,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				   "^\n]",
 				   fold_str, func_name, arg_value, arg_value2, arg_value3,
 				   arg_value4, arg_value5) < 3) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid switchbind "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -2246,7 +2246,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				binding->arg.v3 = NULL;
 			}
 
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Unknown dispatch in "
 						"switchbind: "
 						"\033[1m\033[31m%s\033[0m\n",
@@ -2261,7 +2261,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 			config->gesture_bindings,
 			(config->gesture_bindings_count + 1) * sizeof(GestureBinding));
 		if (!config->gesture_bindings) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Failed to allocate "
 						"memory for axis gesturebind\n");
 			return false;
@@ -2285,7 +2285,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				   "^,],%255[^,],%255[^\n]",
 				   mod_str, motion_str, fingers_count_str, func_name, arg_value,
 				   arg_value2, arg_value3, arg_value4, arg_value5) < 4) {
-			mango_error(false, WLR_ERROR,
+			acwm_error(false, WLR_ERROR,
 						"Invalid gesturebind "
 						"format: \033[1m\033[31m%s\033[0m\n",
 						value);
@@ -2333,7 +2333,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 				binding->arg.v3 = NULL;
 			}
 			if (!binding->func)
-				mango_error(false, WLR_ERROR,
+				acwm_error(false, WLR_ERROR,
 							"Unknown "
 							"dispatch in "
 							"axisbind: \033[1m\033[31m%s\033[0m\n",
@@ -2348,7 +2348,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	} else if (strncmp(key, "source", 6) == 0) {
 		parse_config_file(config, value, true);
 	} else {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Unknown keyword: "
 					"\033[1m\033[31m%s\033[0m\n",
 					key);
@@ -2452,7 +2452,7 @@ void set_value_default() {
 	config.syncobj_enable = 1;
 	config.tag_carousel = 0;
 	config.allow_tearing = TEARING_DISABLED;
-	config.hdr_depth = MANGO_RENDER_BIT_DEPTH_10;
+	config.hdr_depth = ACWM_RENDER_BIT_DEPTH_10;
 	config.allow_shortcuts_inhibit = SHORTCUTS_INHIBIT_ENABLE;
 	config.disable_middle_paste = 0;
 	config.allow_lock_transparent = 0;

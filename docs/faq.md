@@ -65,7 +65,7 @@ Then force it for your specific game:
 window_rule=force_tearing:1,title:Counter-Strike 2
 ```
 
-> **Warning:** Some graphics cards require setting `env=WLR_DRM_NO_ATOMIC,1` in config before mango starts for tearing to work. 
+> **Warning:** Some graphics cards require setting `env=WLR_DRM_NO_ATOMIC,1` in config before acwm starts for tearing to work. 
 > See [Monitors — Tearing](/docs/configuration/monitors#tearing-game-mode) for details.
 
 ---
@@ -94,7 +94,7 @@ Some games (Proton/Wine titles) open a short-lived helper window (a splash/loadi
 window_rule=confine_pointer:1,is_fullscreen:1,app_id:steam_app_526870
 ```
 
-matches **every** window of that app, including that helper window, so mango forces it to fullscreen as well. The helper window then gets `_NET_WM_STATE_FULLSCREEN` and a resize to the whole monitor, and when the real game window maps mango's "a new tiled window kicks the fullscreen window out of fullscreen" logic un-fullscreens and re-tiles it again. Wine ties its mouse capture and cursor visibility to those window states, so after this churn the game ends up with a broken capture state: the cursor is not hidden, the pointer lock is created and dropped repeatedly, and the game's own cursor and the compositor cursor disagree (e.g. the menu cursor is not where the game thinks it is).
+matches **every** window of that app, including that helper window, so acwm forces it to fullscreen as well. The helper window then gets `_NET_WM_STATE_FULLSCREEN` and a resize to the whole monitor, and when the real game window maps acwm's "a new tiled window kicks the fullscreen window out of fullscreen" logic un-fullscreens and re-tiles it again. Wine ties its mouse capture and cursor visibility to those window states, so after this churn the game ends up with a broken capture state: the cursor is not hidden, the pointer lock is created and dropped repeatedly, and the game's own cursor and the compositor cursor disagree (e.g. the menu cursor is not where the game thinks it is).
 
 Restrict `is_fullscreen` to the real game window with `title:` (the helper window has no title):
 

@@ -1,20 +1,20 @@
-#include "mango/common/server.h"
+#include "acwm/common/server.h"
 
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/ext-protocol/tearing.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/input/tablet.h"
-#include "mango/input/touch.h"
-#include "mango/input/trackpad.h"
-#include "mango/ipc/ipc.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/ext-protocol/tearing.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/input/tablet.h"
+#include "acwm/input/touch.h"
+#include "acwm/input/trackpad.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
 
-struct MangoServer server = {
+struct AcwmServer server = {
 	.child_pid = -1,
 
 	.enable_gaps = 1, /* enables gaps, used by togglegaps */

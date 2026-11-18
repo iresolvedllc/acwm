@@ -1,10 +1,10 @@
-#include "mango/layout/dwindle.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #include <wlr/types/wlr_cursor.h>
 
 static DwindleNode *locked_horizontal_node = NULL;
@@ -172,8 +172,8 @@ void dwindle_assign(DwindleNode *node, int32_t ax, int32_t ay, int32_t aw,
 		if (node->client) {
 			if (!node->client->isfullscreen &&
 				!node->client->ismaximizescreen) {
-				struct wlr_box box = {ax, ay, MANGO_MAX(1, aw),
-									  MANGO_MAX(1, ah)};
+				struct wlr_box box = {ax, ay, ACWM_MAX(1, aw),
+									  ACWM_MAX(1, ah)};
 				if (ctx && ctx->probe) {
 					if (node->client == ctx->probe && ctx->out)
 						*ctx->out = box;
@@ -192,12 +192,12 @@ void dwindle_assign(DwindleNode *node, int32_t ax, int32_t ay, int32_t aw,
 	node->container_w = aw;
 	node->container_h = ah;
 	if (node->split_h) {
-		int32_t w1 = MANGO_MAX(1, (int32_t)(aw * node->ratio) - gap_h / 2);
+		int32_t w1 = ACWM_MAX(1, (int32_t)(aw * node->ratio) - gap_h / 2);
 		dwindle_assign(node->first, ax, ay, w1, ah, gap_h, gap_v, ctx);
 		dwindle_assign(node->second, ax + w1 + gap_h, ay, aw - w1 - gap_h, ah,
 					   gap_h, gap_v, ctx);
 	} else {
-		int32_t h1 = MANGO_MAX(1, (int32_t)(ah * node->ratio) - gap_v / 2);
+		int32_t h1 = ACWM_MAX(1, (int32_t)(ah * node->ratio) - gap_v / 2);
 		dwindle_assign(node->first, ax, ay, aw, h1, gap_h, gap_v, ctx);
 		dwindle_assign(node->second, ax, ay + h1 + gap_v, aw, ah - h1 - gap_v,
 					   gap_h, gap_v, ctx);
@@ -450,7 +450,7 @@ void dwindle_resize_client(Monitor *m, Client *c) {
 		return;
 
 	if (locked_horizontal_node) {
-		float cw = (float)MANGO_MAX(1, locked_horizontal_node->container_w);
+		float cw = (float)ACWM_MAX(1, locked_horizontal_node->container_w);
 		float ox = (float)(server.cursor->x - server.drag_begin_cursor_x);
 		if (config.dwindle_smart_resize) {
 			/* Move the boundary toward the cursor: invert direction when
@@ -467,7 +467,7 @@ void dwindle_resize_client(Monitor *m, Client *c) {
 	}
 
 	if (locked_vertical_node) {
-		float ch = (float)MANGO_MAX(1, locked_vertical_node->container_h);
+		float ch = (float)ACWM_MAX(1, locked_vertical_node->container_h);
 		float oy = (float)(server.cursor->y - server.drag_begin_cursor_y);
 		if (config.dwindle_smart_resize) {
 			/* Same logic for the vertical split line. */
@@ -519,13 +519,13 @@ void dwindle_resize_client_step(Monitor *m, Client *c, int32_t dx, int32_t dy) {
 		return;
 
 	if (h_node && dx) {
-		float cw = (float)MANGO_MAX(1, h_node->container_w);
+		float cw = (float)ACWM_MAX(1, h_node->container_w);
 		float delta = (float)dx / cw;
 		h_node->ratio = CLAMP_FLOAT(h_node->ratio + delta, 0.05f, 0.95f);
 	}
 
 	if (v_node && dy) {
-		float ch = (float)MANGO_MAX(1, v_node->container_h);
+		float ch = (float)ACWM_MAX(1, v_node->container_h);
 		float delta = (float)dy / ch;
 		v_node->ratio = CLAMP_FLOAT(v_node->ratio + delta, 0.05f, 0.95f);
 	}

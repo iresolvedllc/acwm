@@ -1,7 +1,7 @@
-#include "mango/manage/xwayland_primary.h"
+#include "acwm/manage/xwayland_primary.h"
 
-#include "mango/common/server.h"
-#include "mango/manage/monitor.h"
+#include "acwm/common/server.h"
+#include "acwm/manage/monitor.h"
 
 #ifdef XWAYLAND
 #include <stdlib.h>

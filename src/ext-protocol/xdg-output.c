@@ -1,8 +1,8 @@
-#include "mango/ext-protocol/xdg-output.h"
-#include "mango/common/server.h"
-#include "mango/config/parse.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/xdg-output.h"
+#include "acwm/common/server.h"
+#include "acwm/config/parse.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 #ifdef XWAYLAND
 #include <wlr/xwayland.h>
 #endif
@@ -27,7 +27,7 @@ bool xdg_output_resource_is_xwayland(struct wl_resource *resource) {
 }
 /* Computes logical and physical (rotation-aware) values from the current output
  * state. */
-void xdg_output_get_values(struct MangoXDGOutput *output, int32_t *lx,
+void xdg_output_get_values(struct AcwmXDGOutput *output, int32_t *lx,
 						   int32_t *ly, int32_t *lw, int32_t *lh, int32_t *px,
 						   int32_t *py, int32_t *pw, int32_t *ph) {
 	int32_t x = 0, y = 0;
@@ -80,7 +80,7 @@ void xdg_output_get_values(struct MangoXDGOutput *output, int32_t *lx,
 	*pw = tw; // Uses the physical resolution width/height directly.
 	*ph = th;
 }
-void xdg_output_send_details(struct MangoXDGOutput *output,
+void xdg_output_send_details(struct AcwmXDGOutput *output,
 							 struct wl_resource *resource) {
 	int32_t lx, ly, lw, lh, px, py, pw, ph;
 	xdg_output_get_values(output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
@@ -93,7 +93,7 @@ void xdg_output_send_details(struct MangoXDGOutput *output,
 #endif
 		if (config.xwayland_ignore_scale) {
 			/*
-			 * Tricks XWayland: mango places X11 windows in a physical
+			 * Tricks XWayland: acwm places X11 windows in a physical
 			 * coordinate space of logical*scale, so tell XWayland the screen is
 			 * physical (rotation-aware). px/py already are relative to the
 			 * layout origin.
@@ -120,7 +120,7 @@ void xdg_output_send_details(struct MangoXDGOutput *output,
 	zxdg_output_v1_send_logical_size(resource, w, h);
 
 	if (wl_resource_get_version(resource) <
-		MANGO_XDG_OUTPUT_DONE_DEPRECATED_SINCE_VERSION)
+		ACWM_XDG_OUTPUT_DONE_DEPRECATED_SINCE_VERSION)
 		zxdg_output_v1_send_done(resource);
 
 	/* Syncs the last sent logical values for change detection in
@@ -140,7 +140,7 @@ void xdg_output_send_details(struct MangoXDGOutput *output,
 }
 /* Whether the logical values seen by normal clients differ from the last send.
  */
-bool xdg_output_logical_changed(struct MangoXDGOutput *output) {
+bool xdg_output_logical_changed(struct AcwmXDGOutput *output) {
 	int32_t lx, ly, lw, lh, px, py, pw, ph;
 	xdg_output_get_values(output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
 
@@ -161,7 +161,7 @@ bool xdg_output_logical_changed(struct MangoXDGOutput *output) {
  * server usually does not bind zxdg_output_v1, so xwl_sent cannot be relied
  * on); done is only re-sent when physical values actually change.
  */
-bool xdg_output_xwayland_changed(struct MangoXDGOutput *output) {
+bool xdg_output_xwayland_changed(struct AcwmXDGOutput *output) {
 	int32_t lx, ly, lw, lh, px, py, pw, ph;
 	xdg_output_get_values(output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
 
@@ -176,14 +176,14 @@ bool xdg_output_xwayland_changed(struct MangoXDGOutput *output) {
 
 /*
  * Updates the xdg-output details for this output. XWayland resources are always
- * re-sent (mango coordinates XWayland based on receiving position/size after
+ * re-sent (acwm coordinates XWayland based on receiving position/size after
  * every layout/config change, even when values are unchanged); normal clients
  * are only re-sent when logical values change, matching the wlroots standard
  * implementation.
  */
-void xdg_output_update(struct MangoXDGOutput *output) {
+void xdg_output_update(struct AcwmXDGOutput *output) {
 	bool logical_changed = xdg_output_logical_changed(output);
-	struct MangoXDGOutputResource *res;
+	struct AcwmXDGOutputResource *res;
 	wl_list_for_each(res, &output->resources, link) {
 		if (!xdg_output_resource_is_xwayland(res->resource) && !logical_changed)
 			continue;
@@ -192,7 +192,7 @@ void xdg_output_update(struct MangoXDGOutput *output) {
 }
 
 void handle_xdg_output_resource_destroy(struct wl_resource *resource) {
-	struct MangoXDGOutputResource *res = wl_resource_get_user_data(resource);
+	struct AcwmXDGOutputResource *res = wl_resource_get_user_data(resource);
 	if (!res)
 		return;
 	wl_list_remove(&res->link);
@@ -210,22 +210,22 @@ void handle_xdg_output_manager_destroy(struct wl_client *client,
 
 /* Output description changed (clients with version >= 3 need a resend). */
 void handle_xdg_output_description(struct wl_listener *listener, void *data) {
-	struct MangoXDGOutput *output =
+	struct AcwmXDGOutput *output =
 		wl_container_of(listener, output, description);
 	struct wlr_output *wlr_output = output->wlr_output;
 	if (!wlr_output->description)
 		return;
 
-	struct MangoXDGOutputResource *res;
+	struct AcwmXDGOutputResource *res;
 	wl_list_for_each(res, &output->resources, link) {
 		if (wl_resource_get_version(res->resource) >=
-			MANGO_XDG_OUTPUT_DESCRIPTION_MUTABLE_SINCE_VERSION)
+			ACWM_XDG_OUTPUT_DESCRIPTION_MUTABLE_SINCE_VERSION)
 			zxdg_output_v1_send_description(res->resource,
 											wlr_output->description);
 	}
 }
-struct MangoXDGOutput *xdg_output_find(struct wlr_output *wlr_output) {
-	struct MangoXDGOutput *output;
+struct AcwmXDGOutput *xdg_output_find(struct wlr_output *wlr_output) {
+	struct AcwmXDGOutput *output;
 	wl_list_for_each(output, &xdg_outputs, link) {
 		if (output->wlr_output == wlr_output)
 			return output;
@@ -244,7 +244,7 @@ struct MangoXDGOutput *xdg_output_find(struct wlr_output *wlr_output) {
 static void
 handle_xdg_output_layout_output_destroy(struct wl_listener *listener,
 										void *data) {
-	struct MangoXDGOutput *output =
+	struct AcwmXDGOutput *output =
 		wl_container_of(listener, output, layout_output_destroy);
 	/* The signal owner does not unlink the listener for us. */
 	wl_list_remove(&output->layout_output_destroy.link);
@@ -252,8 +252,8 @@ handle_xdg_output_layout_output_destroy(struct wl_listener *listener,
 	xdg_output_destroy(output);
 }
 
-struct MangoXDGOutput *xdg_output_create(struct wlr_output *wlr_output) {
-	struct MangoXDGOutput *output = calloc(1, sizeof(*output));
+struct AcwmXDGOutput *xdg_output_create(struct wlr_output *wlr_output) {
+	struct AcwmXDGOutput *output = calloc(1, sizeof(*output));
 	if (!output)
 		return NULL;
 	output->wlr_output = wlr_output;
@@ -273,14 +273,14 @@ struct MangoXDGOutput *xdg_output_create(struct wlr_output *wlr_output) {
 	return output;
 }
 
-void xdg_output_destroy(struct MangoXDGOutput *output) {
+void xdg_output_destroy(struct AcwmXDGOutput *output) {
 	/*
 	 * Makes all resources inert: zxdg_output_v1 is created by clients and only
 	 * clients can destroy it. Destroying it directly makes libwayland send
 	 * delete_id for that id; if the client reuses the id while its own destroy
 	 * request is still in flight, the next request hits an unknown object.
 	 */
-	struct MangoXDGOutputResource *res, *tmp;
+	struct AcwmXDGOutputResource *res, *tmp;
 	wl_list_for_each_safe(res, tmp, &output->resources, link) {
 		wl_resource_set_user_data(res->resource, NULL);
 		wl_list_remove(&res->link);
@@ -313,7 +313,7 @@ void handle_xdg_output_manager_get_output(struct wl_client *client,
 		return;
 	}
 
-	struct MangoXDGOutput *output = xdg_output_find(wlr_output);
+	struct AcwmXDGOutput *output = xdg_output_find(wlr_output);
 	if (!output)
 		output = xdg_output_create(wlr_output);
 	if (!output) {
@@ -322,7 +322,7 @@ void handle_xdg_output_manager_get_output(struct wl_client *client,
 		return;
 	}
 
-	struct MangoXDGOutputResource *res = calloc(1, sizeof(*res));
+	struct AcwmXDGOutputResource *res = calloc(1, sizeof(*res));
 	if (!res) {
 		wl_client_post_no_memory(client);
 		wl_resource_destroy(resource);
@@ -344,7 +344,7 @@ void handle_xdg_output_manager_get_output(struct wl_client *client,
 
 	if (wl_resource_get_version(output_resource) >=
 			WL_OUTPUT_DONE_SINCE_VERSION &&
-		version >= MANGO_XDG_OUTPUT_DONE_DEPRECATED_SINCE_VERSION)
+		version >= ACWM_XDG_OUTPUT_DONE_DEPRECATED_SINCE_VERSION)
 		wl_output_send_done(output_resource);
 }
 void xdg_output_manager_bind(struct wl_client *client, void *data,
@@ -369,7 +369,7 @@ void xdg_output_manager_bind(struct wl_client *client, void *data,
  * disturbing normal clients.
  */
 void xdg_output_update_all(void) {
-	struct MangoXDGOutput *output, *tmp;
+	struct AcwmXDGOutput *output, *tmp;
 	wl_list_for_each_safe(output, tmp, &xdg_outputs, link) {
 		bool logical_changed = xdg_output_logical_changed(output);
 		bool xwayland_changed = xdg_output_xwayland_changed(output);
@@ -393,7 +393,7 @@ void xdg_output_init(void) {
 	wl_list_init(&xdg_outputs);
 	xdg_output_global = wl_global_create(
 		server.display, &zxdg_output_manager_v1_interface,
-		MANGO_XDG_OUTPUT_MANAGER_VERSION, NULL, xdg_output_manager_bind);
+		ACWM_XDG_OUTPUT_MANAGER_VERSION, NULL, xdg_output_manager_bind);
 	if (!xdg_output_global)
 		wlr_log(WLR_ERROR, "failed to create zxdg_output_manager_v1 global");
 }

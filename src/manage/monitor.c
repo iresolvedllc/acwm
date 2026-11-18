@@ -1,27 +1,27 @@
-#include "mango/manage/monitor.h"
-#include "mango/animation/client.h"
-#include "mango/animation/common.h"
-#include "mango/animation/layer.h"
-#include "mango/bar/bar.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/dispatch/bind.h"
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/ext-protocol/foreign-toplevel.h"
-#include "mango/ext-protocol/hdr.h"
-#include "mango/ext-protocol/tearing.h"
-#include "mango/ext-protocol/text-input.h"
-#include "mango/ext-protocol/xdg-output.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/layout/scroll.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/xwayland_primary.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/animation/client.h"
+#include "acwm/animation/common.h"
+#include "acwm/animation/layer.h"
+#include "acwm/bar/bar.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/ext-protocol/hdr.h"
+#include "acwm/ext-protocol/tearing.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/ext-protocol/xdg-output.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/xwayland_primary.h"
 #include <fcntl.h>
 #include <scenefx/render/fx_renderer/fx_renderer.h>
 #include <scenefx/types/wlr_scene.h>
@@ -355,7 +355,7 @@ bool blur_layer_on_wallpaper(uint32_t layer) {
 	}
 }
 
-bool mango_scene_output_commit(struct wlr_scene_output *scene_output,
+bool acwm_scene_output_commit(struct wlr_scene_output *scene_output,
 							   struct wlr_output_state *state) {
 	struct wlr_output *wlr_output = scene_output->output;
 	Monitor *m = wlr_output->data;
@@ -416,7 +416,7 @@ bool mango_scene_output_commit(struct wlr_scene_output *scene_output,
 			wlr_output_state_init(&m->pending);
 		}
 	} else {
-		mango_error(true, WLR_INFO, "Failed to commit output %s",
+		acwm_error(true, WLR_INFO, "Failed to commit output %s",
 					m->wlr_output->name);
 		return false;
 	}
@@ -424,13 +424,13 @@ bool mango_scene_output_commit(struct wlr_scene_output *scene_output,
 	return committed;
 }
 
-bool mango_output_commit(Monitor *m) {
+bool acwm_output_commit(Monitor *m) {
 	bool committed = wlr_output_commit_state(m->wlr_output, &m->pending);
 	if (committed) {
 		wlr_output_state_finish(&m->pending);
 		wlr_output_state_init(&m->pending);
 	} else {
-		mango_error(true, WLR_ERROR, "Failed to commit frame");
+		acwm_error(true, WLR_ERROR, "Failed to commit frame");
 	}
 	return committed;
 }
@@ -460,12 +460,12 @@ void enable_adaptive_sync(Monitor *m, struct wlr_output_state *state) {
 	wlr_output_state_set_adaptive_sync_enabled(state, true);
 	if (!wlr_output_test_state(m->wlr_output, state)) {
 		wlr_output_state_set_adaptive_sync_enabled(state, false);
-		mango_error(true, WLR_DEBUG,
+		acwm_error(true, WLR_DEBUG,
 					"failed to enable adaptive sync for output %s",
 					m->wlr_output->name);
 	} else {
 		m->is_vrr_enabling = true;
-		mango_error(true, WLR_INFO, "adaptive sync enabled for output %s",
+		acwm_error(true, WLR_INFO, "adaptive sync enabled for output %s",
 					m->wlr_output->name);
 	}
 }
@@ -494,14 +494,14 @@ bool monitor_matches_rule(Monitor *m, const ConfigMonitorRule *rule) {
 struct wlr_color_transform *monitor_load_icc_transform(const char *path) {
 	int fd = open(path, O_RDONLY | O_NOCTTY | O_CLOEXEC);
 	if (fd == -1) {
-		mango_error(true, WLR_ERROR, "Failed to open ICC profile %s", path);
+		acwm_error(true, WLR_ERROR, "Failed to open ICC profile %s", path);
 		return NULL;
 	}
 
 	struct stat info;
 	if (fstat(fd, &info) == -1 || !S_ISREG(info.st_mode) || info.st_size <= 0) {
 		close(fd);
-		mango_error(true, WLR_ERROR, "Invalid ICC profile file %s", path);
+		acwm_error(true, WLR_ERROR, "Invalid ICC profile file %s", path);
 		return NULL;
 	}
 
@@ -518,7 +518,7 @@ struct wlr_color_transform *monitor_load_icc_transform(const char *path) {
 		if ((r == -1 && errno != EINTR) || r == 0) {
 			free(data);
 			close(fd);
-			mango_error(true, WLR_ERROR, "Failed to read ICC profile %s", path);
+			acwm_error(true, WLR_ERROR, "Failed to read ICC profile %s", path);
 			return NULL;
 		}
 		if (r > 0)
@@ -530,7 +530,7 @@ struct wlr_color_transform *monitor_load_icc_transform(const char *path) {
 		wlr_color_transform_init_linear_to_icc(data, size);
 	free(data);
 	if (!tr)
-		mango_error(true, WLR_ERROR, "Failed to parse ICC profile %s", path);
+		acwm_error(true, WLR_ERROR, "Failed to parse ICC profile %s", path);
 	return tr;
 }
 
@@ -571,7 +571,7 @@ bool apply_rule_to_state(Monitor *m, const ConfigMonitorRule *rule,
 	monitor_set_icc(m, rule->icc);
 
 	if (m->hdr_enable && m->icc_transform)
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"ICC profile ignored on output %s: HDR is enabled",
 					m->wlr_output->name);
 
@@ -995,7 +995,7 @@ void handle_output_request_state(struct wl_listener *listener, void *data) {
 	}
 
 	if (!wlr_output_commit_state(m->wlr_output, event->state)) {
-		mango_error(false, WLR_ERROR,
+		acwm_error(false, WLR_ERROR,
 					"Backend requested a new state that could not be applied");
 	}
 }
@@ -1070,7 +1070,7 @@ void handle_output_layout_change(struct wl_listener *listener, void *data) {
 	wlr_scene_rect_set_size(server.root_bg, server.scene_geometry.width,
 							server.scene_geometry.height);
 
-	/* Make sure the clients are hidden when mango is locked */
+	/* Make sure the clients are hidden when acwm is locked */
 	wlr_scene_node_set_position(&server.locked_bg->node,
 								server.scene_geometry.x,
 								server.scene_geometry.y);
@@ -1280,7 +1280,7 @@ void handle_output_power_manager_set_mode(struct wl_listener *listener,
 		return;
 
 	wlr_output_state_set_enabled(&m->pending, event->mode);
-	mango_output_commit(m);
+	acwm_output_commit(m);
 	m->only_sleep = !event->mode;
 	handle_output_layout_change(NULL, NULL);
 }
@@ -1371,7 +1371,7 @@ void handle_output_frame(struct wl_listener *listener, void *data) {
 		monitor_stop_skip_frame_timer(m);
 	}
 
-	mango_scene_output_commit(m->scene_output, &m->pending);
+	acwm_scene_output_commit(m->scene_output, &m->pending);
 
 skip:
 	// Sends frame-done notifications.
@@ -1393,7 +1393,7 @@ void check_vrr_enable(Client *c) {
 	if (!c && m && !m->iscleanuping && m->is_vrr_enabling &&
 		!m->vrr_global_enable) {
 		disable_adaptive_sync(m, &m->pending);
-		mango_output_commit(m);
+		acwm_output_commit(m);
 		return;
 	}
 
@@ -1403,17 +1403,17 @@ void check_vrr_enable(Client *c) {
 	if (VISIBLEON(c, c->mon) && c->vrr_only_fullscreen && c->isfullscreen &&
 		!c->mon->is_vrr_enabling) {
 		enable_adaptive_sync(c->mon, &m->pending);
-		mango_output_commit(m);
+		acwm_output_commit(m);
 		return;
 	}
 
 	if (!c->mon->is_vrr_enabling && c->mon->vrr_global_enable) {
 		enable_adaptive_sync(c->mon, &m->pending);
-		mango_output_commit(m);
+		acwm_output_commit(m);
 	} else if (c->mon->is_vrr_enabling && !c->mon->vrr_global_enable &&
 			   (!c->vrr_only_fullscreen || !c->isfullscreen)) {
 		disable_adaptive_sync(c->mon, &m->pending);
-		mango_output_commit(m);
+		acwm_output_commit(m);
 	}
 }
 
@@ -1453,7 +1453,7 @@ void handle_renderer_lost(struct wl_listener *listener, void *data) {
 	if (server.recreate_renderer_source)
 		return;
 
-	mango_error(true, WLR_DEBUG, "gpu reset");
+	acwm_error(true, WLR_DEBUG, "gpu reset");
 
 	server.recreate_renderer_source =
 		wl_event_loop_add_idle(server.event_loop, do_renderer_recreate, NULL);
@@ -1464,15 +1464,15 @@ void setgaps(int32_t oh, int32_t ov, int32_t ih, int32_t iv) {
 		return;
 	if (server.selected_monitor->pertag &&
 		is_special_active(server.selected_monitor)) {
-		server.selected_monitor->special_gappoh = MANGO_MAX(oh, 0);
-		server.selected_monitor->special_gappov = MANGO_MAX(ov, 0);
-		server.selected_monitor->special_gappih = MANGO_MAX(ih, 0);
-		server.selected_monitor->special_gappiv = MANGO_MAX(iv, 0);
+		server.selected_monitor->special_gappoh = ACWM_MAX(oh, 0);
+		server.selected_monitor->special_gappov = ACWM_MAX(ov, 0);
+		server.selected_monitor->special_gappih = ACWM_MAX(ih, 0);
+		server.selected_monitor->special_gappiv = ACWM_MAX(iv, 0);
 	} else {
-		server.selected_monitor->gappoh = MANGO_MAX(oh, 0);
-		server.selected_monitor->gappov = MANGO_MAX(ov, 0);
-		server.selected_monitor->gappih = MANGO_MAX(ih, 0);
-		server.selected_monitor->gappiv = MANGO_MAX(iv, 0);
+		server.selected_monitor->gappoh = ACWM_MAX(oh, 0);
+		server.selected_monitor->gappov = ACWM_MAX(ov, 0);
+		server.selected_monitor->gappih = ACWM_MAX(ih, 0);
+		server.selected_monitor->gappiv = ACWM_MAX(iv, 0);
 	}
 	arrange(server.selected_monitor, false, false);
 }

@@ -6,23 +6,23 @@ self:
   ...
 }:
 let
-  cfg = config.programs.mango;
+  cfg = config.programs.acwm;
 in
 {
-  disabledModules = [ "programs/wayland/mango.nix" ];
+  disabledModules = [ "programs/wayland/acwm.nix" ];
 
   options = {
-    programs.mango = {
-      enable = lib.mkEnableOption "mango, a wayland compositor based on dwl";
+    programs.acwm = {
+      enable = lib.mkEnableOption "acwm, a wayland compositor based on dwl";
       addLoginEntry = lib.mkOption {
         type = lib.types.bool;
         default = true;
-        description = "Whether to add a login entry to the display manager for mango. Only has effect if a display manager is configured (e.g. SDDM, GDM via `services.displayManager`).";
+        description = "Whether to add a login entry to the display manager for acwm. Only has effect if a display manager is configured (e.g. SDDM, GDM via `services.displayManager`).";
       };
       package = lib.mkOption {
         type = lib.types.package;
-        default = self.packages.${pkgs.stdenv.hostPlatform.system}.mango;
-        description = "The mango package to use";
+        default = self.packages.${pkgs.stdenv.hostPlatform.system}.acwm;
+        description = "The acwm package to use";
       };
     };
   };
@@ -36,7 +36,7 @@ in
       enable = lib.mkDefault true;
 
       config = {
-        mango = {
+        acwm = {
           default = [
             "gtk"
           ];

@@ -2,10 +2,10 @@
 /.vscode
 /result
 /build
-/mango-wlonly
+/acwm-wlonly
 config.h
-/mango
-mango.o
+/acwm
+acwm.o
 util.o
 *-protocol.h
 *-protocol.c

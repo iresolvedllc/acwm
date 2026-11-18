@@ -1,33 +1,33 @@
 /*
  * See LICENSE file for copyright and license details.
  */
-#include "mango/animation/common.h"
-#include "mango/bar/bar.h"
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/error_nag.h"
-#include "mango/config/parse.h"
-#include "mango/config/watcher.h"
-#include "mango/dispatch/bind.h"
-#include "mango/draw/text-node.h"
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/ext-protocol/foreign-toplevel.h"
-#include "mango/ext-protocol/hdr.h"
-#include "mango/ext-protocol/tearing.h"
-#include "mango/ext-protocol/text-input.h"
-#include "mango/ext-protocol/xdg-activation.h"
-#include "mango/ext-protocol/xdg-output.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/input/tablet.h"
-#include "mango/input/trackpad.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
+#include "acwm/animation/common.h"
+#include "acwm/bar/bar.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/error_nag.h"
+#include "acwm/config/parse.h"
+#include "acwm/config/watcher.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/draw/text-node.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/ext-protocol/hdr.h"
+#include "acwm/ext-protocol/tearing.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/ext-protocol/xdg-activation.h"
+#include "acwm/ext-protocol/xdg-output.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/input/tablet.h"
+#include "acwm/input/trackpad.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
 #include "wlr/util/box.h"
 #include <fcntl.h>
 #include <getopt.h>
@@ -138,14 +138,14 @@ static void restore_nofile_limit(void) {
 	if (original_nofile_rlimit.rlim_cur == 0)
 		return;
 	if (setrlimit(RLIMIT_NOFILE, &original_nofile_rlimit) != 0)
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to restore max open files limit: "
 					"setrlimit(NOFILE) failed");
 }
 
 static void increase_nofile_limit(void) {
 	if (getrlimit(RLIMIT_NOFILE, &original_nofile_rlimit) != 0) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to bump max open files limit: "
 					"getrlimit(NOFILE) failed");
 		return;
@@ -154,10 +154,10 @@ static void increase_nofile_limit(void) {
 	struct rlimit new_rlimit = original_nofile_rlimit;
 	new_rlimit.rlim_cur = new_rlimit.rlim_max;
 	if (setrlimit(RLIMIT_NOFILE, &new_rlimit) != 0) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to bump max open files limit: "
 					"setrlimit(NOFILE) failed");
-		mango_error(true, WLR_INFO, "Running with %d max open files",
+		acwm_error(true, WLR_INFO, "Running with %d max open files",
 					(int)original_nofile_rlimit.rlim_cur);
 		return;
 	}
@@ -263,7 +263,7 @@ void cleanup(void) {
 
 	keyboard_group_destroy(&server.keyboard_group->destroy, NULL);
 
-	mango_im_relay_finish(server.input_method_relay);
+	acwm_im_relay_finish(server.input_method_relay);
 
 	/* If it's not destroyed manually it will cause a use-after-free of
 	 * wlr_seat. Destroy it until it's fixed in the wlroots side */
@@ -274,7 +274,7 @@ void cleanup(void) {
 	   destroyed) to avoid destroying them with an invalid scene output. */
 	wlr_scene_node_destroy(&server.scene->tree.node);
 
-	mango_text_global_finish();
+	acwm_text_global_finish();
 }
 
 void handle_quit_signal(int32_t signo) { quit(NULL); }
@@ -287,19 +287,19 @@ static char *env_vars[] = {
 	"XDG_SESSION_TYPE",
 	"XCURSOR_THEME",
 	"XCURSOR_SIZE",
-	"MANGO_INSTANCE_SIGNATURE",
+	"ACWM_INSTANCE_SIGNATURE",
 	NULL,
 };
 
 void set_activation_env() {
 	if (!getenv("DBUS_SESSION_BUS_ADDRESS")) {
-		mango_error(true, WLR_INFO,
+		acwm_error(true, WLR_INFO,
 					"Not updating dbus execution environment: "
 					"DBUS_SESSION_BUS_ADDRESS not set");
 		return;
 	}
 
-	mango_error(true, WLR_INFO, "Updating dbus execution environment");
+	acwm_error(true, WLR_INFO, "Updating dbus execution environment");
 
 	char *env_keys = join_strings(env_vars, " ");
 
@@ -307,7 +307,7 @@ void set_activation_env() {
 	const char *arg1 = env_keys;
 	char *cmd1 = string_printf("dbus-update-activation-environment %s", arg1);
 	if (!cmd1) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 	spawn(&(Arg){.v = cmd1});
@@ -322,10 +322,10 @@ void set_activation_env() {
 	const char *action = "import-environment";
 	char *cmd2 = string_printf("systemctl --user %s %s; "
 							   "systemctl --user --no-block start "
-							   "mango-session.target",
+							   "acwm-session.target",
 							   action, env_keys);
 	if (!cmd2) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 	spawn_shell(&(Arg){.v = cmd2});
@@ -337,29 +337,29 @@ cleanup:
 
 void unset_activation_env(void) {
 	if (!getenv("DBUS_SESSION_BUS_ADDRESS")) {
-		mango_error(true, WLR_INFO,
+		acwm_error(true, WLR_INFO,
 					"Not clearing dbus execution environment: "
 					"DBUS_SESSION_BUS_ADDRESS not set");
 		return;
 	}
 
-	mango_error(true, WLR_INFO, "Clearing dbus execution environment");
+	acwm_error(true, WLR_INFO, "Clearing dbus execution environment");
 
 	char *env_keys = join_strings(env_vars, " ");
 	char *env_unset_keys = join_strings_with_suffix(env_vars, "=", " ");
 	if (!env_keys || !env_unset_keys) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 
 	/* These are fired off asynchronously: doing them synchronously (blocking
-	 * on the child) deadlocks when mango itself belongs to the systemd user
-	 * session, because stopping graphical-session.target then waits for mango
-	 * to exit while mango waits for the command to finish. */
+	 * on the child) deadlocks when acwm itself belongs to the systemd user
+	 * session, because stopping graphical-session.target then waits for acwm
+	 * to exit while acwm waits for the command to finish. */
 	char *cmd0 = string_printf(
 		"systemctl --user --no-block stop graphical-session.target");
 	if (!cmd0) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 	spawn_shell(&(Arg){.v = cmd0});
@@ -368,7 +368,7 @@ void unset_activation_env(void) {
 	char *cmd1 =
 		string_printf("systemctl --user unset-environment %s", env_keys);
 	if (!cmd1) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 	spawn_shell(&(Arg){.v = cmd1});
@@ -377,7 +377,7 @@ void unset_activation_env(void) {
 	char *cmd2 =
 		string_printf("dbus-update-activation-environment %s", env_unset_keys);
 	if (!cmd2) {
-		mango_error(true, WLR_ERROR, "Failed to allocate command string");
+		acwm_error(true, WLR_ERROR, "Failed to allocate command string");
 		goto cleanup;
 	}
 	spawn_shell(&(Arg){.v = cmd2});
@@ -425,7 +425,7 @@ void run(char *startup_cmd, int readiness_fd) {
 	}
 
 	/* Mark stdout as non-blocking to avoid people who does not close stdin
-	 * nor consumes it in their startup script getting mango frozen */
+	 * nor consumes it in their startup script getting acwm frozen */
 	if (fd_set_nonblock(STDOUT_FILENO) < 0)
 		close(STDOUT_FILENO);
 
@@ -468,7 +468,7 @@ void run(char *startup_cmd, int readiness_fd) {
 }
 
 void setup(void) {
-	setenv("XDG_CURRENT_DESKTOP", "mango", 1);
+	setenv("XDG_CURRENT_DESKTOP", "acwm", 1);
 	setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
 
 	parse_config();
@@ -503,7 +503,7 @@ void setup(void) {
 	server.display = wl_display_create();
 
 	wl_display_set_default_max_buffer_size(server.display, 1024 * 1024);
-	wl_display_set_global_filter(server.display, mango_global_filter, NULL);
+	wl_display_set_global_filter(server.display, acwm_global_filter, NULL);
 
 	server.event_loop = wl_display_get_event_loop(server.display);
 
@@ -525,7 +525,7 @@ void setup(void) {
 
 	server.headless_backend = wlr_headless_backend_create(server.event_loop);
 	if (!server.headless_backend) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to create secondary headless backend");
 	} else {
 		wlr_multi_backend_add(server.backend, server.headless_backend);
@@ -583,7 +583,7 @@ void setup(void) {
 		if (cm) {
 			wlr_scene_set_color_manager_v1(server.scene, cm);
 		} else {
-			mango_error(true, WLR_ERROR, "unable to create color manager");
+			acwm_error(true, WLR_ERROR, "unable to create color manager");
 		}
 	}
 
@@ -899,7 +899,7 @@ void setup(void) {
 	server.text_input_manager =
 		wlr_text_input_manager_v3_create(server.display);
 
-	server.input_method_relay = mango_im_relay_create();
+	server.input_method_relay = acwm_im_relay_create();
 
 	server.drm_lease_manager =
 		wlr_drm_lease_v1_manager_create(server.display, server.backend);
@@ -907,9 +907,9 @@ void setup(void) {
 		wl_signal_add(&server.drm_lease_manager->events.request,
 					  &server.drm_lease_request_listener);
 	} else {
-		mango_error(true, WLR_DEBUG,
+		acwm_error(true, WLR_DEBUG,
 					"Failed to create wlr_drm_lease_device_v1.");
-		mango_error(true, WLR_INFO, "VR will not be available.");
+		acwm_error(true, WLR_INFO, "VR will not be available.");
 	}
 
 	// Create the toplevel manager handle.
@@ -937,7 +937,7 @@ void setup(void) {
 
 		setenv("DISPLAY", server.xwayland->display_name, 1);
 	} else {
-		mango_error(
+		acwm_error(
 			true, WLR_ERROR,
 			"failed to setup XWayland X server, continuing without it\n");
 	}
@@ -959,7 +959,7 @@ int32_t main(int32_t argc, char *argv[]) {
 		} else if (c == 'd') {
 			server.cli_debug_log = true;
 		} else if (c == 'v') {
-			printf("mango " VERSION "\n");
+			printf("acwm " VERSION "\n");
 			return EXIT_SUCCESS;
 		} else if (c == 'c') {
 			snprintf(server.cli_config_path, sizeof(server.cli_config_path),
@@ -993,10 +993,10 @@ int32_t main(int32_t argc, char *argv[]) {
 	cleanup();
 	return EXIT_SUCCESS;
 usage:
-	printf("Usage: mango [OPTIONS]\n"
+	printf("Usage: acwm [OPTIONS]\n"
 		   "\n"
 		   "Options:\n"
-		   "  -v             Show mango version\n"
+		   "  -v             Show acwm version\n"
 		   "  -d             Enable debug log\n"
 		   "  -c <file>      Use custom configuration file\n"
 		   "  -s <command>   Execute startup command\n"

@@ -1,14 +1,14 @@
-#include "mango/ipc/ipc.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/monitor.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <libinput.h>
@@ -316,7 +316,7 @@ int ipc_handle_client_data(int fd, uint32_t mask, void *data) {
 			size_t new_cap = client->buf_cap ? client->buf_cap * 2 : 8192;
 			char *new_buf = realloc(client->buf, new_cap);
 			if (!new_buf) {
-				mango_error(true, WLR_ERROR, "IPC: out of memory");
+				acwm_error(true, WLR_ERROR, "IPC: out of memory");
 				goto cleanup;
 			}
 			client->buf = new_buf;
@@ -365,7 +365,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 	// Sets O_NONBLOCK
 	int flags = fcntl(client_fd, F_GETFL, 0);
 	if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"failed to set O_NONBLOCK on IPC client socket");
 		close(client_fd);
 		return 0;
@@ -373,7 +373,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 	// Sets FD_CLOEXEC
 	flags = fcntl(client_fd, F_GETFD, 0);
 	if (flags == -1 || fcntl(client_fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"failed to set FD_CLOEXEC on IPC client socket");
 		close(client_fd);
 		return 0;
@@ -381,7 +381,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 
 	struct ipc_client_state *client = calloc(1, sizeof(*client));
 	if (!client) {
-		mango_error(true, WLR_ERROR, "failed to allocate IPC client");
+		acwm_error(true, WLR_ERROR, "failed to allocate IPC client");
 		close(client_fd);
 		return 0;
 	}
@@ -524,7 +524,7 @@ void handle_print_status(struct wl_listener *listener, void *data) {
 			ipc_notify_last_surface_ws_name(m);
 		}
 
-		mango_ext_workspace_printstatus(m);
+		acwm_ext_workspace_printstatus(m);
 	}
 }
 
@@ -539,7 +539,7 @@ void ipc_cleanup(void) {
 	if (ipc_socket_fd >= 0)
 		close(ipc_socket_fd);
 	unlink(ipc_socket_path);
-	unsetenv("MANGO_INSTANCE_SIGNATURE");
+	unsetenv("ACWM_INSTANCE_SIGNATURE");
 
 	struct ipc_watch_client *wc, *tmp;
 	wl_list_for_each_safe(wc, tmp, &ipc_watch_clients, link)
@@ -1354,7 +1354,7 @@ void ipc_init(struct wl_event_loop *loop) {
 	if (!xdg_runtime)
 		return;
 
-	snprintf(ipc_socket_path, sizeof(ipc_socket_path), "%s/mango-%d.sock",
+	snprintf(ipc_socket_path, sizeof(ipc_socket_path), "%s/acwm-%d.sock",
 			 xdg_runtime, getpid());
 
 	ipc_socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -1364,7 +1364,7 @@ void ipc_init(struct wl_event_loop *loop) {
 	int flags = fcntl(ipc_socket_fd, F_GETFD, 0);
 	if (flags == -1 ||
 		fcntl(ipc_socket_fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
-		mango_error(true, WLR_ERROR, "failed to set FD_CLOEXEC on IPC socket");
+		acwm_error(true, WLR_ERROR, "failed to set FD_CLOEXEC on IPC socket");
 		close(ipc_socket_fd);
 		return;
 	}
@@ -1372,7 +1372,7 @@ void ipc_init(struct wl_event_loop *loop) {
 	flags = fcntl(ipc_socket_fd, F_GETFL, 0);
 	if (flags == -1 ||
 		fcntl(ipc_socket_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		mango_error(true, WLR_ERROR, "failed to set O_NONBLOCK on IPC socket");
+		acwm_error(true, WLR_ERROR, "failed to set O_NONBLOCK on IPC socket");
 		close(ipc_socket_fd);
 		return;
 	}
@@ -1393,7 +1393,7 @@ void ipc_init(struct wl_event_loop *loop) {
 	}
 	listen(ipc_socket_fd, 16);
 
-	setenv("MANGO_INSTANCE_SIGNATURE", ipc_socket_path, 1);
+	setenv("ACWM_INSTANCE_SIGNATURE", ipc_socket_path, 1);
 
 	ipc_event_source = wl_event_loop_add_fd(
 		loop, ipc_socket_fd, WL_EVENT_READABLE, ipc_handle_connection, loop);

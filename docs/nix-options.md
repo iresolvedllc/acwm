@@ -1,19 +1,19 @@
 ---
 title: Nix Module Options
-description: NixOS and Home Manager configuration options for mangowm.
+description: NixOS and Home Manager configuration options for acwm.
 ---
 
 > **Note:** This document is automatically generated from the Nix module source code.
 
 ## NixOS
 
-**System-level options via `programs.mango`.**
+**System-level options via `programs.acwm`.**
 
 ### enable
 
 
 
-Whether to enable mango, a wayland compositor based on dwl\.
+Whether to enable acwm, a wayland compositor based on dwl\.
 
 
 
@@ -37,7 +37,7 @@ true
 ```
 
 *Declared by:*
- - [\<mango/nix/nixos-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/nixos-modules.nix)
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
 
 
 
@@ -45,7 +45,7 @@ true
 
 
 
-The mango package to use
+The acwm package to use
 
 
 
@@ -57,11 +57,11 @@ package
 *Default:*
 
 ```nix
-<derivation mango-nightly>
+<derivation acwm-nightly>
 ```
 
 *Declared by:*
- - [\<mango/nix/nixos-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/nixos-modules.nix)
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
 
 
 
@@ -69,7 +69,7 @@ package
 
 
 
-Whether to add a login entry to the display manager for mango\. Only has effect if a display manager is configured (e\.g\. SDDM, GDM via ` services.displayManager `)\.
+Whether to add a login entry to the display manager for acwm\. Only has effect if a display manager is configured (e\.g\. SDDM, GDM via ` services.displayManager `)\.
 
 
 
@@ -85,17 +85,17 @@ true
 ```
 
 *Declared by:*
- - [\<mango/nix/nixos-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/nixos-modules.nix)
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
 
 ## Home Manager
 
-**Configure mangowm declaratively via `wayland.windowManager.mango`.**
+**Configure acwm declaratively via `wayland.windowManager.acwm`.**
 
 ### enable
 
 
 
-Whether to enable mangowm, a Wayland compositor based on dwl\.
+Whether to enable acwm, a Wayland compositor based on dwl\.
 
 
 
@@ -111,7 +111,7 @@ false
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -119,7 +119,7 @@ false
 
 
 
-The mango package to use
+The acwm package to use
 
 
 
@@ -131,11 +131,11 @@ package
 *Default:*
 
 ```nix
-<derivation mango-nightly>
+<derivation acwm-nightly>
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -143,10 +143,10 @@ package
 
 
 
-Shell script to run on mango startup\. No shebang needed\.
+Shell script to run on acwm startup\. No shebang needed\.
 
 When this option is set, the script will be written to
-` ~/.config/mango/autostart.sh ` and an ` exec_once ` line
+` ~/.config/acwm/autostart.sh ` and an ` exec_once ` line
 will be automatically added to the config to execute it\.
 
 
@@ -174,7 +174,7 @@ strings concatenated with “\\n”
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -209,7 +209,7 @@ list of string
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -217,7 +217,7 @@ list of string
 
 
 
-Extra configuration lines to add to ` ~/.config/mango/config.conf `\.
+Extra configuration lines to add to ` ~/.config/acwm/config.conf `\.
 This is useful for advanced configurations that don’t fit the structured
 settings format, or for options that aren’t yet supported by the module\.
 
@@ -246,7 +246,7 @@ strings concatenated with “\\n”
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -254,11 +254,11 @@ strings concatenated with “\\n”
 
 
 
-Mango configuration written in Nix\. Entries with the same key
+ACWM configuration written in Nix\. Entries with the same key
 should be written as lists\. Variables and colors names should be
-quoted\. See [https://mangowm\.github\.io/docs](https://mangowm\.github\.io/docs) for more examples\.
+quoted\. See [https://acwm\.github\.io/docs](https://acwm\.github\.io/docs) for more examples\.
 
-**Note:** This option uses a structured format that is converted to Mango’s
+**Note:** This option uses a structured format that is converted to ACWM’s
 configuration syntax\. Nested attributes are flattened with underscore separators\.
 For example: ` animation.duration_open = 400 ` becomes ` animation_duration_open = 400 `
 
@@ -268,7 +268,7 @@ is a nested attribute set under ` key_mode ` that contains its own bindings\.
 
 
 *Type:*
-Mango configuration value
+ACWM configuration value
 
 
 
@@ -334,7 +334,7 @@ Mango configuration value
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -342,8 +342,8 @@ Mango configuration value
 
 
 
-Whether to enable ` mango-session.target ` on
-mango startup\. This links to
+Whether to enable ` acwm-session.target ` on
+acwm startup\. This links to
 ` graphical-session.target `\.
 Some important environment variables will be imported to systemd
 and dbus user environment before reaching the target, including
@@ -377,7 +377,7 @@ false
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -399,12 +399,12 @@ list of string
 ```nix
 [
   "systemctl --user reset-failed"
-  "systemctl --user start mango-session.target"
+  "systemctl --user start acwm-session.target"
 ]
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -446,7 +446,7 @@ list of string
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -480,7 +480,7 @@ true
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 
 
 
@@ -515,5 +515,5 @@ list of string
 ```
 
 *Declared by:*
- - [\<mango/nix/hm-modules\.nix>](https://github.com/mangowm/mango/blob/main/nix/hm-modules.nix)
+ - [\<acwm/nix/hm-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/hm-modules.nix)
 

@@ -1,12 +1,12 @@
-#include "mango/overview/overview.h"
-#include "mango/animation/client.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/draw/text-node.h"
-#include "mango/layout/layout.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
+#include "acwm/overview/overview.h"
+#include "acwm/animation/client.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/draw/text-node.h"
+#include "acwm/layout/layout.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
 #include <scenefx/types/wlr_scene.h>
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_xdg_shell.h>
@@ -196,10 +196,10 @@ void overview_layout_card(Client *c) {
 			int dw = (int)(lw * scale_x);
 			int dh = (int)(lh * scale_y);
 
-			int cx0 = MANGO_MAX(px, vx);
-			int cy0 = MANGO_MAX(py, vy);
-			int cx1 = MANGO_MIN(px + dw, vx + vw);
-			int cy1 = MANGO_MIN(py + dh, vy + vh);
+			int cx0 = ACWM_MAX(px, vx);
+			int cy0 = ACWM_MAX(py, vy);
+			int cx1 = ACWM_MIN(px + dw, vx + vw);
+			int cy1 = ACWM_MIN(py + dh, vy + vh);
 			int cw = cx1 - cx0;
 			int ch = cy1 - cy0;
 			if (cw <= 0 || ch <= 0) {

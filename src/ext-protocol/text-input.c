@@ -1,11 +1,11 @@
-#include "mango/ext-protocol/text-input.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/manage/client.h"
-#include "mango/manage/monitor.h"
+#include "acwm/ext-protocol/text-input.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 
 #include <assert.h>
 #include <wlr/types/wlr_compositor.h>
@@ -52,7 +52,7 @@ get_keyboard_grab(KeyboardGroup *keyboard) {
 
 	return input_method->keyboard_grab;
 }
-bool mango_im_keyboard_grab_forward_modifiers(KeyboardGroup *keyboard) {
+bool acwm_im_keyboard_grab_forward_modifiers(KeyboardGroup *keyboard) {
 	struct wlr_input_method_keyboard_grab_v2 *keyboard_grab =
 		get_keyboard_grab(keyboard);
 
@@ -68,7 +68,7 @@ bool mango_im_keyboard_grab_forward_modifiers(KeyboardGroup *keyboard) {
 		return false;
 	}
 }
-bool mango_im_keyboard_grab_forward_key(KeyboardGroup *keyboard,
+bool acwm_im_keyboard_grab_forward_key(KeyboardGroup *keyboard,
 										struct wlr_keyboard_key_event *event) {
 	struct wlr_input_method_keyboard_grab_v2 *keyboard_grab =
 		get_keyboard_grab(keyboard);
@@ -84,7 +84,7 @@ bool mango_im_keyboard_grab_forward_key(KeyboardGroup *keyboard,
 }
 
 struct text_input *
-get_active_text_input(struct mango_input_method_relay *relay) {
+get_active_text_input(struct acwm_input_method_relay *relay) {
 	struct text_input *text_input;
 
 	if (!relay->input_method) {
@@ -98,7 +98,7 @@ get_active_text_input(struct mango_input_method_relay *relay) {
 	}
 	return NULL;
 }
-void update_active_text_input(struct mango_input_method_relay *relay) {
+void update_active_text_input(struct acwm_input_method_relay *relay) {
 	struct text_input *active_text_input = get_active_text_input(relay);
 
 	if (relay->input_method && relay->active_text_input != active_text_input) {
@@ -113,7 +113,7 @@ void update_active_text_input(struct mango_input_method_relay *relay) {
 	relay->active_text_input = active_text_input;
 }
 void update_text_inputs_focused_surface(
-	struct mango_input_method_relay *relay) {
+	struct acwm_input_method_relay *relay) {
 	struct text_input *text_input;
 	wl_list_for_each(text_input, &relay->text_inputs, link) {
 		struct wlr_text_input_v3 *input = text_input->input;
@@ -138,8 +138,8 @@ void update_text_inputs_focused_surface(
 		}
 	}
 }
-void update_popup_position(struct mango_input_method_popup *popup) {
-	struct mango_input_method_relay *relay = popup->relay;
+void update_popup_position(struct acwm_input_method_popup *popup) {
+	struct acwm_input_method_relay *relay = popup->relay;
 	struct text_input *text_input = relay->active_text_input;
 	struct wlr_box cursor_rect;
 	struct wlr_xdg_surface *xdg_surface;
@@ -213,15 +213,15 @@ void update_popup_position(struct mango_input_method_popup *popup) {
 								  .height = cursor_rect.height,
 							  });
 }
-void update_popups_position(struct mango_input_method_relay *relay) {
-	struct mango_input_method_popup *popup;
+void update_popups_position(struct acwm_input_method_relay *relay) {
+	struct acwm_input_method_popup *popup;
 	wl_list_for_each(popup, &relay->popups, link) {
 		update_popup_position(popup);
 	}
 }
 
 void handle_input_method_commit(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, input_method_commit);
 	struct text_input *text_input;
 	struct wlr_input_method_v2 *input_method = relay->input_method;
@@ -250,7 +250,7 @@ void handle_input_method_commit(struct wl_listener *listener, void *data) {
 	wlr_text_input_v3_send_done(text_input->input);
 }
 void handle_keyboard_grab_destroy(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, keyboard_grab_destroy);
 	struct wlr_input_method_keyboard_grab_v2 *keyboard_grab =
 		relay->input_method->keyboard_grab;
@@ -264,7 +264,7 @@ void handle_keyboard_grab_destroy(struct wl_listener *listener, void *data) {
 
 void handle_input_method_grab_keyboard(struct wl_listener *listener,
 									   void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, input_method_grab_keyboard);
 	struct wlr_input_method_keyboard_grab_v2 *keyboard_grab = data;
 
@@ -281,7 +281,7 @@ void handle_input_method_grab_keyboard(struct wl_listener *listener,
 				  &relay->keyboard_grab_destroy);
 }
 void handle_input_method_destroy(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, input_method_destroy);
 	wl_list_remove(&relay->input_method_commit.link);
 	wl_list_remove(&relay->input_method_grab_keyboard.link);
@@ -294,7 +294,7 @@ void handle_input_method_destroy(struct wl_listener *listener, void *data) {
 }
 
 void handle_popup_surface_destroy(struct wl_listener *listener, void *data) {
-	struct mango_input_method_popup *popup =
+	struct acwm_input_method_popup *popup =
 		wl_container_of(listener, popup, destroy);
 	wlr_scene_node_destroy(&popup->tree->node);
 	wl_list_remove(&popup->destroy.link);
@@ -303,18 +303,18 @@ void handle_popup_surface_destroy(struct wl_listener *listener, void *data) {
 	free(popup);
 }
 void handle_popup_surface_commit(struct wl_listener *listener, void *data) {
-	struct mango_input_method_popup *popup =
+	struct acwm_input_method_popup *popup =
 		wl_container_of(listener, popup, commit);
 	update_popup_position(popup);
 }
 
 void handle_input_method_new_popup_surface(struct wl_listener *listener,
 										   void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, input_method_new_popup_surface);
 
-	struct mango_input_method_popup *popup =
-		ecalloc(1, sizeof(struct mango_input_method_popup));
+	struct acwm_input_method_popup *popup =
+		ecalloc(1, sizeof(struct acwm_input_method_popup));
 	popup->popup_surface = data;
 	popup->relay = relay;
 
@@ -330,14 +330,14 @@ void handle_input_method_new_popup_surface(struct wl_listener *listener,
 		popup->tree, popup->popup_surface->surface);
 
 	popup->type = XdgImPopup;
-	mango_scene_node_set(&popup->scene_surface->node, XdgImPopup, popup);
+	acwm_scene_node_set(&popup->scene_surface->node, XdgImPopup, popup);
 
 	wl_list_insert(&relay->popups, &popup->link);
 
 	update_popup_position(popup);
 }
 void handle_new_input_method(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, new_input_method);
 	struct wlr_input_method_v2 *input_method = data;
 	if (server.seat != input_method->seat) {
@@ -372,7 +372,7 @@ void handle_new_input_method(struct wl_listener *listener, void *data) {
 	update_text_inputs_focused_surface(relay);
 	update_active_text_input(relay);
 }
-void send_state_to_input_method(struct mango_input_method_relay *relay) {
+void send_state_to_input_method(struct acwm_input_method_relay *relay) {
 	struct wlr_input_method_v2 *input_method = relay->input_method;
 	struct wlr_text_input_v3 *input = relay->active_text_input->input;
 	assert(relay->active_text_input && relay->input_method);
@@ -396,7 +396,7 @@ void send_state_to_input_method(struct mango_input_method_relay *relay) {
 void handle_text_input_enable(struct wl_listener *listener, void *data) {
 	struct text_input *text_input =
 		wl_container_of(listener, text_input, enable);
-	struct mango_input_method_relay *relay = text_input->relay;
+	struct acwm_input_method_relay *relay = text_input->relay;
 
 	update_active_text_input(relay);
 	if (relay->active_text_input == text_input) {
@@ -415,7 +415,7 @@ void handle_text_input_disable(struct wl_listener *listener, void *data) {
 void handle_text_input_commit(struct wl_listener *listener, void *data) {
 	struct text_input *text_input =
 		wl_container_of(listener, text_input, commit);
-	struct mango_input_method_relay *relay = text_input->relay;
+	struct acwm_input_method_relay *relay = text_input->relay;
 
 	if (relay->active_text_input == text_input) {
 		update_popups_position(relay);
@@ -435,7 +435,7 @@ void handle_text_input_destroy(struct wl_listener *listener, void *data) {
 }
 
 void handle_new_text_input(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, new_text_input);
 	struct wlr_text_input_v3 *wlr_text_input = data;
 	struct text_input *text_input = ecalloc(1, sizeof(struct text_input));
@@ -463,16 +463,16 @@ void handle_new_text_input(struct wl_listener *listener, void *data) {
 	update_text_inputs_focused_surface(relay);
 }
 void handle_focused_surface_destroy(struct wl_listener *listener, void *data) {
-	struct mango_input_method_relay *relay =
+	struct acwm_input_method_relay *relay =
 		wl_container_of(listener, relay, focused_surface_destroy);
 	assert(relay->focused_surface == data);
 
-	mango_im_relay_set_focus(relay, NULL);
+	acwm_im_relay_set_focus(relay, NULL);
 }
 
-struct mango_input_method_relay *mango_im_relay_create() {
-	struct mango_input_method_relay *relay =
-		ecalloc(1, sizeof(struct mango_input_method_relay));
+struct acwm_input_method_relay *acwm_im_relay_create() {
+	struct acwm_input_method_relay *relay =
+		ecalloc(1, sizeof(struct acwm_input_method_relay));
 	wl_list_init(&relay->text_inputs);
 	wl_list_init(&relay->popups);
 	relay->popup_tree = wlr_scene_tree_create(&server.scene->tree);
@@ -489,13 +489,13 @@ struct mango_input_method_relay *mango_im_relay_create() {
 
 	return relay;
 }
-void mango_im_relay_finish(struct mango_input_method_relay *relay) {
+void acwm_im_relay_finish(struct acwm_input_method_relay *relay) {
 	wl_list_remove(&relay->new_text_input.link);
 	wl_list_remove(&relay->new_input_method.link);
 	free(relay);
 }
 
-void mango_im_relay_set_focus(struct mango_input_method_relay *relay,
+void acwm_im_relay_set_focus(struct acwm_input_method_relay *relay,
 							  struct wlr_surface *surface) {
 	if (relay->focused_surface == surface) {
 		return;

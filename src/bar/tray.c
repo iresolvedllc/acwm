@@ -1,4 +1,4 @@
-#include "mango/bar/bar.h"
+#include "acwm/bar/bar.h"
 
 #include <cairo.h>
 #include <dirent.h>
@@ -9,14 +9,14 @@
 #include <string.h>
 #include <wlr/interfaces/wlr_buffer.h>
 
-#include "mango/common/input-event-codes.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/parse.h"
-#include "mango/draw/text-node.h"
-#include "mango/manage/monitor.h"
+#include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/parse.h"
+#include "acwm/draw/text-node.h"
+#include "acwm/manage/monitor.h"
 
 /*
  * Minimal org.kde.StatusNotifierWatcher implementation for the built-in bar.
@@ -26,7 +26,7 @@
  * (IconPixmap as raw ARGB32, or IconName resolved through the icon theme).
  * Icons are rendered into scene buffers of every live bar.
  *
- * The dbus connection is integrated into mango's wl_event_loop through its
+ * The dbus connection is integrated into acwm's wl_event_loop through its
  * fd. Without libsystemd (no HAVE_TRAY) everything below is a no-op, so the
  * bar keeps working and simply has no tray.
  */
@@ -49,7 +49,7 @@ struct TrayPixmap {
 	uint32_t *data; /* ARGB32, premultiplied */
 };
 
-struct MangoTrayItem {
+struct AcwmTrayItem {
 	char *name; /* sender bus name (registration service) */
 	char *path; /* object path of the item */
 	char *icon_name;
@@ -65,13 +65,13 @@ struct MangoTrayItem {
 
 static sd_bus *tray_bus = NULL;
 static struct wl_event_source *tray_fd_source = NULL;
-static struct wl_list items; /* struct MangoTrayItem::link */
+static struct wl_list items; /* struct AcwmTrayItem::link */
 static bool items_ready = false;
 
 /* ---------------------------------------------------------------- buffers */
 
 static void tray_buffer_destroy(struct wlr_buffer *wlr_buffer) {
-	struct mango_text_buffer *buf = wl_container_of(wlr_buffer, buf, base);
+	struct acwm_text_buffer *buf = wl_container_of(wlr_buffer, buf, base);
 	if (buf->surface) {
 		cairo_surface_destroy(buf->surface);
 	}
@@ -85,7 +85,7 @@ static bool tray_buffer_begin_data_ptr_access(struct wlr_buffer *wlr_buffer,
 	if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE) {
 		return false;
 	}
-	struct mango_text_buffer *buf = wl_container_of(wlr_buffer, buf, base);
+	struct acwm_text_buffer *buf = wl_container_of(wlr_buffer, buf, base);
 	if (!buf->surface) {
 		return false;
 	}
@@ -103,16 +103,16 @@ static const struct wlr_buffer_impl tray_buffer_impl = {
 	.end_data_ptr_access = tray_buffer_end_data_ptr_access,
 };
 
-static struct mango_text_buffer *tray_buffer_create(int32_t pixel_w,
+static struct acwm_text_buffer *tray_buffer_create(int32_t pixel_w,
 													int32_t pixel_h) {
-	uint32_t w = MANGO_MAX(pixel_w, 1), h = MANGO_MAX(pixel_h, 1);
+	uint32_t w = ACWM_MAX(pixel_w, 1), h = ACWM_MAX(pixel_h, 1);
 	cairo_surface_t *surface =
 		cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (int)w, (int)h);
 	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(surface);
 		return NULL;
 	}
-	struct mango_text_buffer *buf = calloc(1, sizeof(*buf));
+	struct acwm_text_buffer *buf = calloc(1, sizeof(*buf));
 	if (!buf) {
 		cairo_surface_destroy(surface);
 		return NULL;
@@ -129,8 +129,8 @@ static bool surface_load_png(const char *path, cairo_surface_t **out) {
 
 /* ---------------------------------------------------------------- items */
 
-static struct MangoTrayItem *item_create(const char *name, const char *path) {
-	struct MangoTrayItem *item = calloc(1, sizeof(*item));
+static struct AcwmTrayItem *item_create(const char *name, const char *path) {
+	struct AcwmTrayItem *item = calloc(1, sizeof(*item));
 	if (!item)
 		return NULL;
 	item->name = name ? strdup(name) : strdup("");
@@ -145,7 +145,7 @@ static struct MangoTrayItem *item_create(const char *name, const char *path) {
 	return item;
 }
 
-static void pixmap_list_free(struct MangoTrayItem *item) {
+static void pixmap_list_free(struct AcwmTrayItem *item) {
 	for (int32_t i = 0; i < item->pixmap_count; i++)
 		free(item->pixmaps[i].data);
 	free(item->pixmaps);
@@ -153,7 +153,7 @@ static void pixmap_list_free(struct MangoTrayItem *item) {
 	item->pixmap_count = 0;
 }
 
-static void item_destroy(struct MangoTrayItem *item) {
+static void item_destroy(struct AcwmTrayItem *item) {
 	wl_list_remove(&item->link);
 	for (int32_t i = 0; i < SNI_LISTEN_SIGNALS; i++) {
 		if (item->slots[i]) {
@@ -178,7 +178,7 @@ static void item_destroy(struct MangoTrayItem *item) {
 static int item_props_done(sd_bus_message *m, void *userdata,
 						   sd_bus_error *ret_error);
 
-static void item_refresh_async(struct MangoTrayItem *item) {
+static void item_refresh_async(struct AcwmTrayItem *item) {
 	if (item->props_slot) {
 		sd_bus_slot_unref(item->props_slot);
 		item->props_slot = NULL;
@@ -198,7 +198,7 @@ static void item_refresh_async(struct MangoTrayItem *item) {
 
 /* Reads "a(iiay)" pixmaps from an open "sv" variant container; the variant
  * container stays open for the caller (it exits after this returns). */
-static int read_pixmap_variant(sd_bus_message *m, struct MangoTrayItem *item) {
+static int read_pixmap_variant(sd_bus_message *m, struct AcwmTrayItem *item) {
 	struct TrayPixmap *pixmaps = NULL;
 	int32_t count = 0;
 
@@ -269,7 +269,7 @@ fail:
 	return r;
 }
 
-static void item_free_strings(struct MangoTrayItem *item) {
+static void item_free_strings(struct AcwmTrayItem *item) {
 	free(item->icon_name);
 	free(item->theme_path);
 	item->icon_name = NULL;
@@ -279,7 +279,7 @@ static void item_free_strings(struct MangoTrayItem *item) {
 
 static int item_props_done(sd_bus_message *m, void *userdata,
 						   sd_bus_error *ret_error) {
-	struct MangoTrayItem *item = userdata;
+	struct AcwmTrayItem *item = userdata;
 
 	if (item->props_slot) {
 		sd_bus_slot_unref(item->props_slot);
@@ -394,7 +394,7 @@ out:
 
 /* ------------------------------------------------- watcher (dbus object) */
 
-static void item_listen_signals(struct MangoTrayItem *item);
+static void item_listen_signals(struct AcwmTrayItem *item);
 
 static int watcher_register_item(sd_bus_message *m, void *userdata,
 								 sd_bus_error *ret_error) {
@@ -423,7 +423,7 @@ static int watcher_register_item(sd_bus_message *m, void *userdata,
 		return 0;
 	}
 
-	struct MangoTrayItem *item = NULL, *it = NULL;
+	struct AcwmTrayItem *item = NULL, *it = NULL;
 	wl_list_for_each(it, &items, link) {
 		if (strcmp(it->name, service) == 0 && it->path &&
 			strcmp(it->path, path) == 0) {
@@ -460,7 +460,7 @@ static int watcher_get_items(sd_bus *bus, const char *path, const char *iface,
 	int r = sd_bus_message_open_container(reply, SD_BUS_TYPE_ARRAY, "s");
 	if (r < 0)
 		return r;
-	struct MangoTrayItem *item = NULL;
+	struct AcwmTrayItem *item = NULL;
 	wl_list_for_each(item, &items, link) {
 		char *combined = string_printf("%s%s", item->name, item->path);
 		if (combined) {
@@ -501,12 +501,12 @@ static const sd_bus_vtable watcher_vtable[] = {
 
 static int on_item_signal(sd_bus_message *m, void *userdata,
 						  sd_bus_error *ret_error) {
-	struct MangoTrayItem *item = userdata;
+	struct AcwmTrayItem *item = userdata;
 	item_refresh_async(item);
 	return 0;
 }
 
-static void item_listen_signals(struct MangoTrayItem *item) {
+static void item_listen_signals(struct AcwmTrayItem *item) {
 	static const char *const members[SNI_LISTEN_SIGNALS] = {
 		"NewIcon", "NewAttentionIcon", "NewStatus", "NewPixmap", "NewTitle",
 	};
@@ -530,7 +530,7 @@ static int on_name_owner_changed(sd_bus_message *m, void *userdata,
 		return 0;
 
 	bool removed = false;
-	struct MangoTrayItem *item = NULL, *tmp = NULL;
+	struct AcwmTrayItem *item = NULL, *tmp = NULL;
 	wl_list_for_each_safe(item, tmp, &items, link) {
 		if (strcmp(item->name, name) == 0) {
 			item_destroy(item);
@@ -544,7 +544,7 @@ static int on_name_owner_changed(sd_bus_message *m, void *userdata,
 
 /* ---------------------------------------------------------------- icons */
 
-static bool pixmap_find_best(struct MangoTrayItem *item, int32_t target,
+static bool pixmap_find_best(struct AcwmTrayItem *item, int32_t target,
 							 struct TrayPixmap **best) {
 	*best = NULL;
 	for (int32_t i = 0; i < item->pixmap_count; i++) {
@@ -616,7 +616,7 @@ static bool theme_lookup(const char *dirs[], const char *rel_icon,
 }
 
 static bool tray_render_icon_pixmap(cairo_surface_t *dst,
-									struct MangoTrayItem *item,
+									struct AcwmTrayItem *item,
 									int32_t target_size, float scale) {
 	int32_t pix = (int32_t)(target_size * scale + 0.5f);
 	if (pix < 1)
@@ -677,13 +677,13 @@ static bool tray_render_icon_pixmap(cairo_surface_t *dst,
 
 /* ---------------------------------------------------------------- bars */
 
-void tray_sync_bar(struct MangoBar *bar) {
+void tray_sync_bar(struct AcwmBar *bar) {
 	if (!bar || !items_ready)
 		return;
 	tray_detach_bar(bar);
 
 	int32_t count = 0;
-	struct MangoTrayItem *item = NULL;
+	struct AcwmTrayItem *item = NULL;
 	wl_list_for_each(item, &items, link) {
 		if (strcmp(item->status, "Passive") == 0)
 			continue;
@@ -711,7 +711,7 @@ void tray_sync_bar(struct MangoBar *bar) {
 		if (pix < 1)
 			pix = 1;
 
-		struct mango_text_buffer *buf = tray_buffer_create(pix, pix);
+		struct acwm_text_buffer *buf = tray_buffer_create(pix, pix);
 		if (!buf)
 			continue;
 		tray_render_icon_pixmap(buf->surface, item, config.bar_tray_icon_size,
@@ -731,13 +731,13 @@ void tray_sync_bar(struct MangoBar *bar) {
 		icon->btn.type = BarNodeTypeTray;
 		icon->btn.tag = 0;
 		icon->btn.item = item;
-		mango_scene_node_set(&icon->node->node, BarNodeTypeTray, &icon->btn);
+		acwm_scene_node_set(&icon->node->node, BarNodeTypeTray, &icon->btn);
 
 		bar->tray_icon_count++;
 	}
 }
 
-void tray_detach_bar(struct MangoBar *bar) {
+void tray_detach_bar(struct AcwmBar *bar) {
 	if (!bar)
 		return;
 	for (int32_t i = 0; i < bar->tray_icon_count; i++) {
@@ -752,7 +752,7 @@ void tray_detach_bar(struct MangoBar *bar) {
 	bar->tray_icon_capacity = 0;
 }
 
-void tray_click(struct MangoTrayItem *item, uint32_t button) {
+void tray_click(struct AcwmTrayItem *item, uint32_t button) {
 	if (!item || !tray_bus)
 		return;
 	const char *method = button == BTN_RIGHT ? "SecondaryActivate" : "Activate";
@@ -837,7 +837,7 @@ void tray_cleanup(void) {
 	tray_bus = sd_bus_flush_close_unref(tray_bus);
 	if (items_ready) {
 		while (!wl_list_empty(&items)) {
-			struct MangoTrayItem *item =
+			struct AcwmTrayItem *item =
 				wl_container_of(items.next, item, link);
 			item_destroy(item);
 		}
@@ -850,9 +850,9 @@ void tray_cleanup(void) {
 void tray_init(struct wl_event_loop *loop) { (void)loop; }
 void tray_cleanup(void) {}
 void tray_reload(void) {}
-void tray_sync_bar(struct MangoBar *bar) { (void)bar; }
-void tray_detach_bar(struct MangoBar *bar) { (void)bar; }
-void tray_click(struct MangoTrayItem *item, uint32_t button) {
+void tray_sync_bar(struct AcwmBar *bar) { (void)bar; }
+void tray_detach_bar(struct AcwmBar *bar) { (void)bar; }
+void tray_click(struct AcwmTrayItem *item, uint32_t button) {
 	(void)item;
 	(void)button;
 }

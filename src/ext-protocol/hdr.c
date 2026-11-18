@@ -1,10 +1,10 @@
-#include "mango/ext-protocol/hdr.h"
+#include "acwm/ext-protocol/hdr.h"
 
 static uint32_t output_formats_8bit[10];
 static uint32_t output_formats_10bit[8];
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/manage/monitor.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/manage/monitor.h"
 
 bool output_set_render_format(Monitor *m, uint32_t candidates[], size_t count,
 							  struct wlr_output_state *state) {
@@ -17,7 +17,7 @@ bool output_set_render_format(Monitor *m, uint32_t candidates[], size_t count,
 		}
 	}
 
-	mango_error(true, WLR_DEBUG, "HDR: Failed to set render format");
+	acwm_error(true, WLR_DEBUG, "HDR: Failed to set render format");
 	return false;
 }
 
@@ -31,11 +31,11 @@ bool output_format_in_candidates(uint32_t format, uint32_t candidates[],
 enum render_bit_depth bit_depth_from_format(uint32_t render_format) {
 	if (output_format_in_candidates(render_format, output_formats_10bit,
 									ARRAY_SIZE(output_formats_10bit)))
-		return MANGO_RENDER_BIT_DEPTH_10;
+		return ACWM_RENDER_BIT_DEPTH_10;
 	if (output_format_in_candidates(render_format, output_formats_8bit,
 									ARRAY_SIZE(output_formats_8bit)))
-		return MANGO_RENDER_BIT_DEPTH_8;
-	return MANGO_RENDER_BIT_DEPTH_DEFAULT;
+		return ACWM_RENDER_BIT_DEPTH_8;
+	return ACWM_RENDER_BIT_DEPTH_DEFAULT;
 }
 bool output_supports_hdr(const Monitor *m, const char **reason) {
 	const struct wlr_output *output = m->wlr_output;
@@ -70,7 +70,7 @@ void output_enable_hdr(Monitor *m, struct wlr_output_state *os, bool enabled,
 		if (m->wlr_output->supported_primaries ||
 			m->wlr_output->supported_transfer_functions) {
 			if (!silent)
-				mango_error(true, WLR_DEBUG, "Disabling HDR on output %s",
+				acwm_error(true, WLR_DEBUG, "Disabling HDR on output %s",
 							m->wlr_output->name);
 			wlr_output_state_set_image_description(os, NULL);
 		}
@@ -79,7 +79,7 @@ void output_enable_hdr(Monitor *m, struct wlr_output_state *os, bool enabled,
 	}
 
 	if (!silent)
-		mango_error(true, WLR_DEBUG, "Enabling HDR on output %s",
+		acwm_error(true, WLR_DEBUG, "Enabling HDR on output %s",
 					m->wlr_output->name);
 	struct wlr_output_image_description desc = {
 		.primaries = WLR_COLOR_NAMED_PRIMARIES_BT2020,
@@ -110,31 +110,31 @@ void output_state_setup_hdr(Monitor *m, bool silent,
 
 	if (!hdr_supported) {
 		if (!silent)
-			mango_error(true, WLR_INFO, "HDR not supported on output %s: %s",
+			acwm_error(true, WLR_INFO, "HDR not supported on output %s: %s",
 						m->wlr_output->name, unsupported_reason);
 		return;
 	}
 
 	enum render_bit_depth depth = config.hdr_depth;
-	if (depth == MANGO_RENDER_BIT_DEPTH_DEFAULT)
+	if (depth == ACWM_RENDER_BIT_DEPTH_DEFAULT)
 		depth = bit_depth_from_format(render_format);
 
-	if (depth == MANGO_RENDER_BIT_DEPTH_10 &&
+	if (depth == ACWM_RENDER_BIT_DEPTH_10 &&
 		bit_depth_from_format(render_format) == depth) {
 		hdr_succeeded = true; // 10-bit was already set successfully last time;
 							  // reuse it directly.
-	} else if (depth == MANGO_RENDER_BIT_DEPTH_10) {
+	} else if (depth == ACWM_RENDER_BIT_DEPTH_10) {
 		hdr_succeeded = output_set_render_format(
 			m, output_formats_10bit, ARRAY_SIZE(output_formats_10bit), state);
 		if (!hdr_succeeded) {
 			if (!silent)
-				mango_error(true, WLR_INFO,
+				acwm_error(true, WLR_INFO,
 							"No 10 bit color formats supported, HDR disabled.");
 			hdr_succeeded = output_set_render_format(
 				m, output_formats_8bit, ARRAY_SIZE(output_formats_8bit), state);
 			if (!hdr_succeeded) {
 				if (!silent)
-					mango_error(true, WLR_ERROR,
+					acwm_error(true, WLR_ERROR,
 								"No 8 bit color formats supported!");
 			}
 		}
@@ -144,7 +144,7 @@ void output_state_setup_hdr(Monitor *m, bool silent,
 			m, output_formats_8bit, ARRAY_SIZE(output_formats_8bit), state);
 		if (!hdr_succeeded) {
 			if (!silent)
-				mango_error(true, WLR_ERROR,
+				acwm_error(true, WLR_ERROR,
 							"No 8 bit color formats supported!");
 		}
 	}
@@ -170,7 +170,7 @@ bool togglehdr_output(Monitor *target, bool want) {
 
 	// Snapshot both flags: output_enable_hdr() writes is_hdr_enabling before
 	// the commit is attempted, so a failed commit must restore both or the two
-	// disagree -- mango would render SDR on a connector still in PQ.
+	// disagree -- acwm would render SDR on a connector still in PQ.
 	bool prev_enable = target->hdr_enable;
 	bool prev_enabling = target->is_hdr_enabling;
 
@@ -192,7 +192,7 @@ bool togglehdr_output(Monitor *target, bool want) {
 	// such a commit unless the disruption is explicitly allowed.
 	target->pending.allow_reconfiguration = true;
 
-	if (!mango_scene_output_commit(target->scene_output, &target->pending)) {
+	if (!acwm_scene_output_commit(target->scene_output, &target->pending)) {
 		wlr_log(WLR_ERROR, "togglehdr: commit failed on %s, reverting",
 				target->wlr_output->name);
 		target->hdr_enable = prev_enable;

@@ -1,26 +1,26 @@
-#include "mango/dispatch/bind.h"
-#include "mango/animation/client.h"
-#include "mango/common/log.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/config/parse.h"
-#include "mango/ext-protocol/ext-workspace.h"
-#include "mango/ext-protocol/foreign-toplevel.h"
-#include "mango/ext-protocol/xdg-activation.h"
-#include "mango/input/device.h"
-#include "mango/input/keyboard.h"
-#include "mango/input/pointer.h"
-#include "mango/ipc/ipc.h"
-#include "mango/layout/arrange.h"
-#include "mango/layout/dwindle.h"
-#include "mango/layout/layout.h"
-#include "mango/layout/overview.h"
-#include "mango/layout/scroll.h"
-#include "mango/manage/client.h"
-#include "mango/manage/misc.h"
-#include "mango/manage/monitor.h"
-#include "mango/manage/tab.h"
-#include "mango/overview/overview.h"
+#include "acwm/dispatch/bind.h"
+#include "acwm/animation/client.h"
+#include "acwm/common/log.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/config/parse.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/ext-protocol/xdg-activation.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
+#include "acwm/input/pointer.h"
+#include "acwm/ipc/ipc.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/layout/dwindle.h"
+#include "acwm/layout/layout.h"
+#include "acwm/layout/overview.h"
+#include "acwm/layout/scroll.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/misc.h"
+#include "acwm/manage/monitor.h"
+#include "acwm/manage/tab.h"
+#include "acwm/overview/overview.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include <wlr/backend.h>
@@ -112,7 +112,7 @@ int32_t change_vt(const Arg *arg) {
 
 int32_t create_virtual_output(const Arg *arg) {
 	if (!wlr_backend_is_multi(server.backend)) {
-		mango_error(true, WLR_ERROR, "Expected a multi backend");
+		acwm_error(true, WLR_ERROR, "Expected a multi backend");
 		return 0;
 	}
 
@@ -120,7 +120,7 @@ int32_t create_virtual_output(const Arg *arg) {
 		Monitor *m;
 		wl_list_for_each(m, &server.monitors, link) {
 			if (strcmp(m->wlr_output->name, arg->v) == 0) {
-				mango_error(true, WLR_ERROR, "Output '%s' already exists",
+				acwm_error(true, WLR_ERROR, "Output '%s' already exists",
 							arg->v);
 				return 0;
 			}
@@ -133,21 +133,21 @@ int32_t create_virtual_output(const Arg *arg) {
 	server.pending_headless_output_name = NULL;
 
 	if (!done) {
-		mango_error(true, WLR_ERROR, "Failed to create virtual output");
+		acwm_error(true, WLR_ERROR, "Failed to create virtual output");
 		return 0;
 	}
 
 	if (arg->v) {
-		mango_error(true, WLR_INFO, "Virtual output '%s' created", arg->v);
+		acwm_error(true, WLR_INFO, "Virtual output '%s' created", arg->v);
 	} else {
-		mango_error(true, WLR_INFO, "Virtual output created");
+		acwm_error(true, WLR_INFO, "Virtual output created");
 	}
 	return 0;
 }
 
 int32_t destroy_all_virtual_output(const Arg *arg) {
 	if (!wlr_backend_is_multi(server.backend)) {
-		mango_error(true, WLR_ERROR, "Expected a multi backend");
+		acwm_error(true, WLR_ERROR, "Expected a multi backend");
 		return 0;
 	}
 
@@ -155,7 +155,7 @@ int32_t destroy_all_virtual_output(const Arg *arg) {
 	wl_list_for_each_safe(m, tmp, &server.monitors, link) {
 		if (wlr_output_is_headless(m->wlr_output)) {
 			wlr_output_destroy(m->wlr_output);
-			mango_error(true, WLR_INFO, "Virtual output destroyed");
+			acwm_error(true, WLR_INFO, "Virtual output destroyed");
 		}
 	}
 	return 0;
@@ -593,7 +593,7 @@ int32_t inc_nmaster(const Arg *arg) {
 		return 0;
 	uint32_t tag = get_mon_curtag(server.selected_monitor);
 	server.selected_monitor->pertag->nmasters[tag] =
-		MANGO_MAX(server.selected_monitor->pertag->nmasters[tag] + arg->i, 0);
+		ACWM_MAX(server.selected_monitor->pertag->nmasters[tag] + arg->i, 0);
 	arrange(server.selected_monitor, false, false);
 	return 0;
 }
@@ -706,7 +706,7 @@ int32_t kill_client(const Arg *arg) {
 
 int32_t move_resize(const Arg *arg) {
 	Client *c = NULL;
-	MangoBarDecoration *bar = NULL;
+	AcwmBarDecoration *bar = NULL;
 
 	if (server.cursor_mode != CurNormal && server.cursor_mode != CurPressed)
 		return 0;
@@ -1074,12 +1074,12 @@ int32_t smart_move_window(const Arg *arg) {
 				continue;
 			buttom = tc->geom.y + tc->geom.height + config.gappiv;
 			if (top > buttom && ny < buttom) {
-				tar = MANGO_MAX(tar, buttom);
+				tar = ACWM_MAX(tar, buttom);
 			};
 		}
 
 		ny = tar == -99999 ? ny : tar;
-		ny = MANGO_MAX(ny, c->mon->w.y + c->mon->gappov);
+		ny = ACWM_MAX(ny, c->mon->w.y + c->mon->gappov);
 		break;
 	case DOWN:
 		tar = 99999;
@@ -1095,11 +1095,11 @@ int32_t smart_move_window(const Arg *arg) {
 				continue;
 			top = tc->geom.y - config.gappiv;
 			if (buttom < top && (ny + c->geom.height) > top) {
-				tar = MANGO_MIN(tar, top - c->geom.height);
+				tar = ACWM_MIN(tar, top - c->geom.height);
 			};
 		}
 		ny = tar == 99999 ? ny : tar;
-		ny = MANGO_MIN(ny, c->mon->w.y + c->mon->w.height - c->geom.height -
+		ny = ACWM_MIN(ny, c->mon->w.y + c->mon->w.height - c->geom.height -
 							   c->mon->gappov);
 		break;
 	case LEFT:
@@ -1116,12 +1116,12 @@ int32_t smart_move_window(const Arg *arg) {
 				continue;
 			right = tc->geom.x + tc->geom.width + config.gappih;
 			if (left > right && nx < right) {
-				tar = MANGO_MAX(tar, right);
+				tar = ACWM_MAX(tar, right);
 			};
 		}
 
 		nx = tar == -99999 ? nx : tar;
-		nx = MANGO_MAX(nx, c->mon->w.x + c->mon->gappoh);
+		nx = ACWM_MAX(nx, c->mon->w.x + c->mon->gappoh);
 		break;
 	case RIGHT:
 		tar = 99999;
@@ -1136,11 +1136,11 @@ int32_t smart_move_window(const Arg *arg) {
 				continue;
 			left = tc->geom.x - config.gappih;
 			if (right < left && (nx + c->geom.width) > left) {
-				tar = MANGO_MIN(tar, left - c->geom.width);
+				tar = ACWM_MIN(tar, left - c->geom.width);
 			};
 		}
 		nx = tar == 99999 ? nx : tar;
-		nx = MANGO_MIN(nx, c->mon->w.x + c->mon->w.width - c->geom.width -
+		nx = ACWM_MIN(nx, c->mon->w.x + c->mon->w.width - c->geom.width -
 							   c->mon->gappoh);
 		break;
 	}
@@ -1169,7 +1169,7 @@ int32_t smart_resize_window(const Arg *arg) {
 	switch (arg->i) {
 	case UP:
 		nh -= server.selected_monitor->w.height / 8;
-		nh = MANGO_MAX(nh, server.selected_monitor->w.height / 10);
+		nh = ACWM_MAX(nh, server.selected_monitor->w.height / 10);
 		break;
 	case DOWN:
 		tar = -99999;
@@ -1185,7 +1185,7 @@ int32_t smart_resize_window(const Arg *arg) {
 				continue;
 			top = tc->geom.y - config.gappiv;
 			if (buttom < top && (nh + c->geom.y) > top) {
-				tar = MANGO_MAX(tar, top - c->geom.y);
+				tar = ACWM_MAX(tar, top - c->geom.y);
 			};
 		}
 		nh = tar == -99999 ? nh : tar;
@@ -1196,7 +1196,7 @@ int32_t smart_resize_window(const Arg *arg) {
 		break;
 	case LEFT:
 		nw -= server.selected_monitor->w.width / 16;
-		nw = MANGO_MAX(nw, server.selected_monitor->w.width / 10);
+		nw = ACWM_MAX(nw, server.selected_monitor->w.width / 10);
 		break;
 	case RIGHT:
 		tar = 99999;
@@ -1211,7 +1211,7 @@ int32_t smart_resize_window(const Arg *arg) {
 				continue;
 			left = tc->geom.x - config.gappih;
 			if (right < left && (nw + c->geom.x) > left) {
-				tar = MANGO_MIN(tar, left - c->geom.x);
+				tar = ACWM_MIN(tar, left - c->geom.x);
 			};
 		}
 
@@ -1283,8 +1283,8 @@ int32_t spawn_shell(const Arg *arg) {
 		execlp("sh", "sh", "-c", arg->v, (char *)NULL);
 		execlp("bash", "bash", "-c", arg->v, (char *)NULL);
 
-		mango_error(true, WLR_DEBUG,
-					"mango: failed to execute command '%s' with shell: %s\n",
+		acwm_error(true, WLR_DEBUG,
+					"acwm: failed to execute command '%s' with shell: %s\n",
 					(char *)arg->v, strerror(errno));
 		_exit(EXIT_FAILURE);
 	}
@@ -1307,14 +1307,14 @@ int32_t spawn(const Arg *arg) {
 
 		wordexp_t p;
 		if (wordexp(arg->v, &p, 0) != 0) {
-			mango_error(true, WLR_DEBUG, "mango: wordexp failed for '%s'\n",
+			acwm_error(true, WLR_DEBUG, "acwm: wordexp failed for '%s'\n",
 						(char *)arg->v);
 			_exit(EXIT_FAILURE);
 		}
 
 		execvp(p.we_wordv[0], p.we_wordv);
 
-		mango_error(true, WLR_DEBUG, "mango: execvp '%s' failed: %s\n",
+		acwm_error(true, WLR_DEBUG, "acwm: execvp '%s' failed: %s\n",
 					p.we_wordv[0], strerror(errno));
 		wordfree(&p);
 		_exit(EXIT_FAILURE);
@@ -1345,13 +1345,13 @@ int32_t spawn_on_empty(const Arg *arg) {
 int32_t switch_keyboard_layout(const Arg *arg) {
 	if (!server.keyboard_group || !server.keyboard_group->wlr_group ||
 		!server.seat) {
-		mango_error(true, WLR_ERROR, "Invalid keyboard group or seat");
+		acwm_error(true, WLR_ERROR, "Invalid keyboard group or seat");
 		return 0;
 	}
 
 	struct wlr_keyboard *keyboard = &server.keyboard_group->wlr_group->keyboard;
 	if (!keyboard || !keyboard->keymap) {
-		mango_error(true, WLR_ERROR, "Invalid keyboard or keymap");
+		acwm_error(true, WLR_ERROR, "Invalid keyboard or keymap");
 		return 0;
 	}
 
@@ -1359,7 +1359,7 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 		keyboard->xkb_state, XKB_STATE_LAYOUT_EFFECTIVE);
 	const int32_t num_layouts = xkb_keymap_num_layouts(keyboard->keymap);
 	if (num_layouts < 2) {
-		mango_error(true, WLR_INFO, "Only one layout available");
+		acwm_error(true, WLR_INFO, "Only one layout available");
 		return 0;
 	}
 
@@ -1415,7 +1415,7 @@ int32_t switch_layout(const Arg *arg) {
 	if (config.circle_layout_count != 0) {
 		for (jk = 0; jk < config.circle_layout_count; jk++) {
 
-			len = MANGO_MAX(
+			len = ACWM_MAX(
 				strlen(config.circle_layout[jk]),
 				strlen(server.selected_monitor->pertag->ltidxs[tag]->name));
 
@@ -1435,7 +1435,7 @@ int32_t switch_layout(const Arg *arg) {
 
 		for (ji = 0; ji < LENGTH(layouts); ji++) {
 			len =
-				MANGO_MAX(strlen(layouts[ji].name), strlen(target_layout_name));
+				ACWM_MAX(strlen(layouts[ji].name), strlen(target_layout_name));
 			if (strncmp(layouts[ji].name, target_layout_name, len) == 0) {
 				server.selected_monitor->pertag->ltidxs[tag] = &layouts[ji];
 
@@ -2448,7 +2448,7 @@ int32_t disable_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, false);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = 0;
 			handle_output_layout_change(NULL, NULL);
 			break;
@@ -2462,7 +2462,7 @@ int32_t enable_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, true);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = 0;
 			handle_output_layout_change(NULL, NULL);
 			break;
@@ -2476,7 +2476,7 @@ int32_t toggle_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, !m->wlr_output->enabled);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = 0;
 			handle_output_layout_change(NULL, NULL);
 			break;
@@ -2491,7 +2491,7 @@ int32_t sleep_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, false);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = 1;
 			handle_output_layout_change(NULL, NULL);
 			break;
@@ -2505,7 +2505,7 @@ int32_t wakeup_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, true);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = 0;
 			handle_output_layout_change(NULL, NULL);
 			break;
@@ -2519,7 +2519,7 @@ int32_t sleep_toggle_monitor(const Arg *arg) {
 	wl_list_for_each(m, &server.monitors, link) {
 		if (match_monitor_spec(arg->v, m)) {
 			wlr_output_state_set_enabled(&m->pending, !m->wlr_output->enabled);
-			mango_output_commit(m);
+			acwm_output_commit(m);
 			m->only_sleep = !m->wlr_output->enabled;
 			handle_output_layout_change(NULL, NULL);
 			break;

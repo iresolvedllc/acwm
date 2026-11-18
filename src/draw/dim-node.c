@@ -1,4 +1,4 @@
-#include "mango/draw/dim-node.h"
+#include "acwm/draw/dim-node.h"
 
 #include <drm_fourcc.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@
 #endif
 
 static void dim_buffer_destroy(struct wlr_buffer *wlr_buffer) {
-	struct mango_dim_buffer *buf = wl_container_of(wlr_buffer, buf, base);
+	struct acwm_dim_buffer *buf = wl_container_of(wlr_buffer, buf, base);
 	if (buf->surface) {
 		cairo_surface_destroy(buf->surface);
 	}
@@ -27,7 +27,7 @@ static bool dim_buffer_begin_data_ptr_access(struct wlr_buffer *wlr_buffer,
 		return false;
 	}
 
-	struct mango_dim_buffer *buf = wl_container_of(wlr_buffer, buf, base);
+	struct acwm_dim_buffer *buf = wl_container_of(wlr_buffer, buf, base);
 	if (!buf->surface) {
 		return false;
 	}
@@ -45,7 +45,7 @@ static const struct wlr_buffer_impl dim_buffer_impl = {
 	.end_data_ptr_access = dim_buffer_end_data_ptr_access,
 };
 
-static void dim_node_build_pixel(MangoDimNode *node) {
+static void dim_node_build_pixel(AcwmDimNode *node) {
 	cairo_surface_t *surface =
 		cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
 	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
@@ -61,7 +61,7 @@ static void dim_node_build_pixel(MangoDimNode *node) {
 	cairo_surface_flush(surface);
 	cairo_destroy(cr);
 
-	struct mango_dim_buffer *buf = calloc(1, sizeof(*buf));
+	struct acwm_dim_buffer *buf = calloc(1, sizeof(*buf));
 	if (!buf) {
 		cairo_surface_destroy(surface);
 		return;
@@ -82,13 +82,13 @@ static bool dim_node_point_accepts_input(struct wlr_scene_buffer *buffer,
 	return false;
 }
 
-MangoDimNode *mango_dim_node_create(struct wlr_scene_tree *parent,
+AcwmDimNode *acwm_dim_node_create(struct wlr_scene_tree *parent,
 									const float color[4]) {
 	if (!parent) {
 		return NULL;
 	}
 
-	MangoDimNode *node = calloc(1, sizeof(*node));
+	AcwmDimNode *node = calloc(1, sizeof(*node));
 	if (!node) {
 		return NULL;
 	}
@@ -116,7 +116,7 @@ MangoDimNode *mango_dim_node_create(struct wlr_scene_tree *parent,
 	return node;
 }
 
-void mango_dim_node_destroy(MangoDimNode *node) {
+void acwm_dim_node_destroy(AcwmDimNode *node) {
 	if (!node) {
 		return;
 	}
@@ -133,7 +133,7 @@ void mango_dim_node_destroy(MangoDimNode *node) {
 	free(node);
 }
 
-void mango_dim_node_set_color(MangoDimNode *node, const float color[4]) {
+void acwm_dim_node_set_color(AcwmDimNode *node, const float color[4]) {
 	if (!node || !color) {
 		return;
 	}
@@ -147,7 +147,7 @@ void mango_dim_node_set_color(MangoDimNode *node, const float color[4]) {
 	}
 }
 
-void mango_dim_node_set_radius(MangoDimNode *node, int32_t radius) {
+void acwm_dim_node_set_radius(AcwmDimNode *node, int32_t radius) {
 #if DIM_NODE_CORNER_RADIUS
 	if (!node) {
 		return;
@@ -161,7 +161,7 @@ void mango_dim_node_set_radius(MangoDimNode *node, int32_t radius) {
 #endif
 }
 
-void mango_dim_node_set_box(MangoDimNode *node, int32_t x, int32_t y,
+void acwm_dim_node_set_box(AcwmDimNode *node, int32_t x, int32_t y,
 							int32_t width, int32_t height) {
 	if (!node) {
 		return;
@@ -180,7 +180,7 @@ void mango_dim_node_set_box(MangoDimNode *node, int32_t x, int32_t y,
 	wlr_scene_buffer_set_dest_size(node->scene_buffer, width, height);
 }
 
-void mango_dim_node_set_enabled(MangoDimNode *node, bool enabled) {
+void acwm_dim_node_set_enabled(AcwmDimNode *node, bool enabled) {
 	if (!node) {
 		return;
 	}

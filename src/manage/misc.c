@@ -1,15 +1,15 @@
-#include "mango/manage/misc.h"
-#include "mango/bar/bar.h"
-#include "mango/common/log.h"
-#include "mango/common/scene_node.h"
-#include "mango/common/server.h"
-#include "mango/common/util.h"
-#include "mango/data/static_keymap.h"
-#include "mango/input/pointer.h"
-#include "mango/layout/arrange.h"
-#include "mango/manage/client.h"
-#include "mango/manage/layer.h"
-#include "mango/manage/monitor.h"
+#include "acwm/manage/misc.h"
+#include "acwm/bar/bar.h"
+#include "acwm/common/log.h"
+#include "acwm/common/scene_node.h"
+#include "acwm/common/server.h"
+#include "acwm/common/util.h"
+#include "acwm/data/static_keymap.h"
+#include "acwm/input/pointer.h"
+#include "acwm/layout/arrange.h"
+#include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
+#include "acwm/manage/monitor.h"
 
 #include <ctype.h>
 #include <drm_fourcc.h>
@@ -221,13 +221,13 @@ bool layer_ignores_focus(LayerSurface *l) {
 }
 
 void node_at_point(double x, double y, struct wlr_surface **psurface,
-				   Client **pc, LayerSurface **pl, MangoBarDecoration **bar,
+				   Client **pc, LayerSurface **pl, AcwmBarDecoration **bar,
 				   double *nx, double *ny) {
 	struct wlr_scene_node *node = NULL;
 	struct wlr_surface *surface = NULL;
 	Client *c = NULL;
 	LayerSurface *l = NULL;
-	MangoBarDecoration *mangobar = NULL;
+	AcwmBarDecoration *bar_deco = NULL;
 	int32_t layer;
 	Client *ovc = NULL;
 
@@ -247,11 +247,11 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 		/* Only layers_wrap carries the real layer stacking order;
 		 * layers[] are the content nodes that get inserted dynamically. */
 		node =
-			mango_scene_node_at(&server.layers_wrap[layer]->node, x, y, nx, ny);
+			acwm_scene_node_at(&server.layers_wrap[layer]->node, x, y, nx, ny);
 		if (!node)
 			continue;
 
-		MangoSceneNode *data = mango_scene_node_find(node);
+		AcwmSceneNode *data = acwm_scene_node_find(node);
 
 		Monitor *cm = monitor_at_point(x, y);
 		if (cm && cm->special_dim_rect && cm->special_dim_rect->node.enabled &&
@@ -259,7 +259,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 			c = NULL;
 			l = NULL;
 			surface = NULL;
-			mangobar = NULL;
+			bar_deco = NULL;
 			break;
 		}
 
@@ -279,7 +279,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 			if (data->type == LayerShell) {
 				l = data->owner;
 			} else if (data->type == GroupBar || data->type == TabBar) {
-				mangobar = data->owner;
+				bar_deco = data->owner;
 			} else if (data->type == XDGShell || data->type == X11) {
 				c = data->owner;
 			}
@@ -305,7 +305,7 @@ void node_at_point(double x, double y, struct wlr_surface **psurface,
 	if (pl)
 		*pl = l;
 	if (bar)
-		*bar = mangobar;
+		*bar = bar_deco;
 
 	if (server.selected_monitor && server.selected_monitor->isoverview) {
 		ovc = client_at_point(x, y);
@@ -570,7 +570,7 @@ void handle_session_destroy(struct wl_listener *listener, void *data) {
 		}
 	}
 
-	mango_error(true, WLR_DEBUG, "Capture session ended, active count: %d",
+	acwm_error(true, WLR_DEBUG, "Capture session ended, active count: %d",
 				server.active_capture_count);
 	free(tracker);
 }
@@ -608,7 +608,7 @@ capture_source_add_shm_format(struct wlr_ext_image_capture_source_v1 *source,
 	uint32_t *formats = realloc(
 		source->shm_formats, (source->shm_formats_len + 1) * sizeof(*formats));
 	if (formats == NULL) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to allocate capture source shm formats");
 		return false;
 	}
@@ -661,7 +661,7 @@ void handle_ext_image_copy_capture_new_session(struct wl_listener *listener,
 
 	struct capture_session_tracker *tracker = calloc(1, sizeof(*tracker));
 	if (!tracker) {
-		mango_error(true, WLR_ERROR,
+		acwm_error(true, WLR_ERROR,
 					"Failed to allocate capture session tracker");
 		return;
 	}
@@ -680,7 +680,7 @@ void handle_ext_image_copy_capture_new_session(struct wl_listener *listener,
 		}
 	}
 
-	mango_error(true, WLR_DEBUG,
+	acwm_error(true, WLR_DEBUG,
 				"New capture session started, active count: %d",
 				server.active_capture_count);
 }
@@ -709,7 +709,7 @@ void handle_drm_lease_request(struct wl_listener *listener, void *data) {
 	struct wlr_drm_lease_v1 *lease = wlr_drm_lease_request_v1_grant(req);
 
 	if (!lease) {
-		mango_error(true, WLR_ERROR, "Failed to grant lease request");
+		acwm_error(true, WLR_ERROR, "Failed to grant lease request");
 		wlr_drm_lease_request_v1_reject(req);
 	}
 }
@@ -767,7 +767,7 @@ primary_selection_policy(struct wl_client *client) {
 	return policy;
 }
 
-bool mango_global_filter(const struct wl_client *client,
+bool acwm_global_filter(const struct wl_client *client,
 						 const struct wl_global *global, void *data) {
 	if (client == NULL)
 		return true;
@@ -789,7 +789,7 @@ bool mango_global_filter(const struct wl_client *client,
 void handle_request_set_selection(struct wl_listener *listener, void *data) {
 	/* This event is raised by the seat when a client wants to set the
 	 * selection, usually when the user copies something. wlroots allows
-	 * compositors to ignore such requests if they so choose, but in mango we
+	 * compositors to ignore such requests if they so choose, but in acwm we
 	 * always honor
 	 */
 	struct wlr_seat_request_set_selection_event *event = data;

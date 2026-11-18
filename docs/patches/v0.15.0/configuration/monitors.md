@@ -85,13 +85,13 @@ name:xxx&&make:xxx&&model:xxx&&serial:xxx
 
 ```bash
 # By name (shorthand)
-mmsg dispatch toggle_monitor,eDP-1
+acwm-msg dispatch toggle_monitor,eDP-1
 
 # By make and model
-mmsg dispatch toggle_monitor,make:Chimei Innolux Corporation&&model:0x15F5
+acwm-msg dispatch toggle_monitor,make:Chimei Innolux Corporation&&model:0x15F5
 
 # By serial
-mmsg dispatch toggle_monitor,serial:12345678
+acwm-msg dispatch toggle_monitor,serial:12345678
 ```
 
 ---
@@ -110,7 +110,7 @@ Tearing allows games to bypass the compositor's VSync for lower latency.
 | `hdr_depth` | `2`| Set the hdr depth for the current display. `0` is Default, `1` is HDR8, `2` is HDR10. |
 
 - you should enable HDR in monitor_rule first, refer to [Monitors — Monitor Rules](/docs/configuration/monitors#monitor-rules)
-- you must set `env=WLR_RENDERER,vulkan` before mango starts.
+- you must set `env=WLR_RENDERER,vulkan` before acwm starts.
 
 #### for example(must relogin once after setting):
 ```ini
@@ -145,9 +145,9 @@ window_rule=force_tearing:1,title:vkcube
 
 ### Graphics Card Compatibility
 
-> **Warning:** Some graphics cards require setting the `WLR_DRM_NO_ATOMIC` environment variable before mango starts to successfully enable tearing.
+> **Warning:** Some graphics cards require setting the `WLR_DRM_NO_ATOMIC` environment variable before acwm starts to successfully enable tearing.
 
-Add this to config and relogin mango:
+Add this to config and relogin acwm:
 ```
 env=WLR_DRM_NO_ATOMIC,1
 ```
@@ -156,14 +156,14 @@ env=WLR_DRM_NO_ATOMIC,1
 
 ## GPU Compatibility
 
-If mango cannot display correctly or shows a black screen, try selecting a specific GPU:
+If acwm cannot display correctly or shows a black screen, try selecting a specific GPU:
 
 ```bash
 # Use a single GPU
-WLR_DRM_DEVICES=/dev/dri/card1 mango
+WLR_DRM_DEVICES=/dev/dri/card1 acwm
 
 # Use multiple GPUs
-WLR_DRM_DEVICES=/dev/dri/card0:/dev/dri/card1 mango
+WLR_DRM_DEVICES=/dev/dri/card0:/dev/dri/card1 acwm
 ```
 
 Some GPUs have compatibility issues with `sync_obj_enable=1` — it may crash apps like `kitty` that use syncobj. Set `env=WLR_DRM_NO_ATOMIC,1` in `config.conf` and relogin to resolve this.
@@ -172,19 +172,19 @@ Some GPUs have compatibility issues with `sync_obj_enable=1` — it may crash ap
 
 ## Power Management
 
-You can control monitor power using the `mmsg` IPC tool.
+You can control monitor power using the `acwm-msg` IPC tool.
 > Notice: This command does not remove the monitor, it only turns it off.
 > if you want completely remove monitor, just use `wlr-randr`
 
 ```bash
 # Turn off
-mmsg dispatch disable_monitor,eDP-1
+acwm-msg dispatch disable_monitor,eDP-1
 
 # Turn on
-mmsg dispatch enable_monitor,eDP-1
+acwm-msg dispatch enable_monitor,eDP-1
 
 # Toggle
-mmsg dispatch toggle_monitor,eDP-1
+acwm-msg dispatch toggle_monitor,eDP-1
 ```
 
 You can also use `wlr-randr` for monitor management:
@@ -259,7 +259,7 @@ exec_once=xwayland-satellite :2
 monitor_rule=name:eDP-1,width:1920,height:1080,refresh:60,x:0,y:0,scale:1.4,vrr:0,rr:0
 ```
 
-> **Warning:** Use a `DISPLAY` value other than `:1` to avoid conflicting with mangowm.
+> **Warning:** Use a `DISPLAY` value other than `:1` to avoid conflicting with acwm.
 
 ---
 
@@ -269,10 +269,10 @@ You can create and manage virtual displays through IPC commands:
 
 ```bash
 # Create virtual output
-mmsg dispatch create_virtual_output
+acwm-msg dispatch create_virtual_output
 
 # Destroy all virtual outputs
-mmsg dispatch destroy_all_virtual_output
+acwm-msg dispatch destroy_all_virtual_output
 ```
 
 You can configure virtual monitors using `wlr-randr`:
