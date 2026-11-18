@@ -1,4 +1,0 @@
-[portal]
-DBusName=org.freedesktop.impl.portal.desktop.acwm
-Interfaces=org.freedesktop.impl.portal.Screenshot;
-UseIn=acwm

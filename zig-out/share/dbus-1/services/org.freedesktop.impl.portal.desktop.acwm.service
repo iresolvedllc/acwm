@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=org.freedesktop.impl.portal.desktop.acwm
-Exec=/bin/false
-SystemdService=dbus-org.freedesktop.impl.portal.desktop.acwm.service
