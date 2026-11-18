@@ -71,8 +71,10 @@ struct mirrors.
 - [x] `value_parse.c` → `src/config/value_parse.zig` (18 helpers, 11 tests)
 - [x] `variable_expand.c` → `src/config/variable_expand.zig` (translate-c
       pattern established; `cc` module)
-- [ ] `option_defs.c` (3,028 lines) — the whale. Slices, in order:
-  - [ ] bar option group (~40 `bar_*` keys)
+- [~] `option_defs.c` (3,028 lines) — the whale. Slices, in order:
+  - [x] bar option group (45 `bar_*`/`group_bar_*`/`tab_bar_*` keys →
+        `src/config/option_bar.zig`: comptime row table, tri-state
+        `acwm_config_apply_bar_option`, 10 tests with C-parity checks)
   - [ ] idle + general/session options
   - [ ] layout options (scroll/mfact/pertag)
   - [ ] input options (keyrepeat, cursor, trackpad)
