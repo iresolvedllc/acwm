@@ -385,6 +385,9 @@ bool parse_config(void) {
 	config.groupbardata.font_desc = NULL;
 	config.bardata.font_desc = NULL;
 	config.bar_clock_format = NULL;
+	config.idle_after = 0;
+	config.idle_command = NULL;
+	config.resume_command = NULL;
 	config.jump_labels = NULL;
 	strcpy(config.keymode, "default");
 

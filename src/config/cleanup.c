@@ -335,6 +335,16 @@ void free_config(void) {
 		config.bar_clock_format = NULL;
 	}
 
+	if (config.idle_command) {
+		free(config.idle_command);
+		config.idle_command = NULL;
+	}
+
+	if (config.resume_command) {
+		free(config.resume_command);
+		config.resume_command = NULL;
+	}
+
 	if (config.jump_labels) {
 		free(config.jump_labels);
 		config.jump_labels = NULL;

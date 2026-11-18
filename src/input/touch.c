@@ -163,7 +163,7 @@ void handle_cursor_touch_down(struct wl_listener *listener, void *data) {
 
 	touch_apply_monitor_mapping(event->touch);
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	point->surface = touch_get_coords(event->touch, event->x, event->y,
 									  &x_offset, &y_offset, &c);
@@ -232,7 +232,7 @@ void handle_cursor_touch_motion(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each(point, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)
@@ -271,7 +271,7 @@ void handle_cursor_touch_up(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each_safe(point, tmp, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)
@@ -310,7 +310,7 @@ void handle_cursor_touch_cancel(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	wl_list_for_each_safe(point, tmp, &server.touch_points, link) {
 		if (point->touch_id != event->touch_id)

@@ -305,7 +305,7 @@ void tablet_tool_motion(struct TabletTool *tool, bool change_x, bool change_y,
 	if (surface)
 		wlr_tablet_v2_tablet_tool_notify_motion(tool->tool_v2, sx, sy);
 
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 	pointer_cursor_activity();
 }
 

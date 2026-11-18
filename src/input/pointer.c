@@ -415,7 +415,7 @@ handle_cursor_axis(struct wl_listener *listener, void *data) {
 	double target_scroll_factor;
 	// IDLE_NOTIFY_ACTIVITY;
 	pointer_cursor_activity();
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	if (check_trackpad_disabled(event->pointer)) {
 		return;
@@ -1258,7 +1258,7 @@ void pointer_process_motion(uint32_t time, struct wlr_input_device *device,
 
 		wlr_cursor_move(server.cursor, device, dx, dy);
 		pointer_cursor_activity();
-		wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+		acwm_notify_activity(server.seat);
 
 		/* Update selected_monitor (even while dragging a window) */
 		if (config.sloppyfocus) {
@@ -1724,7 +1724,7 @@ bool pointer_process_button_press(struct wlr_pointer_button_event *event) {
 		server.seat->pointer_state.focused_surface;
 
 	pointer_cursor_activity();
-	wlr_idle_notifier_v1_notify_activity(server.idle_notifier, server.seat);
+	acwm_notify_activity(server.seat);
 
 	if (event->pointer && check_trackpad_disabled(event->pointer)) {
 		return true;

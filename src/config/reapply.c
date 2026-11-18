@@ -544,5 +544,6 @@ int32_t reload_config(const Arg *arg) {
 	bar_config_reload();
 	printstatus(IPC_WATCH_ARRANGGE);
 	config_watcher_update();
+	rearm_idle_check();
 	return 1;
 }

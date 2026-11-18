@@ -201,6 +201,10 @@ struct AcwmServer {
 	/* Cursor hiding / input keep-alive */
 	struct wl_event_source *hide_cursor_source;
 	struct wl_event_source *keep_idle_inhibit_source;
+	struct wl_event_source *idle_check_source;
+	int64_t last_activity_ms;
+	bool idle_triggered;
+	bool idle_inhibited;
 
 	/* Key mode / IPC print-status signal */
 	KeyMode key_mode;

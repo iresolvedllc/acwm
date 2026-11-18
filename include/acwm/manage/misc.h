@@ -50,6 +50,11 @@ bool acwm_global_filter(const struct wl_client *client,
 void handle_request_set_selection(struct wl_listener *listener, void *data);
 void check_keep_idle_inhibit(Client *c);
 int32_t idle_keep_inhibit(void *data);
+struct wlr_seat;
+void acwm_idle_init(void);
+void acwm_notify_activity(struct wlr_seat *seat);
+void rearm_idle_check(void);
+int32_t idle_check(void *data);
 void handle_session_lock_unlock(struct wl_listener *listener, void *data);
 
 #endif

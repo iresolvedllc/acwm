@@ -507,6 +507,16 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 		config->idleinhibit_ignore_visible = atoi(value);
 	} else if (strcmp(key, "idle_inhibit_when_fullscreen") == 0) {
 		config->idleinhibit_when_fullscreen = atoi(value);
+	} else if (strcmp(key, "idle_after") == 0) {
+		config->idle_after = CLAMP_INT(atoi(value), 0, 86400);
+	} else if (strcmp(key, "idle_command") == 0) {
+		if (config->idle_command)
+			free(config->idle_command);
+		config->idle_command = strdup(value);
+	} else if (strcmp(key, "resume_command") == 0) {
+		if (config->resume_command)
+			free(config->resume_command);
+		config->resume_command = strdup(value);
 	} else if (strcmp(key, "sloppy_focus") == 0) {
 		config->sloppyfocus = atoi(value);
 	} else if (strcmp(key, "warp_cursor") == 0) {

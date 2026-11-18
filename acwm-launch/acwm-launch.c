@@ -639,7 +639,6 @@ static void acwm_launch_load_desktops(void) {
 
 static void acwm_launch_load_appimages(void) {
 	const char *home = getenv("HOME");
-	char buffer[4096];
 	const char *spec = getenv("ACWM_LAUNCH_APPIMAGE_DIRS");
 
 	char dirs_buffer[4096];

@@ -715,6 +715,10 @@ void setup(void) {
 	server.keep_idle_inhibit_source = wl_event_loop_add_timer(
 		wl_display_get_event_loop(server.display), idle_keep_inhibit, NULL);
 
+	server.idle_check_source = wl_event_loop_add_timer(
+		wl_display_get_event_loop(server.display), idle_check, NULL);
+	acwm_idle_init();
+
 	server.layer_shell = wlr_layer_shell_v1_create(server.display, 4);
 	wl_signal_add(&server.layer_shell->events.new_surface,
 				  &server.new_layer_surface_listener);

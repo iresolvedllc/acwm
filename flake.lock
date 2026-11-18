@@ -49,10 +49,28 @@
         "type": "github"
       }
     },
+    "oo7": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1771691217,
+        "narHash": "sha256-FPt37KEap7z1ant+6VHqqFBRwwE4YV3yQrc0V/kd+Mo=",
+        "owner": "linux-credentials",
+        "repo": "oo7",
+        "rev": "9070389f33bec2e47048384e2fdbd7aab64e0df7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "linux-credentials",
+        "ref": "0.6.0",
+        "repo": "oo7",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "oo7": "oo7"
       }
     }
   },
