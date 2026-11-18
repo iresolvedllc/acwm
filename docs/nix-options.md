@@ -1,13 +1,13 @@
 ---
 title: Nix Module Options
-description: NixOS and Home Manager configuration options for acwm.
+description: NixOS and Home Manager configuration options for mangowm.
 ---
 
 > **Note:** This document is automatically generated from the Nix module source code.
 
 ## NixOS
 
-**System-level options via `programs.acwm`.**
+**System-level options via `programs.mango`.**
 
 ### enable
 
@@ -87,9 +87,158 @@ true
 *Declared by:*
  - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
 
+
+
+### greeter\.enable
+
+
+
+Whether to enable the greetd greeter: acwm runs as the greeter compositor and starts
+` acwm-greeter ` from the greeter user’s config\. Requires greetd
+(enabled automatically)\.
+\.
+
+
+
+*Type:*
+boolean
+
+
+
+*Default:*
+
+```nix
+false
+```
+
+
+
+*Example:*
+
+```nix
+true
+```
+
+*Declared by:*
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
+
+
+
+### greeter\.config
+
+
+
+acwm config file for the greeter session (written to
+` /etc/acwm/greeter/config.conf `)\. The default starts the
+` acwm-greeter ` client on a bar-less compositor\.
+
+
+
+*Type:*
+strings concatenated with “\\n”
+
+
+
+*Default:*
+
+```nix
+"exec_once=acwm-greeter"
+```
+
+*Declared by:*
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
+
+
+
+### oo7\.enable
+
+
+
+Whether to enable oo7 Secret Service integration: a session keyring daemon
+(org\.freedesktop\.secrets), the secret portal backend and
+keyring unlock at login via ` pam_oo7 `\.
+\.
+
+
+
+*Type:*
+boolean
+
+
+
+*Default:*
+
+```nix
+false
+```
+
+
+
+*Example:*
+
+```nix
+true
+```
+
+*Declared by:*
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
+
+
+
+### oo7\.package
+
+
+
+The oo7 package providing oo7-daemon, the secret portal backend and oo7-cli\.
+
+
+
+*Type:*
+package
+
+
+
+*Default:*
+
+```nix
+self.packages.${pkgs.stdenv.hostPlatform.system}.oo7
+```
+
+*Declared by:*
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
+
+
+
+### oo7\.pamServices
+
+
+
+PAM services that unlock the user’s keyring at login via the
+built-in ` security.pam.services.<name>.oo7 ` wiring (which places
+` pam_oo7 ` after password entry in the auth stack)\.
+
+
+
+*Type:*
+list of string
+
+
+
+*Default:*
+
+```nix
+[
+  "sddm"
+  "login"
+]
+```
+
+*Declared by:*
+ - [\<acwm/nix/nixos-modules\.nix>](https://github.com/mangowm/acwm/blob/main/nix/nixos-modules.nix)
+
 ## Home Manager
 
-**Configure acwm declaratively via `wayland.windowManager.acwm`.**
+**Configure mangowm declaratively via `wayland.windowManager.mango`.**
 
 ### enable
 
@@ -256,7 +405,7 @@ strings concatenated with “\\n”
 
 ACWM configuration written in Nix\. Entries with the same key
 should be written as lists\. Variables and colors names should be
-quoted\. See [https://acwm\.github\.io/docs](https://acwm\.github\.io/docs) for more examples\.
+quoted\. See [https://mangowm\.github\.io/docs](https://mangowm\.github\.io/docs) for more examples\.
 
 **Note:** This option uses a structured format that is converted to ACWM’s
 configuration syntax\. Nested attributes are flattened with underscore separators\.
