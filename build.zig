@@ -85,6 +85,24 @@ fn applyPkgConfig(
     }
 }
 
+/// Runs pkg-config --cflags and returns the -I directories.
+fn pkgIncludes(b: *std.Build, pkgs: []const []const u8) [][]const u8 {
+    var argv: std.ArrayList([]const u8) = .empty;
+    defer argv.deinit(b.allocator);
+    argv.append(b.allocator, "pkg-config") catch return &.{};
+    argv.appendSlice(b.allocator, &.{"--cflags"}) catch return &.{};
+    for (pkgs) |p| argv.append(b.allocator, p) catch return &.{};
+    const out = capture(b, argv.items) orelse return &.{};
+
+    var dirs: std.ArrayList([]const u8) = .empty;
+    var it = std.mem.tokenizeAny(u8, out, " \n\r\t");
+    while (it.next()) |tok| {
+        if (std.mem.startsWith(u8, tok, "-I") and tok.len > 2)
+            dirs.append(b.allocator, dupe(b, tok[2..])) catch {};
+    }
+    return dirs.items;
+}
+
 fn hasPkg(b: *std.Build, name: []const u8) bool {
     return capture(b, &.{ "pkg-config", "--exists", name }) != null;
 }
@@ -182,6 +200,22 @@ pub fn build(b: *std.Build) void {
     const xwayland = b.option(bool, "xwayland", "Enable Xwayland support (auto)") orelse hasPkg(b, "xcb");
     const tray = b.option(bool, "tray", "Enable the SNI system tray / portal (libsystemd)") orelse hasPkg(b, "libsystemd");
 
+    // Shared translate-c module ("cc"): Zig 0.17 removed @cImport, so the
+    // config ports get C types (Config/ConfigVar, the `config` global) from
+    // the translated headers instead.
+    const c_unit = b.addTranslateC(.{
+        .root_source_file = b.path("include/c_acwm.h"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    c_unit.addIncludePath(b.path("."));
+    c_unit.addIncludePath(b.path("include"));
+    for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo" })) |dir| {
+        c_unit.addIncludePath(.{ .cwd_relative = dir });
+    }
+    const c_mod = c_unit.createModule();
+
     const server_protos = [_][]const u8{
         "xdg-shell",
         "pointer-constraints-unstable-v1",
@@ -236,8 +270,11 @@ pub fn build(b: *std.Build) void {
                 continue;
             // Phase 4 strangler boundary: src/config/value_parse.c is
             // replaced by its Zig twin (src/config/value_parse.zig), which
-            // is attached as an object below.
+            // is attached as an object below. Same for
+            // src/config/variable_expand.c.
             if (std.mem.eql(u8, p, "src/config/value_parse.c"))
+                continue;
+            if (std.mem.eql(u8, p, "src/config/variable_expand.c"))
                 continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
@@ -254,6 +291,18 @@ pub fn build(b: *std.Build) void {
     });
     const vp_obj = b.addObject(.{ .name = "acwm-value-parse", .root_module = vp_mod });
     compositor.root_module.addObject(vp_obj);
+
+    // Zig twin of variable_expand.c: reads/writes the C `config` global via
+    // the translated headers ("cc").
+    const ve_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/variable_expand.zig"),
+    });
+    ve_mod.addImport("cc", c_mod);
+    const ve_obj = b.addObject(.{ .name = "acwm-variable-expand", .root_module = ve_mod });
+    compositor.root_module.addObject(ve_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -420,6 +469,27 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/value_parse_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/variable_expand.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/variable_expand_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
