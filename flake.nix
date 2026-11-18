@@ -2,6 +2,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    # Pinned oo7 (Secret Service provider) for the session integration.
+    # Must stay in lockstep with nixpkgs `oo7-pam` (see nix/oo7.nix).
+    oo7 = {
+      url = "github:linux-credentials/oo7/0.6.0";
+      flake = false;
+    };
   };
 
   outputs =
@@ -31,14 +37,17 @@
           acwm = callPackage ./nix {
             scenefx = pkgs.scenefx;
           };
+          oo7 = callPackage ./nix/oo7.nix {
+            src = inputs.oo7;
+          };
         in
         {
           packages.default = acwm;
           overlayAttrs = {
-            inherit (config.packages) acwm;
+            inherit (config.packages) acwm oo7;
           };
           packages = {
-            inherit acwm;
+            inherit acwm oo7;
             hm-options-json = pkgs.callPackage (import ./nix/generate-options.nix self) {
               module = ./nix/hm-modules.nix;
               optionPrefix = "wayland.windowManager.acwm.";
