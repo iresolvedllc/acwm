@@ -71,7 +71,6 @@
             shellHook = ''
               echo "acwm dev shell"
               echo "  meson setup build && meson compile -C build"
-              echo "  ./format.sh  # clang-format"
             '';
           };
           formatter = pkgs.nixfmt;
