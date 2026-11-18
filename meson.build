@@ -308,6 +308,86 @@ executable('acwm-launch',
 )
 
 mandir = get_option('mandir')
+
+# build acwm-portal (screenshot portal backend: sd-bus service + screencopy
+# client). Requires libsystemd for the session bus; shares the dep resolved
+# for the SNI tray above.
+if libsystemd_dep.found()
+  portal_screencopy_h = custom_target('acwm-portal-screencopy-client-proto',
+    input : 'protocols/wlr-screencopy-unstable-v1.xml',
+    output : 'wlr-screencopy-unstable-v1-client-protocol.h',
+    command : [wayland_scanner, 'client-header', '@INPUT@', '@OUTPUT@'],
+  )
+
+  portal_screencopy_c = custom_target('acwm-portal-screencopy-private-code',
+    input : 'protocols/wlr-screencopy-unstable-v1.xml',
+    output : 'wlr-screencopy-unstable-v1-client-protocol.c',
+    command : [wayland_scanner, 'private-code', '@INPUT@', '@OUTPUT@'],
+  )
+
+  executable('acwm-portal',
+    'acwm-portal/acwm-portal.c',
+    portal_screencopy_h,
+    portal_screencopy_c,
+
+    include_directories : acwm_inc,
+
+    dependencies: [
+      libwayland_client_dep,
+      cjson_dep,
+      dependency('cairo'),
+      libsystemd_dep,
+    ],
+
+    install : true,
+
+    c_args: [
+      '-g',
+      '-O2',
+      '-U_FORTIFY_SOURCE',
+      '-Wno-unused-function',
+      '-Wno-unused-parameter',
+      '-DWLR_USE_UNSTABLE',
+      '-D_POSIX_C_SOURCE=200809L',
+    ],
+  )
+
+  # systemd user unit + dbus alias + portal registration files, mirroring the
+  # layout upstream portal backends install.
+  portal_unit_conf = configuration_data()
+  portal_unit_conf.set('bindir', join_paths(prefix, get_option('bindir')))
+
+  configure_file(
+    input : 'assets/acwm-portal.service.in',
+    output : 'acwm-portal.service',
+    configuration : portal_unit_conf,
+    install_dir : join_paths(prefix, 'lib/systemd/user'),
+  )
+  install_symlink(
+    'dbus-org.freedesktop.impl.portal.desktop.acwm.service',
+    pointing_to : 'acwm-portal.service',
+    install_dir : join_paths(prefix, 'lib/systemd/user'),
+  )
+
+  install_data('assets/org.freedesktop.impl.portal.desktop.acwm.service',
+    install_dir : join_paths(prefix, 'share/dbus-1/services'))
+  install_data('assets/acwm.portal',
+    install_dir : join_paths(prefix, 'share/xdg-desktop-portal/portals'))
+endif
+
+# generate the acwm-portal man page at build time so the version always
+# matches the project version
+acwm_portal_man_conf = configuration_data()
+acwm_portal_man_conf.set('VERSION', meson.project_version())
+install_data(
+  configure_file(
+    input : 'acwm-portal/acwm-portal.1.in',
+    output : 'acwm-portal.1',
+    configuration : acwm_portal_man_conf,
+  ),
+  install_dir : join_paths(mandir, 'man1'),
+)
+
 desktop_install_dir = join_paths(prefix, 'share/wayland-sessions')
 portal_install_dir = join_paths(prefix, 'share/xdg-desktop-portal')
 install_data('assets/acwm.desktop', install_dir : desktop_install_dir)

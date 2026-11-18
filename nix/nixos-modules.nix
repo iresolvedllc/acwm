@@ -75,7 +75,9 @@ in
             lib.optionals cfg.oo7.enable [ "oo7" ]
             ++ lib.optionals (!cfg.oo7.enable) [ "gnome-keyring" ];
           "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
-          "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+          # acwm-portal (screenshot) is part of the acwm package; wlr stays as
+          # a fallback for packages built without libsystemd.
+          "org.freedesktop.impl.portal.Screenshot" = [ "acwm" "wlr" ];
 
           # wlr does not have this interface
           "org.freedesktop.impl.portal.Inhibit" = [ ];
