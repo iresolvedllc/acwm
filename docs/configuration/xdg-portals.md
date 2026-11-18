@@ -12,6 +12,24 @@ You can customize portal settings via the following paths:
 
 > **Warning:** If you previously added `dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=wlroots` to your config, remove it. ACWM now handles this automatically.
 
+## Screenshots
+
+acwm ships its own screenshot portal backend (`acwm-portal`), so screenshot
+requests from sandboxed and portal-using applications work out of the box —
+no extra packages needed. It captures the output under the pointer and hands
+the requesting app a `file://` URI to a PNG under
+`$XDG_RUNTIME_DIR/acwm-portal/`.
+
+To capture a specific output instead, set the override in the session
+environment before the portal starts:
+
+```bash
+ACWM_PORTAL_OUTPUT=eDP-1
+```
+
+Screenshots taken manually (keybind → command) can use the same backend or
+any standalone tool (`grim`, `satty`, …).
+
 ## Screen Sharing
 
 To enable screen sharing (OBS, Discord, WebRTC), you need `xdg-desktop-portal-wlr`.
@@ -71,20 +89,24 @@ wl-clip-persist --clipboard regular --reconnect-tries 0 &
 wl-paste --type text --watch cliphist store &
 ```
 
-## GNOME Keyring
+## GNOME Keyring / oo7
 
-If you need to store passwords or secrets (e.g., for VS Code or Minecraft launchers), install `gnome-keyring`.
+For passwords and secrets (VS Code, browsers, Git credential helpers), use
+[oo7](/docs/configuration/secrets) — the modern Secret Service provider that
+replaces `gnome-keyring`. The oo7 daemon, its secret portal backend and
+login-time keyring unlock are fully wired by the acwm NixOS module.
 
-**Configuration:**
+If you prefer `gnome-keyring`, install it and use the fallback entry shown
+below.
 
-Add the following to `~/.config/xdg-desktop-portal/acwm-portals.conf`:
+**Configuration** (`~/.config/xdg-desktop-portal/acwm-portals.conf`):
 
 ```ini
 [preferred]
 default=gtk
 org.freedesktop.impl.portal.ScreenCast=wlr
-org.freedesktop.impl.portal.Screenshot=wlr
-org.freedesktop.impl.portal.Secret=gnome-keyring
+org.freedesktop.impl.portal.Screenshot=acwm;wlr;
+org.freedesktop.impl.portal.Secret=oo7;gnome-keyring;
 org.freedesktop.impl.portal.Inhibit=none
 ```
 
