@@ -44,6 +44,18 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 
 bool parse_option(Config *config, char *key, char *value, int line_number) {
+#ifdef ACWM_ZIG_BAR_OPTION
+	/* Phase 4 strangler: the bar option group lives in
+	 * src/config/option_bar.zig, linked as the acwm-option-bar object. The
+	 * C branches for those keys below are only reached by the meson build
+	 * (which does not define this macro); this build routes bar keys to the
+	 * Zig applier first. 1 = applied, -1 = applied with an invalid value,
+	 * 0 = not a bar key. */
+	const int bar_group =
+		acwm_config_apply_bar_option(config, key, value, line_number);
+	if (bar_group != 0)
+		return bar_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

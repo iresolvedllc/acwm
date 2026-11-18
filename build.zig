@@ -279,7 +279,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{}) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{"-DACWM_ZIG_BAR_OPTION"}) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -303,6 +303,21 @@ pub fn build(b: *std.Build) void {
     ve_mod.addImport("cc", c_mod);
     const ve_obj = b.addObject(.{ .name = "acwm-variable-expand", .root_module = ve_mod });
     compositor.root_module.addObject(ve_obj);
+
+    // Zig twin of the bar option group (option_defs.c slice 1): parse_option
+    // calls it first under ACWM_ZIG_BAR_OPTION. parse_color/
+    // convert_hex_to_rgba stay extern — they resolve to the value-parse
+    // object in this link (importing that module here would duplicate its
+    // exported symbols across objects).
+    const ob_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_bar.zig"),
+    });
+    ob_mod.addImport("cc", c_mod);
+    const ob_obj = b.addObject(.{ .name = "acwm-option-bar", .root_module = ob_mod });
+    compositor.root_module.addObject(ob_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -490,6 +505,22 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/variable_expand_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_bar.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/option_bar_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);

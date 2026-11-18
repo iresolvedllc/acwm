@@ -718,6 +718,13 @@ void run_exec_once();
 
 bool parse_option(Config *config, char *key, char *value, int line_number);
 
+/* Phase 4 strangler boundary (Zig): the bar option group lives in
+ * src/config/option_bar.zig. Returns 1 when the key was applied, -1 when it
+ * belonged to the group but had an invalid value, and 0 when the key is not a
+ * bar-group option (caller continues its own dispatch). */
+int acwm_config_apply_bar_option(Config *config, char *key, char *value,
+								 int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);
