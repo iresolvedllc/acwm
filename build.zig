@@ -232,10 +232,28 @@ pub fn build(b: *std.Build) void {
         const find_out = capture(b, &.{ "find", "src", "-name", "*.c" }) orelse "";
         var it = std.mem.tokenizeAny(u8, find_out, "\n");
         while (it.next()) |p| {
-            if (p.len > 0) src_files.append(b.allocator, dupe(b, p)) catch {};
+            if (p.len == 0)
+                continue;
+            // Phase 4 strangler boundary: src/config/value_parse.c is
+            // replaced by its Zig twin (src/config/value_parse.zig), which
+            // is attached as an object below.
+            if (std.mem.eql(u8, p, "src/config/value_parse.c"))
+                continue;
+            src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
     compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{}) });
+
+    // Zig twin of value_parse.c: exports the same C symbols, so the rest of
+    // the C tree calls it unchanged.
+    const vp_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/value_parse.zig"),
+    });
+    const vp_obj = b.addObject(.{ .name = "acwm-value-parse", .root_module = vp_mod });
+    compositor.root_module.addObject(vp_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -389,7 +407,22 @@ pub fn build(b: *std.Build) void {
     b.installFile("assets/acwm-session.target", "lib/systemd/user/acwm-session.target");
 
     // ------------------------------------------------------------------
-    // test step — Zig sources arrive in Phase 4; until then it is a no-op
+    // test step — runs the Zig unit tests (stub-backed)
     // ------------------------------------------------------------------
-    _ = b.step("test", "run zig tests");
+    const test_step = b.step("test", "run zig tests");
+    {
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/value_parse.zig"),
+        });
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/value_parse_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
 }

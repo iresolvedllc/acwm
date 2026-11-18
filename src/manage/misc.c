@@ -899,7 +899,6 @@ void rearm_idle_check(void) {
 
 int32_t idle_check(void *data) {
 	int64_t idle_ms = (int64_t)config.idle_after * 1000;
-
 	if (idle_ms <= 0 || server.idle_triggered)
 		return 1;
 
@@ -921,6 +920,12 @@ int32_t idle_check(void *data) {
 
 	rearm_idle_check();
 	return 1;
+}
+
+/* Accessor for the Zig config-parsing port (value_parse.zig): the C global
+ * server struct is not imported into Zig, so expose just the tagmask. */
+uint32_t acwm_current_tagmask(void) {
+	return server.tagmask;
 }
 
 void handle_session_lock_unlock(struct wl_listener *listener, void *data) {
