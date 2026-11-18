@@ -4,6 +4,7 @@ zig-pkg
 .zig-out
 zig-out
 .zig-pkg
+result*
 /.cache
 /.vscode
 /result
