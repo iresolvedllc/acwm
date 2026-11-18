@@ -13,6 +13,17 @@
  * defines it project-wide via cflags. */
 #define WLR_USE_UNSTABLE 1
 
+/* libc surfaces needed by the ported config modules (error_store uses
+ * stat/fcntl/unistd; others use stdlib/string). Kept here so the translated
+ * declarations — including struct stat — stay authoritative. */
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "acwm/config/parse.h"
 #include "acwm/config/internal.h"
 
