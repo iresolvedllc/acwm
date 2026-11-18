@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=ACWM
+DesktopNames=acwm;wlroots
+Comment=acwm WM
+Exec=acwm
+Icon=acwm
+Type=Application

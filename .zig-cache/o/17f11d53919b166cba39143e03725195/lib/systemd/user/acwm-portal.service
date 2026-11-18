@@ -1,0 +1,12 @@
+[Unit]
+Description=acwm screenshot portal backend
+After=graphical-session.target
+Requisite=graphical-session.target
+PartOf=graphical-session.target
+Wants=xdg-desktop-portal.service
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.impl.portal.desktop.acwm
+ExecStart=acwm-portal
+StandardError=journal

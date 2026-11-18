@@ -71,10 +71,12 @@
               git
               meson
               ninja
+              zig
             ];
 
             shellHook = ''
               echo "acwm dev shell"
+              echo "  zig build              # full C build (compositor + clients)"
               echo "  meson setup build && meson compile -C build"
             '';
           };
