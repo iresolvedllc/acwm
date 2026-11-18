@@ -49,6 +49,22 @@ in
           '';
         };
       };
+      greeter = {
+        enable = lib.mkEnableOption ''
+          the greetd greeter: acwm runs as the greeter compositor and starts
+          `acwm-greeter` from the greeter user's config. Requires greetd
+          (enabled automatically).
+        '';
+        config = lib.mkOption {
+          type = lib.types.lines;
+          default = "exec_once=acwm-greeter";
+          description = ''
+            acwm config file for the greeter session (written to
+            `/etc/acwm/greeter/config.conf`). The default starts the
+            `acwm-greeter` client on a bar-less compositor.
+          '';
+        };
+      };
     };
   };
 
@@ -104,6 +120,20 @@ in
     );
 
     security.polkit.enable = lib.mkDefault true;
+
+    programs.greetd = lib.mkIf cfg.greeter.enable {
+      enable = lib.mkDefault true;
+      settings = {
+        # acwm itself is the greeter compositor
+        default_session.command = lib.mkDefault "${cfg.package}/bin/acwm -c /etc/acwm/greeter/config.conf";
+        default_session.user = lib.mkDefault "greeter";
+        user_session.command = lib.mkDefault "${cfg.package}/bin/acwm";
+      };
+    };
+
+    environment.etc = lib.mkIf cfg.greeter.enable {
+      "acwm/greeter/config.conf".text = cfg.greeter.config;
+    };
 
     programs.xwayland.enable = lib.mkDefault true;
 

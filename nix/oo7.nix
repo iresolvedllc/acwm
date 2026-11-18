@@ -36,6 +36,13 @@ rustPlatform.buildRustPackage {
   doCheck = false;
 
   postInstall = ''
+    mkdir -p \
+      $out/bin \
+      $out/lib/systemd/user \
+      $out/share/dbus-1/services \
+      $out/share/xdg-desktop-portal/portals \
+      $out/share/applications
+
     # --- systemd user units (upstream hardening preserved) ---
     substitute ${src}/server/data/oo7-daemon.service.in \
       $out/lib/systemd/user/oo7-daemon.service \

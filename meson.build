@@ -375,6 +375,38 @@ if libsystemd_dep.found()
     install_dir : join_paths(prefix, 'share/xdg-desktop-portal/portals'))
 endif
 
+# build acwm-greeter (greetd client: layer-shell overlay + pangocairo UI).
+# Reuses the layer-shell protocol objects generated for acwm-launch.
+executable('acwm-greeter',
+  'acwm-greeter/acwm-greeter.c',
+  acwm_launch_layer_h,
+  acwm_launch_layer_c,
+  acwm_launch_xdg_h,
+  acwm_launch_xdg_c,
+
+  include_directories : acwm_inc,
+
+  dependencies: [
+    libwayland_client_dep,
+    cjson_dep,
+    dependency('cairo'),
+    pangocairo_dep,
+    dependency('xkbcommon'),
+  ],
+
+  install : true,
+
+  c_args: [
+    '-g',
+    '-O2',
+    '-U_FORTIFY_SOURCE',
+    '-Wno-unused-function',
+    '-Wno-unused-parameter',
+    '-DWLR_USE_UNSTABLE',
+    '-D_POSIX_C_SOURCE=200809L',
+  ],
+)
+
 # generate the acwm-portal man page at build time so the version always
 # matches the project version
 acwm_portal_man_conf = configuration_data()

@@ -1,4 +1,4 @@
 {
 	"title": "Configuration",
-	"pages": ["basics", "toml", "monitors", "input", "xdg-portals", "secrets", "miscellaneous"]
+	"pages": ["basics", "toml", "monitors", "input", "xdg-portals", "secrets", "greetd", "miscellaneous"]
 }

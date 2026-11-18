@@ -1,0 +1,45 @@
+.TH "acwm-greeter" "1" "2026-11-17" "acwm-greeter @VERSION@" "acwm-greeter manual"
+
+.SH NAME
+acwm-greeter \- greetd greeter client for acwm
+
+.SH SYNOPSIS
+\fBacwm-greeter\fP [\fB\-h\fP | \fB\-\-help\fP]
+
+.SH DESCRIPTION
+\fBacwm-greeter\fP is a standalone greeter client implementing the
+.B greetd
+IPC protocol (JSON over \fB$GREETD_SOCK\fP). It renders a minimal
+username/password overlay as a layer-shell surface and hands the
+authenticated session back to greetd, which starts the user's session
+command from \fBgreetd\fR(1)'s configuration.
+
+It is intended to run inside the \fBacwm\fP greeter session: greetd starts
+acwm as the greeter compositor, and the greeter user's acwm config starts
+\fBacwm-greeter\fR via `exec_once`. See
+.B docs/configuration/greetd.md
+in the acwm source for a complete setup.
+
+.SH ENVIRONMENT
+.TP
+.B GREETD_SOCK
+Path to the greetd IPC socket (set by greetd). Required.
+.TP
+.B ACWM_GREETER_FONT
+Pango font description for the UI (default `sans 11`).
+
+.SH KEYS
+.TP
+.B Return
+continue (submit username/password)
+.TP
+.B Escape
+cancel the current authentication attempt
+.TP
+.B Ctrl+U
+clear the input field
+
+.SH SEE ALSO
+.BR acwm (1),
+.BR greetd (1),
+.BR greetd-ipc (7)
