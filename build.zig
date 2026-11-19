@@ -283,7 +283,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -414,6 +414,17 @@ pub fn build(b: *std.Build) void {
     oa_mod.addImport("cc", c_mod);
     const oa_obj = b.addObject(.{ .name = "acwm-option-animation", .root_module = oa_mod });
     compositor.root_module.addObject(oa_obj);
+
+    // Zig twin of the scroller/focus option group (option_defs.c slice 8).
+    const osc_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_scroller.zig"),
+    });
+    osc_mod.addImport("cc", c_mod);
+    const osc_obj = b.addObject(.{ .name = "acwm-option-scroller", .root_module = osc_mod });
+    compositor.root_module.addObject(osc_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -619,6 +630,19 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/option_bar_stub.c"),
             .flags = &.{},
         });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_scroller: no C stub needed (libc + cc types only).
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_scroller.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }

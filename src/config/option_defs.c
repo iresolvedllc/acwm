@@ -104,6 +104,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (animation_group != 0)
 		return animation_group > 0;
 #endif
+#ifdef ACWM_ZIG_SCROLLER_OPTION
+	/* Phase 4 strangler: scroller/focus options live in
+	 * src/config/option_scroller.zig. */
+	const int scroller_group =
+		acwm_config_apply_scroller_option(config, key, value, line_number);
+	if (scroller_group != 0)
+		return scroller_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

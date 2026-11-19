@@ -760,6 +760,11 @@ int acwm_config_apply_device_option(Config *config, char *key, char *value,
 int acwm_config_apply_animation_option(Config *config, char *key, char *value,
 									   int line_number);
 
+/* Phase 4 strangler boundary (Zig): the scroller/focus option group lives
+ * in src/config/option_scroller.zig. Same tri-state contract. */
+int acwm_config_apply_scroller_option(Config *config, char *key, char *value,
+									  int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);
