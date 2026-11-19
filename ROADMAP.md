@@ -81,7 +81,9 @@ struct mirrors.
   - [x] idle + general/session options (9 keys: focus_on_activate,
         numlock_on, the idle trio + idle/resume commands, sloppy_focus,
         warp_cursor → `src/config/option_session.zig`, 5 tests)
-  - [ ] layout options (scroll/mfact/pertag)
+  - [x] layout options (22 keys: master defaults, tag_num/gather, dwindle
+        tuning, hotarea, overview gaps, overcircle ratio →
+        `src/config/option_layout.zig`, 5 tests)
   - [ ] input options (keyrepeat, cursor, trackpad)
   - [ ] animations/visuals options
   - [ ] remaining misc + defaults preset
