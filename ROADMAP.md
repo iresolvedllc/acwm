@@ -94,7 +94,10 @@ struct mirrors.
         speeds, left-handed/middle-emulation, click/scroll methods,
         send-events modes, button_map, scroll factors →
         `src/config/option_device.zig`, 4 tests)
-  - [ ] animation options (27 keys: types, durations, curves)
+  - [x] animation options (25 keys: enable flags, open/close types via
+        animation_type_from_string, fades/direction, zoom + opacity floats,
+        five durations, seven 4-double Bezier curves via parse_double_array
+        → `src/config/option_animation.zig`, 5 tests)
   - [ ] scroller/focus options (~15 keys)
   - [ ] early misc (scratchpad persistence, xwayland, tearing/hdr,
         snap/drag/gesture, monocle flags, xkb rules, ~35 keys)

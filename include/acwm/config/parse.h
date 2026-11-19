@@ -754,6 +754,12 @@ int acwm_config_apply_visuals_option(Config *config, char *key, char *value,
 int acwm_config_apply_device_option(Config *config, char *key, char *value,
 									int line_number);
 
+/* Phase 4 strangler boundary (Zig): the animation option group (types,
+ * fades, durations, Bezier curves) lives in
+ * src/config/option_animation.zig. Same tri-state contract. */
+int acwm_config_apply_animation_option(Config *config, char *key, char *value,
+									   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);
