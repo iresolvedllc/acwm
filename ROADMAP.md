@@ -101,8 +101,10 @@ struct mirrors.
   - [x] scroller/focus options (15 keys: structs/proportions, edge
         scroller, cross-monitor/tag focus policy →
         `src/config/option_scroller.zig`, 5 tests)
-  - [ ] early misc (scratchpad persistence, xwayland, tearing/hdr,
-        snap/drag/gesture, monocle flags, xkb rules, ~35 keys)
+  - [x] early misc (30 keys: scratchpad persistence, xwayland, sync/tearing/
+        hdr, shortcuts/lock, auto-reload, monocle flags, snap/drag/gesture
+        tuning, five fixed-size xkb rule strings →
+        `src/config/option_misc.zig`, 6 tests)
   - [ ] jump-label decoration set (10 keys)
   - [ ] gaps/scratchpad/special gaps + border_px (12 keys)
   - [ ] `scroller_proportion_preset` + `circle_layout` (array parsers)
