@@ -22,12 +22,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <libinput.h>
 #include <unistd.h>
 #include <wlr/types/wlr_keyboard.h>
+#include <wlr/util/log.h>
 
 #include "acwm/config/parse.h"
 #include "acwm/config/internal.h"
 #include "acwm/config/preset.h"
+#include "acwm/common/server.h"
+#include "acwm/input/pointer.h"
 #include "acwm/manage/client.h"
 
 #endif

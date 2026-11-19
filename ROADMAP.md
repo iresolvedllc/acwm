@@ -141,9 +141,12 @@ struct mirrors.
           `src/config/option_bind.zig`, 11 tests)
           → every parse_option key now routes through Zig in the zig build
           (the C chain remains only for the meson build and is inert here)
-  - [ ] `set_value_default` (defaults preset) + `override_config` clamps +
-        `apply_option_expanded` wrapper — the remaining option_defs.c
-        functions
+  - [x] defaults/clamps tail: `set_value_default` (full defaults table),
+        `override_config` (~190 clamp rows, C order, double-domain for f64
+        fields), `update_global_var` (tag mask) and `apply_option_expanded`
+        (variable expansion wrapper) → `src/config/option_defaults.zig`,
+        6 tests. Only `parse_option` itself remains C in option_defs.c
+        (its chain inert under the zig build; kept for meson)
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind

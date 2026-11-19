@@ -2516,6 +2516,7 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	return true;
 }
 
+#ifndef ACWM_ZIG_OPTION_DEFAULTS
 bool apply_option_expanded(Config *config, char *key, char *value,
 						   int line_number) {
 	char *expanded = expand_config_variables(value);
@@ -3174,3 +3175,4 @@ void override_config(void) {
 void update_global_var(void) {
 	server.tagmask = ((uint32_t)1 << config.tag_num) - 1;
 }
+#endif /* ACWM_ZIG_OPTION_DEFAULTS */
