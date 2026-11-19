@@ -23,8 +23,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <wlr/types/wlr_keyboard.h>
 
 #include "acwm/config/parse.h"
 #include "acwm/config/internal.h"
+#include "acwm/manage/client.h"
 
 #endif
