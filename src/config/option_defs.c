@@ -176,6 +176,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (device_rule_group != 0)
 		return device_rule_group > 0;
 #endif
+#ifdef ACWM_ZIG_DIRECTIVES_OPTION
+	/* Phase 4 strangler: env/var/exec/exec_once/source directives live in
+	 * src/config/option_directives.zig. */
+	const int directives_group =
+		acwm_config_apply_directives_option(config, key, value, line_number);
+	if (directives_group != 0)
+		return directives_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

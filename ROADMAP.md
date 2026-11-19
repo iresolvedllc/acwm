@@ -131,7 +131,10 @@ struct mirrors.
           deprecation alias, keyboard repeat/kb_* strings, libinput params
           with -1/UINT32_MAX/NAN sentinels →
           `src/config/option_device_rule.zig`, 7 tests)
-    - [ ] env/var/exec/exec_once/source
+    - [x] env/var/exec/exec_once/source (env with ~/$HOME expansion across
+          occurrences, var name validation, strdup'd exec arrays, recursive
+          source/source_optional with C prefix-match quirks →
+          `src/config/option_directives.zig`, 9 tests)
     - [ ] mousebind/axisbind/switchbind/gesturebind branches
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)

@@ -283,7 +283,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -516,6 +516,17 @@ pub fn build(b: *std.Build) void {
     const odr_obj = b.addObject(.{ .name = "acwm-device-rule", .root_module = odr_mod });
     compositor.root_module.addObject(odr_obj);
 
+    // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
+    const odi_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_directives.zig"),
+    });
+    odi_mod.addImport("cc", c_mod);
+    const odi_obj = b.addObject(.{ .name = "acwm-option-directives", .root_module = odi_mod });
+    compositor.root_module.addObject(odi_obj);
+
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
         const c_file = protos.gen(xml, name, true, false, "");
@@ -718,6 +729,23 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_directives: var/config-file hooks stubbed (HOME is real).
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_directives.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/option_directives_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
