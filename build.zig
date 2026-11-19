@@ -278,6 +278,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/error_store.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/conflict_check.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -332,6 +334,19 @@ pub fn build(b: *std.Build) void {
     es_mod.addImport("cc", c_mod);
     const es_obj = b.addObject(.{ .name = "acwm-error-store", .root_module = es_mod });
     compositor.root_module.addObject(es_obj);
+
+    // Zig twin of conflict_check.c: keybind/mousebind/axisbind/switchbind/
+    // gesturebind conflict detection (pure logic; callbacks stay C ABI for
+    // qsort and the generic checker).
+    const cc_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/conflict_check.zig"),
+    });
+    cc_mod.addImport("cc", c_mod);
+    const cc_obj = b.addObject(.{ .name = "acwm-conflict-check", .root_module = cc_mod });
+    compositor.root_module.addObject(cc_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -535,6 +550,22 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/conflict_check.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/conflict_check_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
