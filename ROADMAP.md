@@ -154,7 +154,10 @@ struct mirrors.
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
       grouping via qsort, mouse/axis/switch/gesture generic checker, ALLDIR
       wildcards, allowconflict opt-out, mod_to_string; 10 tests)
-- [ ] `binding_parse.c` (861) — keybind table parsing
+- [x] `binding_parse.c` → `src/config/binding_parse.zig` (keymap
+      lifecycle, bind flags, modifier/key/button/mouse-action parsing,
+      comma-arg combination, 93-entry parse_func_name dispatch via
+      comptime @extern; 11 tests)
 - [ ] `load.c` (456) — config load orchestration (after parsers)
 - [ ] `reapply.c` (549) — hot-reload reapply (after load)
 - [ ] `cleanup.c` (361) — config teardown (after load)

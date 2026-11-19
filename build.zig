@@ -282,6 +282,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/error_nag.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/binding_parse.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -544,6 +546,18 @@ pub fn build(b: *std.Build) void {
     const en_obj = b.addObject(.{ .name = "acwm-error-nag", .root_module = en_mod });
     compositor.root_module.addObject(en_obj);
 
+    // Zig twin of binding_parse.c (slice 21): keymap lifecycle, modifier/key/
+    // button parsing and the 93-entry parse_func_name dispatch table.
+    const bp_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/binding_parse.zig"),
+    });
+    bp_mod.addImport("cc", c_mod);
+    const bp_obj = b.addObject(.{ .name = "acwm-binding-parse", .root_module = bp_mod });
+    compositor.root_module.addObject(bp_obj);
+
     // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
     const odi_mod = b.createModule(.{
         .target = target,
@@ -790,6 +804,28 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bind_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // binding_parse: xkb + dispatch + value_parse stubs.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/binding_parse.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/binding_parse_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
