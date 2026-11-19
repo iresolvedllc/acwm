@@ -20,3 +20,8 @@ util.o
 
 .envrc
 .direnv
+
+# VitePress site
+node_modules/
+.vitepress/dist/
+.vitepress/cache/

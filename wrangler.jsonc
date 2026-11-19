@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "acwm",
+  "compatibility_date": "2026-11-19",
+  "assets": {
+    "directory": "./.vitepress/dist"
+  },
+  "routes": [
+    {
+      "pattern": "wm.acw.rest",
+      "custom_domain": true
+    }
+  ]
+}
