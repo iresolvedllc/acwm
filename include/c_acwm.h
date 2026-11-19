@@ -23,7 +23,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <libinput.h>
+#include <sys/socket.h>
 #include <unistd.h>
+#include <wayland-server-core.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/util/log.h>
 
@@ -33,5 +35,6 @@
 #include "acwm/common/server.h"
 #include "acwm/input/pointer.h"
 #include "acwm/manage/client.h"
+#include "acwm/manage/monitor.h"
 
 #endif

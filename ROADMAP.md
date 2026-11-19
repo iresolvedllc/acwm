@@ -147,8 +147,10 @@ struct mirrors.
         (variable expansion wrapper) → `src/config/option_defaults.zig`,
         6 tests. Only `parse_option` itself remains C in option_defs.c
         (its chain inert under the zig build; kept for meson)
-- [ ] `error_nag.c` (388) — config error nag rendering (error_store done
-      above)
+- [x] `error_nag.c` → `src/config/error_nag.zig` (config-error nag
+      launcher: wl_client + acwm-nag spawn, WAYLAND_SOCKET handoff, first-3
+      lines piped + ellipsis summary, $EDITOR/$VISUAL edit command with
+      plus/colon/-g line syntax, ANSI stripping; 10 tests)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
       grouping via qsort, mouse/axis/switch/gesture generic checker, ALLDIR
       wildcards, allowconflict opt-out, mod_to_string; 10 tests)
