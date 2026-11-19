@@ -787,6 +787,12 @@ int acwm_config_apply_gaps_option(Config *config, char *key, char *value,
 int acwm_config_apply_array_option(Config *config, char *key, char *value,
 								   int line_number);
 
+/* Phase 4 strangler boundary (Zig): the monitor_rule branch lives in
+ * src/config/option_monitor_rule.zig. Same tri-state contract; the value
+ * buffer is parsed in place (strtok), like the C twin. */
+int acwm_config_apply_monitor_rule(Config *config, char *key, char *value,
+								   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

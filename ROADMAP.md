@@ -113,7 +113,15 @@ struct mirrors.
         `src/config/option_array.zig`: comma counting, strtok/sscanf
         semantics, 0.1..1.0 clamping, sanitized strings, full
         free-on-failure parity; 6 tests)
-  - [ ] monitor-rule and window-rule parsing tails
+  - [~] rule tails:
+    - [x] `monitor_rule` (name/make/model/serial, rr, scale, x/y,
+          width/height/refresh, vrr/hdr/lum/icc, custom/disable/primary;
+          realloc'd rule array + 4 validation gates →
+          `src/config/option_monitor_rule.zig`, 7 tests)
+    - [ ] tag_rule + layer_rule
+    - [ ] window_rule (incl. globalkeybinding)
+    - [ ] device_rule + env/var/exec/source
+    - [ ] mousebind/axisbind/switchbind/gesturebind branches
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
