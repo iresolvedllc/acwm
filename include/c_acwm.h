@@ -1,0 +1,30 @@
+/*
+ * Translation unit for the Zig build-system translate-c step.
+ *
+ * Zig 0.17 removed @cImport; Zig sources that need C types (the Phase 4
+ * config ports, which read/write the global `Config config`) import the
+ * translate-c output of this header instead ("cc" module in build.zig).
+ * Not used by C code.
+ */
+#ifndef __ACWM_C_TRANSLATION_UNIT_H__
+#define __ACWM_C_TRANSLATION_UNIT_H__
+
+/* wlroots exposes unstable APIs behind this guard; the compositor already
+ * defines it project-wide via cflags. */
+#define WLR_USE_UNSTABLE 1
+
+/* libc surfaces needed by the ported config modules (error_store uses
+ * stat/fcntl/unistd; others use stdlib/string). Kept here so the translated
+ * declarations — including struct stat — stay authoritative. */
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "acwm/config/parse.h"
+#include "acwm/config/internal.h"
+
+#endif
