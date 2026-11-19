@@ -120,6 +120,22 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (misc_group != 0)
 		return misc_group > 0;
 #endif
+#ifdef ACWM_ZIG_JUMLABEL_OPTION
+	/* Phase 4 strangler: jump-label decoration options live in
+	 * src/config/option_jumplabel.zig. */
+	const int jumplabel_group =
+		acwm_config_apply_jumplabel_option(config, key, value, line_number);
+	if (jumplabel_group != 0)
+		return jumplabel_group > 0;
+#endif
+#ifdef ACWM_ZIG_GAPS_OPTION
+	/* Phase 4 strangler: gaps/scratchpad options live in
+	 * src/config/option_gaps.zig. */
+	const int gaps_group =
+		acwm_config_apply_gaps_option(config, key, value, line_number);
+	if (gaps_group != 0)
+		return gaps_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

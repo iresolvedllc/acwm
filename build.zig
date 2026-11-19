@@ -283,7 +283,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -436,6 +436,28 @@ pub fn build(b: *std.Build) void {
     om_mod.addImport("cc", c_mod);
     const om_obj = b.addObject(.{ .name = "acwm-option-misc", .root_module = om_mod });
     compositor.root_module.addObject(om_obj);
+
+    // Zig twin of the jump-label decoration group (option_defs.c slice 10).
+    const oj_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_jumplabel.zig"),
+    });
+    oj_mod.addImport("cc", c_mod);
+    const oj_obj = b.addObject(.{ .name = "acwm-option-jumplabel", .root_module = oj_mod });
+    compositor.root_module.addObject(oj_obj);
+
+    // Zig twin of the gaps/scratchpad group (option_defs.c slice 11).
+    const og_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_gaps.zig"),
+    });
+    og_mod.addImport("cc", c_mod);
+    const og_obj = b.addObject(.{ .name = "acwm-option-gaps", .root_module = og_mod });
+    compositor.root_module.addObject(og_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -641,6 +663,36 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/option_bar_stub.c"),
             .flags = &.{},
         });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_jumplabel: colors need the parse_color/convert stub.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_jumplabel.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/option_bar_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_gaps: no C stub needed (libc + cc types only).
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_gaps.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }

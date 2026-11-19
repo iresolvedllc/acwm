@@ -105,8 +105,10 @@ struct mirrors.
         hdr, shortcuts/lock, auto-reload, monocle flags, snap/drag/gesture
         tuning, five fixed-size xkb rule strings →
         `src/config/option_misc.zig`, 6 tests)
-  - [ ] jump-label decoration set (10 keys)
-  - [ ] gaps/scratchpad/special gaps + border_px (12 keys)
+  - [x] jump-label decoration set (10 keys → `src/config/option_jumplabel.zig`,
+        5 tests)
+  - [x] gaps/scratchpad/special gaps + border_px (12 keys →
+        `src/config/option_gaps.zig`, 5 tests)
   - [ ] `scroller_proportion_preset` + `circle_layout` (array parsers)
   - [ ] monitor-rule and window-rule parsing tails
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
