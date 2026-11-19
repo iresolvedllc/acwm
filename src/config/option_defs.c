@@ -152,6 +152,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (monitor_rule_group != 0)
 		return monitor_rule_group > 0;
 #endif
+#ifdef ACWM_ZIG_RULES_OPTION
+	/* Phase 4 strangler: tag_rule/layer_rule parsing lives in
+	 * src/config/option_rules.zig. */
+	const int rules_group =
+		acwm_config_apply_rules_option(config, key, value, line_number);
+	if (rules_group != 0)
+		return rules_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

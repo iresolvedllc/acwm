@@ -27,6 +27,7 @@
 
 #include "acwm/config/parse.h"
 #include "acwm/config/internal.h"
+#include "acwm/config/preset.h"
 #include "acwm/manage/client.h"
 
 #endif

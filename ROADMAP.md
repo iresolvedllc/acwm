@@ -118,7 +118,10 @@ struct mirrors.
           width/height/refresh, vrr/hdr/lum/icc, custom/disable/primary;
           realloc'd rule array + 4 validation gates →
           `src/config/option_monitor_rule.zig`, 7 tests)
-    - [ ] tag_rule + layer_rule
+    - [x] tag_rule + layer_rule (tag: id/* wildcard, matchers, master/
+          scroller knobs; layer: name defaulting to "default", animation
+          types, capture/blur/shadow switches → `src/config/option_rules.zig`,
+          6 tests)
     - [ ] window_rule (incl. globalkeybinding)
     - [ ] device_rule + env/var/exec/source
     - [ ] mousebind/axisbind/switchbind/gesturebind branches

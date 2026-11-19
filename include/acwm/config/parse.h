@@ -793,6 +793,12 @@ int acwm_config_apply_array_option(Config *config, char *key, char *value,
 int acwm_config_apply_monitor_rule(Config *config, char *key, char *value,
 								   int line_number);
 
+/* Phase 4 strangler boundary (Zig): the tag_rule and layer_rule branches
+ * live in src/config/option_rules.zig. Same tri-state contract; values are
+ * parsed in place (strtok), like the C twin. */
+int acwm_config_apply_rules_option(Config *config, char *key, char *value,
+								   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

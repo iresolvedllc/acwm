@@ -240,7 +240,7 @@ fn resetStub() void {
 
 /// Copies the rule string into a mutable buffer — the parser mutates it.
 fn apply(cfg: *c.Config, value: []const u8) c_int {
-    var buf: [256:0]u8 = undefined;
+    var buf: [512:0]u8 = undefined;
     @memcpy(buf[0..value.len], value);
     buf[value.len] = 0;
     return acwm_config_apply_monitor_rule(cfg, "monitor_rule", &buf, 43);
