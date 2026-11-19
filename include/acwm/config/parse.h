@@ -742,6 +742,12 @@ int acwm_config_apply_layout_option(Config *config, char *key, char *value,
 int acwm_config_apply_input_option(Config *config, char *key, char *value,
 								   int line_number);
 
+/* Phase 4 strangler boundary (Zig): the visuals option group (blur, shadows,
+ * opacity, the color block) lives in src/config/option_visuals.zig. Same
+ * tri-state contract. */
+int acwm_config_apply_visuals_option(Config *config, char *key, char *value,
+									 int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

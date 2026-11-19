@@ -80,6 +80,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (input_group != 0)
 		return input_group > 0;
 #endif
+#ifdef ACWM_ZIG_VISUALS_OPTION
+	/* Phase 4 strangler: visuals options (blur/shadows/opacity/colors) live
+	 * in src/config/option_visuals.zig. */
+	const int visuals_group =
+		acwm_config_apply_visuals_option(config, key, value, line_number);
+	if (visuals_group != 0)
+		return visuals_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

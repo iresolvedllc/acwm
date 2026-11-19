@@ -87,7 +87,9 @@ struct mirrors.
   - [x] input options (23 keys: jump labels, cursor hide + size/theme,
         axis-bind timeout, drag/border-resize, tab modes, keyrepeat,
         trackpad/touch toggles → `src/config/option_input.zig`, 5 tests)
-  - [ ] animations/visuals options
+  - [x] visuals options (33 keys: blur + nested scenefx blur_params,
+        shadows, window opacity, the 14-key color block with legacy error
+        names → `src/config/option_visuals.zig`, 6 tests)
   - [ ] remaining misc + defaults preset
 - [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
       `error_nag.c` (388) — config error nag rendering
