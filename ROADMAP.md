@@ -90,9 +90,20 @@ struct mirrors.
   - [x] visuals options (33 keys: blur + nested scenefx blur_params,
         shadows, window opacity, the 14-key color block with legacy error
         names → `src/config/option_visuals.zig`, 6 tests)
-  - [ ] remaining misc + defaults preset
-- [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
-      `error_nag.c` (388) — config error nag rendering
+  - [x] device options (21 keys: mouse/trackpad accel + double-precision
+        speeds, left-handed/middle-emulation, click/scroll methods,
+        send-events modes, button_map, scroll factors →
+        `src/config/option_device.zig`, 4 tests)
+  - [ ] animation options (27 keys: types, durations, curves)
+  - [ ] scroller/focus options (~15 keys)
+  - [ ] early misc (scratchpad persistence, xwayland, tearing/hdr,
+        snap/drag/gesture, monocle flags, xkb rules, ~35 keys)
+  - [ ] jump-label decoration set (10 keys)
+  - [ ] gaps/scratchpad/special gaps + border_px (12 keys)
+  - [ ] `scroller_proportion_preset` + `circle_layout` (array parsers)
+  - [ ] monitor-rule and window-rule parsing tails
+- [ ] `error_nag.c` (388) — config error nag rendering (error_store done
+      above)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
       grouping via qsort, mouse/axis/switch/gesture generic checker, ALLDIR
       wildcards, allowconflict opt-out, mod_to_string; 10 tests)

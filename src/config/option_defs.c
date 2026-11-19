@@ -88,6 +88,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (visuals_group != 0)
 		return visuals_group > 0;
 #endif
+#ifdef ACWM_ZIG_DEVICE_OPTION
+	/* Phase 4 strangler: device options live in
+	 * src/config/option_device.zig. */
+	const int device_group =
+		acwm_config_apply_device_option(config, key, value, line_number);
+	if (device_group != 0)
+		return device_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

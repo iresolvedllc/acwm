@@ -126,8 +126,10 @@ boundaries, each with unit tests:
 zig build test   # runs the ported modules' test suites
 ```
 
-Ported so far: the config value parser and the variable expander. The build
-system, protocol codegen and packaging are already Zig-native.
+Ported so far: the config value parser, variable expander, error store,
+binding conflict checker, and five config option groups (bar, session,
+layout, input, visuals) — 51 unit tests and counting. The build system,
+protocol codegen and packaging are already Zig-native.
 
 ## License
 
