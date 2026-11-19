@@ -283,7 +283,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -527,6 +527,17 @@ pub fn build(b: *std.Build) void {
     const odi_obj = b.addObject(.{ .name = "acwm-option-directives", .root_module = odi_mod });
     compositor.root_module.addObject(odi_obj);
 
+    // Zig twin of key_mode + the bind branches (option_defs.c slice 18).
+    const obi_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_bind.zig"),
+    });
+    obi_mod.addImport("cc", c_mod);
+    const obi_obj = b.addObject(.{ .name = "acwm-option-bind", .root_module = obi_mod });
+    compositor.root_module.addObject(obi_obj);
+
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
         const c_file = protos.gen(xml, name, true, false, "");
@@ -729,6 +740,28 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_bind: binding_parse.c helpers stubbed with real headers.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_bind.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/option_bind_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);

@@ -817,6 +817,13 @@ int acwm_config_apply_device_rule(Config *config, char *key, char *value,
 int acwm_config_apply_directives_option(Config *config, char *key, char *value,
 										int line_number);
 
+/* Phase 4 strangler boundary (Zig): key_mode and the bind/binds/mousebind/
+ * axisbind/switchbind/gesturebind branches live in
+ * src/config/option_bind.zig. Same tri-state contract; values are parsed in
+ * place (sscanf), like the C twin. */
+int acwm_config_apply_bind_option(Config *config, char *key, char *value,
+								  int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

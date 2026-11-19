@@ -135,7 +135,15 @@ struct mirrors.
           occurrences, var name validation, strdup'd exec arrays, recursive
           source/source_optional with C prefix-match quirks →
           `src/config/option_directives.zig`, 9 tests)
-    - [ ] mousebind/axisbind/switchbind/gesturebind branches
+    - [x] key_mode + bind/binds/mousebind/axisbind/switchbind/gesturebind
+          (8-field sscanf parsing, mode classification, bind-flag regex
+          incl. its literal '|' quirk, silent-vs-logged failure split →
+          `src/config/option_bind.zig`, 11 tests)
+          → every parse_option key now routes through Zig in the zig build
+          (the C chain remains only for the meson build and is inert here)
+  - [ ] `set_value_default` (defaults preset) + `override_config` clamps +
+        `apply_option_expanded` wrapper — the remaining option_defs.c
+        functions
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind

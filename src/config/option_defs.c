@@ -184,6 +184,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (directives_group != 0)
 		return directives_group > 0;
 #endif
+#ifdef ACWM_ZIG_BIND_OPTION
+	/* Phase 4 strangler: key_mode and the bind branches live in
+	 * src/config/option_bind.zig. */
+	const int bind_group =
+		acwm_config_apply_bind_option(config, key, value, line_number);
+	if (bind_group != 0)
+		return bind_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {
