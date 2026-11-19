@@ -748,6 +748,51 @@ int acwm_config_apply_input_option(Config *config, char *key, char *value,
 int acwm_config_apply_visuals_option(Config *config, char *key, char *value,
 									 int line_number);
 
+/* Phase 4 strangler boundary (Zig): the device option group (mouse/trackpad
+ * accel, click/scroll methods, button_map, scroll factors) lives in
+ * src/config/option_device.zig. Same tri-state contract. */
+int acwm_config_apply_device_option(Config *config, char *key, char *value,
+									int line_number);
+
+/* Phase 4 strangler boundary (Zig): the animation option group (types,
+ * fades, durations, Bezier curves) lives in
+ * src/config/option_animation.zig. Same tri-state contract. */
+int acwm_config_apply_animation_option(Config *config, char *key, char *value,
+									   int line_number);
+
+/* Phase 4 strangler boundary (Zig): the scroller/focus option group lives
+ * in src/config/option_scroller.zig. Same tri-state contract. */
+int acwm_config_apply_scroller_option(Config *config, char *key, char *value,
+									  int line_number);
+
+/* Phase 4 strangler boundary (Zig): the early misc option group
+ * (scratchpad/xwayland/tearing/hdr/snap/gesture/xkb rules) lives in
+ * src/config/option_misc.zig. Same tri-state contract. */
+int acwm_config_apply_misc_option(Config *config, char *key, char *value,
+								  int line_number);
+
+/* Phase 4 strangler boundary (Zig): the jump-label decoration group lives
+ * in src/config/option_jumplabel.zig. Same tri-state contract. */
+int acwm_config_apply_jumplabel_option(Config *config, char *key, char *value,
+									   int line_number);
+
+/* Phase 4 strangler boundary (Zig): the gaps/scratchpad group lives in
+ * src/config/option_gaps.zig. Same tri-state contract. */
+int acwm_config_apply_gaps_option(Config *config, char *key, char *value,
+								  int line_number);
+
+/* Phase 4 strangler boundary (Zig): the comma-list options
+ * (scroller_proportion_preset, circle_layout) live in
+ * src/config/option_array.zig. Same tri-state contract. */
+int acwm_config_apply_array_option(Config *config, char *key, char *value,
+								   int line_number);
+
+/* Phase 4 strangler boundary (Zig): the monitor_rule branch lives in
+ * src/config/option_monitor_rule.zig. Same tri-state contract; the value
+ * buffer is parsed in place (strtok), like the C twin. */
+int acwm_config_apply_monitor_rule(Config *config, char *key, char *value,
+								   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

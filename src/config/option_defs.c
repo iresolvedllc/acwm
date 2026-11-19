@@ -88,6 +88,70 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (visuals_group != 0)
 		return visuals_group > 0;
 #endif
+#ifdef ACWM_ZIG_DEVICE_OPTION
+	/* Phase 4 strangler: device options live in
+	 * src/config/option_device.zig. */
+	const int device_group =
+		acwm_config_apply_device_option(config, key, value, line_number);
+	if (device_group != 0)
+		return device_group > 0;
+#endif
+#ifdef ACWM_ZIG_ANIMATION_OPTION
+	/* Phase 4 strangler: animation options live in
+	 * src/config/option_animation.zig. */
+	const int animation_group =
+		acwm_config_apply_animation_option(config, key, value, line_number);
+	if (animation_group != 0)
+		return animation_group > 0;
+#endif
+#ifdef ACWM_ZIG_SCROLLER_OPTION
+	/* Phase 4 strangler: scroller/focus options live in
+	 * src/config/option_scroller.zig. */
+	const int scroller_group =
+		acwm_config_apply_scroller_option(config, key, value, line_number);
+	if (scroller_group != 0)
+		return scroller_group > 0;
+#endif
+#ifdef ACWM_ZIG_MISC_OPTION
+	/* Phase 4 strangler: early misc options live in
+	 * src/config/option_misc.zig. */
+	const int misc_group =
+		acwm_config_apply_misc_option(config, key, value, line_number);
+	if (misc_group != 0)
+		return misc_group > 0;
+#endif
+#ifdef ACWM_ZIG_JUMLABEL_OPTION
+	/* Phase 4 strangler: jump-label decoration options live in
+	 * src/config/option_jumplabel.zig. */
+	const int jumplabel_group =
+		acwm_config_apply_jumplabel_option(config, key, value, line_number);
+	if (jumplabel_group != 0)
+		return jumplabel_group > 0;
+#endif
+#ifdef ACWM_ZIG_GAPS_OPTION
+	/* Phase 4 strangler: gaps/scratchpad options live in
+	 * src/config/option_gaps.zig. */
+	const int gaps_group =
+		acwm_config_apply_gaps_option(config, key, value, line_number);
+	if (gaps_group != 0)
+		return gaps_group > 0;
+#endif
+#ifdef ACWM_ZIG_ARRAY_OPTION
+	/* Phase 4 strangler: comma-list options (scroller_proportion_preset,
+	 * circle_layout) live in src/config/option_array.zig. */
+	const int array_group =
+		acwm_config_apply_array_option(config, key, value, line_number);
+	if (array_group != 0)
+		return array_group > 0;
+#endif
+#ifdef ACWM_ZIG_MONITOR_RULE
+	/* Phase 4 strangler: monitor_rule parsing lives in
+	 * src/config/option_monitor_rule.zig. */
+	const int monitor_rule_group =
+		acwm_config_apply_monitor_rule(config, key, value, line_number);
+	if (monitor_rule_group != 0)
+		return monitor_rule_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {
