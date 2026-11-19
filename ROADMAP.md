@@ -127,7 +127,11 @@ struct mirrors.
           animation types, tag masks, global_key_binding with
           parse_mod/parse_key and hard-abort semantics →
           `src/config/option_window_rule.zig`, 7 tests)
-    - [ ] device_rule + env/var/exec/source
+    - [x] device_rule (25 attributes: match name/type with touchpad
+          deprecation alias, keyboard repeat/kb_* strings, libinput params
+          with -1/UINT32_MAX/NAN sentinels →
+          `src/config/option_device_rule.zig`, 7 tests)
+    - [ ] env/var/exec/exec_once/source
     - [ ] mousebind/axisbind/switchbind/gesturebind branches
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)
