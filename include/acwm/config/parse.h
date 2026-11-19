@@ -737,6 +737,11 @@ int acwm_config_apply_session_option(Config *config, char *key, char *value,
 int acwm_config_apply_layout_option(Config *config, char *key, char *value,
 									int line_number);
 
+/* Phase 4 strangler boundary (Zig): the input/cursor/drag option group
+ * lives in src/config/option_input.zig. Same tri-state contract. */
+int acwm_config_apply_input_option(Config *config, char *key, char *value,
+								   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

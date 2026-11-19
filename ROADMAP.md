@@ -84,7 +84,9 @@ struct mirrors.
   - [x] layout options (22 keys: master defaults, tag_num/gather, dwindle
         tuning, hotarea, overview gaps, overcircle ratio →
         `src/config/option_layout.zig`, 5 tests)
-  - [ ] input options (keyrepeat, cursor, trackpad)
+  - [x] input options (23 keys: jump labels, cursor hide + size/theme,
+        axis-bind timeout, drag/border-resize, tab modes, keyrepeat,
+        trackpad/touch toggles → `src/config/option_input.zig`, 5 tests)
   - [ ] animations/visuals options
   - [ ] remaining misc + defaults preset
 - [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
