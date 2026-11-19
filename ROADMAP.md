@@ -85,8 +85,9 @@ struct mirrors.
   - [ ] remaining misc + defaults preset
 - [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
       `error_nag.c` (388) — config error nag rendering
-- [ ] `conflict_check.c` (252) — keybind conflict detection (pure logic,
-      ideal tests)
+- [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
+      grouping via qsort, mouse/axis/switch/gesture generic checker, ALLDIR
+      wildcards, allowconflict opt-out, mod_to_string; 10 tests)
 - [ ] `binding_parse.c` (861) — keybind table parsing
 - [ ] `load.c` (456) — config load orchestration (after parsers)
 - [ ] `reapply.c` (549) — hot-reload reapply (after load)
