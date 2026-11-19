@@ -122,7 +122,11 @@ struct mirrors.
           scroller knobs; layer: name defaulting to "default", animation
           types, capture/blur/shadow switches → `src/config/option_rules.zig`,
           6 tests)
-    - [ ] window_rule (incl. globalkeybinding)
+    - [x] window_rule + window_rule_once (49 attributes: 34 int relays
+          defaulting to -1, 6 floats, title/app_id/monitor strings,
+          animation types, tag masks, global_key_binding with
+          parse_mod/parse_key and hard-abort semantics →
+          `src/config/option_window_rule.zig`, 7 tests)
     - [ ] device_rule + env/var/exec/source
     - [ ] mousebind/axisbind/switchbind/gesturebind branches
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
