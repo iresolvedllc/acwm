@@ -90,9 +90,40 @@ struct mirrors.
   - [x] visuals options (33 keys: blur + nested scenefx blur_params,
         shadows, window opacity, the 14-key color block with legacy error
         names → `src/config/option_visuals.zig`, 6 tests)
-  - [ ] remaining misc + defaults preset
-- [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
-      `error_nag.c` (388) — config error nag rendering
+  - [x] device options (21 keys: mouse/trackpad accel + double-precision
+        speeds, left-handed/middle-emulation, click/scroll methods,
+        send-events modes, button_map, scroll factors →
+        `src/config/option_device.zig`, 4 tests)
+  - [x] animation options (25 keys: enable flags, open/close types via
+        animation_type_from_string, fades/direction, zoom + opacity floats,
+        five durations, seven 4-double Bezier curves via parse_double_array
+        → `src/config/option_animation.zig`, 5 tests)
+  - [x] scroller/focus options (15 keys: structs/proportions, edge
+        scroller, cross-monitor/tag focus policy →
+        `src/config/option_scroller.zig`, 5 tests)
+  - [x] early misc (30 keys: scratchpad persistence, xwayland, sync/tearing/
+        hdr, shortcuts/lock, auto-reload, monocle flags, snap/drag/gesture
+        tuning, five fixed-size xkb rule strings →
+        `src/config/option_misc.zig`, 6 tests)
+  - [x] jump-label decoration set (10 keys → `src/config/option_jumplabel.zig`,
+        5 tests)
+  - [x] gaps/scratchpad/special gaps + border_px (12 keys →
+        `src/config/option_gaps.zig`, 5 tests)
+  - [x] `scroller_proportion_preset` + `circle_layout` (array parsers →
+        `src/config/option_array.zig`: comma counting, strtok/sscanf
+        semantics, 0.1..1.0 clamping, sanitized strings, full
+        free-on-failure parity; 6 tests)
+  - [~] rule tails:
+    - [x] `monitor_rule` (name/make/model/serial, rr, scale, x/y,
+          width/height/refresh, vrr/hdr/lum/icc, custom/disable/primary;
+          realloc'd rule array + 4 validation gates →
+          `src/config/option_monitor_rule.zig`, 7 tests)
+    - [ ] tag_rule + layer_rule
+    - [ ] window_rule (incl. globalkeybinding)
+    - [ ] device_rule + env/var/exec/source
+    - [ ] mousebind/axisbind/switchbind/gesturebind branches
+- [ ] `error_nag.c` (388) — config error nag rendering (error_store done
+      above)
 - [x] `conflict_check.c` → `src/config/conflict_check.zig` (keybind
       grouping via qsort, mouse/axis/switch/gesture generic checker, ALLDIR
       wildcards, allowconflict opt-out, mod_to_string; 10 tests)
