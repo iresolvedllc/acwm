@@ -781,6 +781,12 @@ int acwm_config_apply_jumplabel_option(Config *config, char *key, char *value,
 int acwm_config_apply_gaps_option(Config *config, char *key, char *value,
 								  int line_number);
 
+/* Phase 4 strangler boundary (Zig): the comma-list options
+ * (scroller_proportion_preset, circle_layout) live in
+ * src/config/option_array.zig. Same tri-state contract. */
+int acwm_config_apply_array_option(Config *config, char *key, char *value,
+								   int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

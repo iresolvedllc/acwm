@@ -109,7 +109,10 @@ struct mirrors.
         5 tests)
   - [x] gaps/scratchpad/special gaps + border_px (12 keys →
         `src/config/option_gaps.zig`, 5 tests)
-  - [ ] `scroller_proportion_preset` + `circle_layout` (array parsers)
+  - [x] `scroller_proportion_preset` + `circle_layout` (array parsers →
+        `src/config/option_array.zig`: comma counting, strtok/sscanf
+        semantics, 0.1..1.0 clamping, sanitized strings, full
+        free-on-failure parity; 6 tests)
   - [ ] monitor-rule and window-rule parsing tails
 - [ ] `error_nag.c` (388) — config error nag rendering (error_store done
       above)

@@ -136,6 +136,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (gaps_group != 0)
 		return gaps_group > 0;
 #endif
+#ifdef ACWM_ZIG_ARRAY_OPTION
+	/* Phase 4 strangler: comma-list options (scroller_proportion_preset,
+	 * circle_layout) live in src/config/option_array.zig. */
+	const int array_group =
+		acwm_config_apply_array_option(config, key, value, line_number);
+	if (array_group != 0)
+		return array_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

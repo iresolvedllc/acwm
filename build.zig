@@ -283,7 +283,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -458,6 +458,19 @@ pub fn build(b: *std.Build) void {
     og_mod.addImport("cc", c_mod);
     const og_obj = b.addObject(.{ .name = "acwm-option-gaps", .root_module = og_mod });
     compositor.root_module.addObject(og_obj);
+
+    // Zig twin of the comma-list option parsers (option_defs.c slice 12):
+    // scroller_proportion_preset + circle_layout, with the C memory
+    // management and strtok/sscanf semantics preserved.
+    const oarr_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/option_array.zig"),
+    });
+    oarr_mod.addImport("cc", c_mod);
+    const oarr_obj = b.addObject(.{ .name = "acwm-option-array", .root_module = oarr_mod });
+    compositor.root_module.addObject(oarr_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -661,6 +674,23 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // option_array: sanitize_string is stubbed; strtok/sscanf are real.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/option_array.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/option_array_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
