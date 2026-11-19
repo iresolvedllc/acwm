@@ -71,6 +71,9 @@ struct mirrors.
 - [x] `value_parse.c` → `src/config/value_parse.zig` (18 helpers, 11 tests)
 - [x] `variable_expand.c` → `src/config/variable_expand.zig` (translate-c
       pattern established; `cc` module)
+- [x] `error_store.c` → `src/config/error_store.zig` (config-error log
+      mirror: XDG runtime dir fallback, 0700/0600 hardening, O_NOFOLLOW,
+      ANSI-reset repair; 7 tests)
 - [~] `option_defs.c` (3,028 lines) — the whale. Slices, in order:
   - [x] bar option group (45 `bar_*`/`group_bar_*`/`tab_bar_*` keys →
         `src/config/option_bar.zig`: comptime row table, tri-state
@@ -80,8 +83,8 @@ struct mirrors.
   - [ ] input options (keyrepeat, cursor, trackpad)
   - [ ] animations/visuals options
   - [ ] remaining misc + defaults preset
-- [ ] `variable_expand.c` ✅ (done above) / `error_store.c` (117) +
-      `error_nag.c` (388) — config error reporting path
+- [ ] `variable_expand.c` ✅ (done above) / `error_store.c` ✅ (done above) +
+      `error_nag.c` (388) — config error nag rendering
 - [ ] `conflict_check.c` (252) — keybind conflict detection (pure logic,
       ideal tests)
 - [ ] `binding_parse.c` (861) — keybind table parsing

@@ -17,7 +17,7 @@ const c = @import("cc");
 const PATH_MAX = c.PATH_MAX;
 
 // module state (C statics)
-var store_path: [PATH_MAX:0]u8 = [_]u8{0} ** (PATH_MAX + 1);
+var store_path: [PATH_MAX:0]u8 = std.mem.zeroes([PATH_MAX:0]u8);
 var store_file: ?*c.FILE = null;
 var store_active: bool = false;
 
@@ -54,10 +54,10 @@ fn storeDirPrepare(path: [*:0]const u8) bool {
 
 export fn config_error_store_path() callconv(.c) [*:0]const u8 {
     if (store_path[0] == 0) {
-        var dir: [PATH_MAX:0]u8 = [_]u8{0} ** (PATH_MAX + 1);
+        var dir: [PATH_MAX:0]u8 = std.mem.zeroes([PATH_MAX:0]u8);
 
         const runtime = c.getenv("XDG_RUNTIME_DIR");
-        if (runtime != null and runtime.?[0] == '/') {
+        if (runtime != null and runtime[0] == '/') {
             _ = c.snprintf(&dir, PATH_MAX, "%s/acwm", runtime.?);
             if (!storeDirPrepare(&dir))
                 dir[0] = 0;
@@ -139,7 +139,7 @@ export fn config_error_store_record(message: ?[*:0]const u8) callconv(.c) void {
         _ = c.fflush(store_file);
     }
 
-    free(@ptrCast(clean));
+    c.free(@ptrCast(clean));
 }
 
 // ---------------------------------------------------------------------------
@@ -149,26 +149,29 @@ export fn config_error_store_record(message: ?[*:0]const u8) callconv(.c) void {
 const testing = std.testing;
 
 fn resetState() void {
-    store_path = [_]u8{0} ** (PATH_MAX + 1);
+    store_path = std.mem.zeroes([PATH_MAX:0]u8);
     store_file = null;
     store_active = false;
 }
 
 fn tmpdirFor(comptime tag: []const u8) ![:0]u8 {
     var tmpl: [64]u8 = undefined;
-    const used = std.fmt.bufPrintZ(
+    const used = std.fmt.bufPrintSentinel(
         &tmpl,
         "/tmp/opencode/acwm-store-" ++ tag ++ "-{d}-XXXXXX",
-        .{c.getpid()},
+        .{c.getpid()}, 0,
     ) catch unreachable;
     const dir = c.mkdtemp(used.ptr) orelse return error.MkdtempFailed;
-    return @constCast(std.mem.span(dir));
+    // mkdtemp's result points into the stack buffer above — copy it out.
+    return testing.allocator.dupeSentinel(u8, std.mem.span(dir), 0);
 }
 
 fn fileContents(path: [*:0]const u8, alloc: std.mem.Allocator) ![]u8 {
-    const f = try std.fs.cwd().openFile(std.mem.span(path), .{});
-    defer f.close();
-    return f.readToEndAlloc(alloc, 1 << 20);
+    const f = c.fopen(path, "rb") orelse return error.OpenFailed;
+    defer _ = c.fclose(f);
+    var buf: [1 << 20]u8 = undefined;
+    const n = c.fread(&buf, 1, buf.len, f);
+    return alloc.dupe(u8, buf[0..n]);
 }
 
 test "path falls back to /tmp/acwm-<uid> without XDG_RUNTIME_DIR" {
@@ -183,26 +186,27 @@ test "path falls back to /tmp/acwm-<uid> without XDG_RUNTIME_DIR" {
 test "path prefers $XDG_RUNTIME_DIR/acwm and prepares it 0700" {
     resetState();
     const tmp = try tmpdirFor("xdg");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
 
     const path = std.mem.span(config_error_store_path());
-    const want_dir = std.fmt.allocPrintZ(
+    const want_dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm/config-errors.log",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(want_dir);
     try testing.expectEqualStrings(want_dir, path);
 
     // the /acwm dir was created and is a private dir owned by us
     var st: c.struct_stat = undefined;
-    const dir_z = std.fmt.allocPrintZ(
+    const dir_z = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(dir_z);
-    try testing.expectEqual(@as(c_int, 0), c.stat(@ptrCast(dir_z), &st));
+    try testing.expectEqual(@as(c_int, 0), c.stat(dir_z.ptr, &st));
     try testing.expect((st.st_mode & c.S_IFMT) == c.S_IFDIR);
     try testing.expectEqual(@as(u32, 0o700), st.st_mode & 0o777);
 }
@@ -210,15 +214,16 @@ test "path prefers $XDG_RUNTIME_DIR/acwm and prepares it 0700" {
 test "loose-permission dir is tightened to 0700" {
     resetState();
     const tmp = try tmpdirFor("loose");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
 
-    const dir = std.fmt.allocPrintZ(
+    const dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(dir);
-    try testing.expectEqual(@as(c_int, 0), c.mkdir(@ptrCast(dir), 0o755));
+    try testing.expectEqual(@as(c_int, 0), c.mkdir(dir.ptr, 0o755));
 
     _ = config_error_store_path();
     var st: c.struct_stat = undefined;
@@ -229,6 +234,7 @@ test "loose-permission dir is tightened to 0700" {
 test "begin/active/record/end round trip with trimming and reset repair" {
     resetState();
     const tmp = try tmpdirFor("roundtrip");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
     const path = config_error_store_path();
 
@@ -261,24 +267,33 @@ test "begin/active/record/end round trip with trimming and reset repair" {
 
 test "record outside an active store is a no-op" {
     resetState();
-    config_error_store_record("before begin"); // must not create anything
-    try testing.expect(!config_error_store_active());
-
     const tmp = try tmpdirFor("noop");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
-    config_error_store_begin();
-    config_error_store_end();
-    config_error_store_record("after end");
 
-    // no file was ever created
+    // record before begin must not create the log file (path() only
+    // prepares the directory)
+    config_error_store_record("before begin");
+    try testing.expect(!config_error_store_active());
     const path = config_error_store_path();
     var st: c.struct_stat = undefined;
     try testing.expect(c.stat(path, &st) != 0);
+
+    // begin creates it; record after end must not append
+    config_error_store_begin();
+    try testing.expect(c.stat(path, &st) == 0);
+    config_error_store_end();
+    config_error_store_record("after end");
+
+    const got = try fileContents(path, testing.allocator);
+    defer testing.allocator.free(got);
+    try testing.expectEqualStrings("", got);
 }
 
 test "re-begin truncates the previous store" {
     resetState();
     const tmp = try tmpdirFor("rebegin");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
     const path = config_error_store_path();
 
@@ -296,34 +311,35 @@ test "re-begin truncates the previous store" {
 test "O_NOFOLLOW refuses a symlinked store file" {
     resetState();
     const tmp = try tmpdirFor("nofollow");
+    defer testing.allocator.free(tmp);
     _ = c.setenv("XDG_RUNTIME_DIR", tmp, 1);
 
-    const dir = std.fmt.allocPrintZ(
+    const dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(dir);
-    try testing.expectEqual(@as(c_int, 0), c.mkdir(@ptrCast(dir), 0o700));
+    try testing.expectEqual(@as(c_int, 0), c.mkdir(dir.ptr, 0o700));
 
     // victim file + symlink in place of the store
-    const victim = std.fmt.allocPrintZ(
+    const victim = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/victim.txt",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(victim);
-    const vf = std.fs.cwd().createFile(std.mem.span(victim), .{}) catch unreachable;
-    vf.writeAll("untouched") catch unreachable;
-    vf.close();
+    const vf = c.fopen(victim, "w") orelse unreachable;
+    _ = c.fputs("untouched", vf);
+    _ = c.fclose(vf);
 
-    const link = std.fmt.allocPrintZ(
+    const link = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm/config-errors.log",
-        .{tmp},
+        .{tmp}, 0,
     ) catch unreachable;
     defer testing.allocator.free(link);
-    try testing.expectEqual(@as(c_int, 0), c.symlink(@ptrCast(victim), @ptrCast(link)));
+    try testing.expectEqual(@as(c_int, 0), c.symlink(victim.ptr, link.ptr));
 
     config_error_store_begin();
     try testing.expect(!config_error_store_active()); // open(ELOOP) → no store

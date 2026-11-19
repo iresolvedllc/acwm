@@ -276,6 +276,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/variable_expand.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/error_store.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -318,6 +320,18 @@ pub fn build(b: *std.Build) void {
     ob_mod.addImport("cc", c_mod);
     const ob_obj = b.addObject(.{ .name = "acwm-option-bar", .root_module = ob_mod });
     compositor.root_module.addObject(ob_obj);
+
+    // Zig twin of error_store.c: the config-error log mirror (XDG runtime
+    // dir, O_NOFOLLOW, 0600/0700 hardening). Pure libc + cc types.
+    const es_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/error_store.zig"),
+    });
+    es_mod.addImport("cc", c_mod);
+    const es_obj = b.addObject(.{ .name = "acwm-error-store", .root_module = es_mod });
+    compositor.root_module.addObject(es_obj);
 
     for (server_protos) |name| {
         const xml = serverProtoXml(b, wl_protocol_dir, name);
@@ -523,6 +537,20 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/option_bar_stub.c"),
             .flags = &.{},
         });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // error_store does its own tmpdir/env manipulation; no C stub is
+        // needed (pure libc + cc types).
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/error_store.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
