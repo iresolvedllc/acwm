@@ -725,6 +725,12 @@ bool parse_option(Config *config, char *key, char *value, int line_number);
 int acwm_config_apply_bar_option(Config *config, char *key, char *value,
 								 int line_number);
 
+/* Phase 4 strangler boundary (Zig): the idle + session/general option group
+ * (focus_on_activate..warp_cursor) lives in src/config/option_session.zig.
+ * Same tri-state contract as the bar applier. */
+int acwm_config_apply_session_option(Config *config, char *key, char *value,
+									 int line_number);
+
 bool parse_config_line(Config *config, const char *line, int line_number);
 
 bool parse_config_file(Config *config, const char *file_path, bool must_exist);

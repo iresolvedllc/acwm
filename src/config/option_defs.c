@@ -56,6 +56,14 @@ bool parse_option(Config *config, char *key, char *value, int line_number) {
 	if (bar_group != 0)
 		return bar_group > 0;
 #endif
+#ifdef ACWM_ZIG_SESSION_OPTION
+	/* Phase 4 strangler: idle + session/general options live in
+	 * src/config/option_session.zig. */
+	const int session_group =
+		acwm_config_apply_session_option(config, key, value, line_number);
+	if (session_group != 0)
+		return session_group > 0;
+#endif
 	if (strcmp(key, "key_mode") == 0) {
 		snprintf(config->keymode, sizeof(config->keymode), "%.27s", value);
 	} else if (strcmp(key, "animations") == 0) {

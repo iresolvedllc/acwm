@@ -78,7 +78,9 @@ struct mirrors.
   - [x] bar option group (45 `bar_*`/`group_bar_*`/`tab_bar_*` keys →
         `src/config/option_bar.zig`: comptime row table, tri-state
         `acwm_config_apply_bar_option`, 10 tests with C-parity checks)
-  - [ ] idle + general/session options
+  - [x] idle + general/session options (9 keys: focus_on_activate,
+        numlock_on, the idle trio + idle/resume commands, sloppy_focus,
+        warp_cursor → `src/config/option_session.zig`, 5 tests)
   - [ ] layout options (scroll/mfact/pertag)
   - [ ] input options (keyrepeat, cursor, trackpad)
   - [ ] animations/visuals options
