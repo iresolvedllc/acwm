@@ -163,7 +163,9 @@ struct mirrors.
       recursive index restore, xkb layout resolution, 12 CHVT defaults,
       full parse_config pipeline; 7 tests)
 - [ ] `reapply.c` (549) — hot-reload reapply (after load)
-- [ ] `cleanup.c` (361) — config teardown (after load)
+- [x] `cleanup.c` → `src/config/cleanup.zig` (deep-free of every config
+      allocation + animation baked-point caches, with null/count resets and
+      idempotent re-entry; 3 tests)
 - [ ] `watcher.c` (452) — file watching (inotify glue; port last of config)
 - [ ] `toml_parse.c` (748) — decide: port the hand-rolled TOML parser vs.
       adopt a Zig TOML library for the test harness and keep the C parser

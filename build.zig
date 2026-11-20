@@ -286,6 +286,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/load.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/cleanup.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -572,6 +574,17 @@ pub fn build(b: *std.Build) void {
     const ld_obj = b.addObject(.{ .name = "acwm-load", .root_module = ld_mod });
     compositor.root_module.addObject(ld_obj);
 
+    // Zig twin of cleanup.c (slice 23): config teardown.
+    const cl_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/cleanup.zig"),
+    });
+    cl_mod.addImport("cc", c_mod);
+    const cl_obj = b.addObject(.{ .name = "acwm-cleanup", .root_module = cl_mod });
+    compositor.root_module.addObject(cl_obj);
+
     // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
     const odi_mod = b.createModule(.{
         .target = target,
@@ -818,6 +831,28 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bind_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // cleanup: server + keymap teardown stubs.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/cleanup.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/cleanup_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
