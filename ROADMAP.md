@@ -158,7 +158,10 @@ struct mirrors.
       lifecycle, bind flags, modifier/key/button/mouse-action parsing,
       comma-arg combination, 93-entry parse_func_name dispatch via
       comptime @extern; 11 tests)
-- [ ] `load.c` (456) — config load orchestration (after parsers)
+- [x] `load.c` → `src/config/load.zig` (line/file parsing with 255-byte
+      value cap, format detection, path resolution, file-path table with
+      recursive index restore, xkb layout resolution, 12 CHVT defaults,
+      full parse_config pipeline; 7 tests)
 - [ ] `reapply.c` (549) — hot-reload reapply (after load)
 - [ ] `cleanup.c` (361) — config teardown (after load)
 - [ ] `watcher.c` (452) — file watching (inotify glue; port last of config)
