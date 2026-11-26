@@ -1051,6 +1051,7 @@ int32_t switch_proportion_preset(const Arg *arg) {
 
 #endif /* ACWM_ZIG_BIND_LAYOUT */
 
+#ifndef ACWM_ZIG_BIND_MOVE
 int32_t smart_move_window(const Arg *arg) {
 	Client *c = NULL, *tc = NULL;
 	int32_t nx, ny;
@@ -1348,6 +1349,8 @@ int32_t spawn_on_empty(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_MOVE */
+
 int32_t switch_keyboard_layout(const Arg *arg) {
 	if (!server.keyboard_group || !server.keyboard_group->wlr_group ||
 		!server.seat) {
@@ -1407,6 +1410,7 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_BIND_MOVE
 int32_t switch_layout(const Arg *arg) {
 
 	int32_t jk, ji;
@@ -1469,6 +1473,8 @@ int32_t switch_layout(const Arg *arg) {
 }
 
 #ifndef ACWM_ZIG_BIND_TAGVIEW
+#endif /* ACWM_ZIG_BIND_MOVE */
+
 int32_t tag(const Arg *arg) {
 	if (!server.selected_monitor)
 		return 0;

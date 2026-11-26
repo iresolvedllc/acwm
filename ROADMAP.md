@@ -296,8 +296,15 @@ struct mirrors.
         set_layout by name, set_key_mode and the scroller set_proportion /
         switch_proportion_preset actions. C twins guarded with
         ACWM_ZIG_BIND_LAYOUT; 8 tests
-  - [ ] remaining bind.c: move/resize/smart/center, spawn/keyboard, view
-        shifting, overview/zoom/monitor and scroller/dwindle helpers
+  - [x] smart-move/center/spawn/layout-cycle → `src/dispatch/bind_move.zig`:
+        smart_move_window and smart_resize_window (edge/neighbour snapping
+        with monitor clamps), center_window for floating and scroller heads,
+        spawn_shell/spawn (activation token, setsid, wordexp/execvp) and
+        spawn_on_empty, plus switch_layout table/circle cycling.
+        switch_keyboard_layout stays C for the keyboard slice; C twins
+        guarded with ACWM_ZIG_BIND_MOVE; 6 tests
+  - [ ] remaining bind.c: switch_keyboard_layout, view shifting,
+        overview/zoom/monitor and scroller/dwindle helpers
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.
