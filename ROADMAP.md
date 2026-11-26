@@ -178,7 +178,13 @@ struct mirrors.
 - [ ] `toml_parse.c` (748) — decide: port the hand-rolled TOML parser vs.
       adopt a Zig TOML library for the test harness and keep the C parser
       until Phase 5 cutover
-- [ ] IPC message building (`ipc.c` JSON builders → Zig, cJSON out)
+- [~] IPC (`ipc.c`, 1,400) — sliced:
+  - [x] JSON builders (tags/client/monitor/layers/layouts + all-tags
+        responses) → `src/ipc/ipc_builders.zig`; C twins guarded with
+        ACWM_ZIG_IPC_BUILDERS (meson keeps them); real cJSON; 8 tests that
+        parse the emitted JSON
+  - [ ] watch-client plumbing + notifiers
+  - [ ] `handle_command` dispatcher (~480 lines)
 - [ ] Layout math: `arrange.c`, `scroll.c`, `dwindle.c`, `vertical.c`,
       `horizontal.c` — pure geometry functions, heavy table tests
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers

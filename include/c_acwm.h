@@ -16,6 +16,7 @@
 /* libc surfaces needed by the ported config modules (error_store uses
  * stat/fcntl/unistd; others use stdlib/string). Kept here so the translated
  * declarations — including struct stat — stay authoritative. */
+#include <cjson/cJSON.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -31,6 +32,8 @@
 #include <wlr/backend/libinput.h>
 #include <wlr/interfaces/wlr_keyboard.h>
 #include <wlr/types/wlr_cursor.h>
+#include <wlr/types/wlr_ext_foreign_toplevel_list_v1.h>
+#include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_keyboard_group.h>
 #include <wlr/types/wlr_xcursor_manager.h>
@@ -47,6 +50,7 @@
 #include "acwm/layout/layout.h"
 #include "acwm/ipc/ipc.h"
 #include "acwm/manage/client.h"
+#include "acwm/manage/layer.h"
 #include "acwm/manage/monitor.h"
 #include "acwm/switcher/switcher.h"
 

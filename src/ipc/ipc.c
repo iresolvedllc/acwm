@@ -106,6 +106,7 @@ const char *ipc_get_layout_str(void) {
 	snprintf(layout, sizeof(layout), "%s", name ? name : "");
 	return layout;
 }
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *build_tags_json(Monitor *m) {
 	cJSON *tags_array = cJSON_CreateArray();
 	Client *c = NULL;
@@ -230,6 +231,8 @@ cJSON *build_layers_response(void) {
 	cJSON_AddItemToObject(resp, "layers", arr);
 	return resp;
 }
+
+#endif /* ACWM_ZIG_IPC_BUILDERS */
 
 void send_static_json(int fd, const char *json_str) {
 	size_t len = strlen(json_str);
@@ -545,6 +548,7 @@ void ipc_cleanup(void) {
 	wl_list_for_each_safe(wc, tmp, &ipc_watch_clients, link)
 		ipc_remove_watch_client(wc);
 }
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *tags_mask_to_array(uint32_t tag_mask) {
 	cJSON *arr = cJSON_CreateArray();
 	if (tag_mask & TAG0_MASK)
@@ -568,6 +572,9 @@ cJSON *monitor_active_tags(Monitor *m) {
 	return arr;
 }
 
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
+#ifndef ACWM_ZIG_IPC_BUILDERS
 static const char *client_output_name(Client *c) {
 	if (c->mon)
 		return c->mon->wlr_output->name;
@@ -614,6 +621,8 @@ cJSON *build_client_json(Client *c) {
 	return obj;
 }
 
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
 static cJSON *build_all_clients_array(void) {
 	cJSON *arr = cJSON_CreateArray();
 	Client *c;
@@ -628,6 +637,7 @@ static cJSON *build_all_clients_array(void) {
 	return arr;
 }
 
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *build_monitor_json(Monitor *m) {
 	cJSON *resp = cJSON_CreateObject();
 	cJSON_AddStringToObject(resp, "name", m->wlr_output->name);
@@ -656,6 +666,8 @@ cJSON *build_monitor_json(Monitor *m) {
 						  cJSON_CreateString(ipc_get_layout_str()));
 	return resp;
 }
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
 void handle_command(int client_fd, const char *cmd_raw) {
 	cJSON *resp = NULL;
 	char *json_str = NULL;

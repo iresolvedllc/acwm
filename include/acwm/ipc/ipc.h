@@ -74,6 +74,7 @@ void ipc_notify_json_to_fd(int fd, cJSON *json);
 
 cJSON *tags_mask_to_array(uint32_t tag_mask);
 cJSON *build_tags_json(Monitor *m);
+cJSON *monitor_active_client(Monitor *m);
 cJSON *monitor_active_tags(Monitor *m);
 cJSON *build_client_json(Client *c);
 cJSON *build_monitor_json(Monitor *m);
