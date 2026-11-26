@@ -170,7 +170,11 @@ struct mirrors.
 - [x] `cleanup.c` → `src/config/cleanup.zig` (deep-free of every config
       allocation + animation baked-point caches, with null/count resets and
       idempotent re-entry; 3 tests)
-- [ ] `watcher.c` (452) — file watching (inotify glue; port last of config)
+- [x] `watcher.c` → `src/config/watcher.zig` (inotify auto-reload: path
+      tracking with dev/ino/size/mtime snapshots, per-directory watches,
+      event matching incl. IN_Q_OVERFLOW, 150 ms debounce timer, reload on
+      change; Linux backend only — BSD kqueue branch dropped, session is
+      Linux-only; 4 tests incl. a real-kernel inotify round trip)
 - [ ] `toml_parse.c` (748) — decide: port the hand-rolled TOML parser vs.
       adopt a Zig TOML library for the test harness and keep the C parser
       until Phase 5 cutover

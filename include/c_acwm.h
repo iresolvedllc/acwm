@@ -16,11 +16,13 @@
 /* libc surfaces needed by the ported config modules (error_store uses
  * stat/fcntl/unistd; others use stdlib/string). Kept here so the translated
  * declarations — including struct stat — stay authoritative. */
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/inotify.h>
 #include <sys/stat.h>
 #include <libinput.h>
 #include <sys/socket.h>

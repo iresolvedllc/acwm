@@ -290,6 +290,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/reapply.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/watcher.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -598,6 +600,17 @@ pub fn build(b: *std.Build) void {
     const ra_obj = b.addObject(.{ .name = "acwm-reapply", .root_module = ra_mod });
     compositor.root_module.addObject(ra_obj);
 
+    // Zig twin of watcher.c (slice 25): inotify config auto-reload.
+    const wt_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/watcher.zig"),
+    });
+    wt_mod.addImport("cc", c_mod);
+    const wt_obj = b.addObject(.{ .name = "acwm-watcher", .root_module = wt_mod });
+    compositor.root_module.addObject(wt_obj);
+
     // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
     const odi_mod = b.createModule(.{
         .target = target,
@@ -844,6 +857,28 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bind_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // watcher: config/reload/path stubs, real inotify.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/watcher.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/watcher_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
