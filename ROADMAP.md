@@ -229,6 +229,15 @@ struct mirrors.
         recorder. Also fixed a parity bug in the already-ported vertical
         tile: C stores `w / available` with integer division before widening
         to double, now reproduced with a regression test)
+  - [x] `scroll.c` → `src/layout/scroll.zig` (horizontal + vertical scroller
+        layouts with their persistent per-tag stack state: node create/find/
+        remove/clear, client sync, weight normalization, stack geometry,
+        fullscreen/maximized adjustment and monitor clamping, the focused
+        head/left/right or up/down arrangement with center/overspread modes,
+        insert-before/after stack linking, drop tiling, head/tail lookups,
+        visible-state reconciliation, same-stack and cross-stack swaps, and
+        client exchange. C twins guarded with ACWM_ZIG_LAYOUT_SCROLL;
+        12 tests driving the state machine and both layout cores)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 
