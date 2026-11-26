@@ -242,6 +242,7 @@ int32_t exchange_stack_client(const Arg *arg) {
 bool view_shift_tag(const Arg *arg, int dir);
 bool view_shift_tag_have_client(const Arg *arg, int dir);
 
+#ifndef ACWM_ZIG_BIND_FOCUS
 int32_t focus_direction(const Arg *arg) {
 
 	if (!server.selected_monitor)
@@ -597,6 +598,8 @@ int32_t inc_nmaster(const Arg *arg) {
 	arrange(server.selected_monitor, false, false);
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_FOCUS */
 
 int32_t increase_gaps(const Arg *arg) {
 	if (!server.selected_monitor)
@@ -2734,6 +2737,7 @@ int32_t dwindle_toggle_current_split(const Arg *arg) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_BIND_FOCUS
 int32_t focus_by_id(const Arg *arg) {
 	if (!server.selected_monitor || !arg->tc)
 		return 0;
@@ -2741,6 +2745,8 @@ int32_t focus_by_id(const Arg *arg) {
 	client_active(arg->tc);
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_FOCUS */
 
 int32_t load_config_file(const Arg *arg) {
 	snprintf(server.cli_config_path, sizeof(server.cli_config_path), "%s",

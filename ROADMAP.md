@@ -280,9 +280,17 @@ struct mirrors.
         maximize/overlay/render-border toggles, toggle_tag (all-tags
         semantics) and toggle_view (size reset + printstatus). C twins
         guarded with ACWM_ZIG_BIND_TAGVIEW; 9 recorded-side-effect tests
-  - [ ] remaining bind.c: focus/group, layout & proportion actions,
-        move/resize/smart/center, spawn/keyboard, view shifting,
-        overview/zoom/monitor and scroller/dwindle helpers
+  - [x] focus/group cluster → `src/dispatch/bind_focus.zig`:
+        directional focus with cross-tag/cross-monitor fallbacks,
+        focus-window-or-workspace, client group join/leave (linking,
+        monitor moves, focus-stack reinsertion), focus_last history walk,
+        trackpad toggle, focus_monitor (cycle/direction/spec + clear focus),
+        focus_stack, over_circle overview cycling, group_focus,
+        inc_nmaster and focus_by_id. C twins guarded with
+        ACWM_ZIG_BIND_FOCUS; 9 tests
+  - [ ] remaining bind.c: layout & proportion actions, move/resize/smart/
+        center, spawn/keyboard, view shifting, overview/zoom/monitor and
+        scroller/dwindle helpers
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.
