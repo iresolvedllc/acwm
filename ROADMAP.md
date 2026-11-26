@@ -310,9 +310,16 @@ struct mirrors.
         routing, combo_view, zoom (promotes the visible tiled candidate),
         setoption (parse + override + reset) and minimize_window. C twins
         guarded with ACWM_ZIG_BIND_VIEW; 8 tests
-  - [ ] remaining bind.c: switch_keyboard_layout, overview controls,
-        monitor sleep/enable/disable, set_overview/toggle/enter/leave/jump
-        and scroller/dwindle helpers
+  - [x] monitor/scroller/dwindle/reload tail → `src/dispatch/bind_tail.zig`:
+        monitor enable/disable/toggle/sleep/wakeup/sleep-toggle (output state
+        + only_sleep + layout reflow), scroller_apply_stack (axis guards,
+        same-stack neighbour moves, cross-stack tail appends, UNDIR stack
+        inserts), scroller_stack dispatch, toggle_all_floating with focus
+        raising, dwindle split direction helpers (toggle/horizontal/vertical,
+        current-parent flip) and load_config_file. C twins guarded with
+        ACWM_ZIG_BIND_TAIL; 7 tests
+  - [ ] remaining bind.c: switch_keyboard_layout and the overview
+        enter/leave/jump cluster
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.

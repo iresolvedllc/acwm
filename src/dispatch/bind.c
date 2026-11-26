@@ -2460,6 +2460,7 @@ int32_t toggle_jump(const Arg *arg) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_BIND_TAIL
 int32_t disable_monitor(const Arg *arg) {
 	Monitor *m = NULL;
 
@@ -2765,3 +2766,4 @@ int32_t load_config_file(const Arg *arg) {
 			 arg->v);
 	return reload_config(arg);
 }
+#endif /* ACWM_ZIG_BIND_TAIL */
