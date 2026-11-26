@@ -175,7 +175,8 @@ fn verticalTileCore(m: *Monitor, ctx: ?*const LayoutContext) void {
             } else {
                 const denom = m.w.width - mx - cur_gapih - cur_gapih * ie * (r - 1);
                 w = @divTrunc(denom, r);
-                cl.master_inner_per = @as(f64, @floatFromInt(w)) / @as(f64, @floatFromInt(denom));
+                // C divides ints here before assigning to the double field.
+                cl.master_inner_per = @floatFromInt(@divTrunc(w, denom));
                 cl.master_mfact_per = mfact;
             }
             client_tile_resize(cl, .{
@@ -198,7 +199,7 @@ fn verticalTileCore(m: *Monitor, ctx: ?*const LayoutContext) void {
             } else {
                 const denom = m.w.width - tx - cur_gapih - cur_gapih * ie * (r - 1);
                 w = @divTrunc(denom, r);
-                cl.stack_inner_per = @as(f64, @floatFromInt(w)) / @as(f64, @floatFromInt(denom));
+                cl.stack_inner_per = @floatFromInt(@divTrunc(w, denom));
                 cl.master_mfact_per = mfact;
             }
             client_tile_resize(cl, .{
@@ -945,6 +946,29 @@ test "vertical_tile: smartgaps removes gaps for a single client" {
 
     try expectCount(1);
     try expectBox(0, 0, 0, 1000, 800);
+}
+
+test "vertical_tile: inner ratios use C integer division" {
+    resetWorld();
+    var p: c.Pertag = undefined;
+    var m: Monitor = undefined;
+    baseMonitor(&m, &p);
+    p.mfacts[0] = 0.5;
+    m.visible_fake_tiling_clients = 3;
+
+    var a: Client = undefined;
+    var b: Client = undefined;
+    var cl_c: Client = undefined;
+    addClient(&a, &m, 1);
+    addClient(&b, &m, 1);
+    addClient(&cl_c, &m, 1);
+
+    vertical_tile(&m);
+
+    // list runs c (master), b (first stack), a (second stack)
+    try testing.expectEqual(@as(f64, 0.0), b.stack_inner_per);
+    try testing.expectEqual(@as(f64, 1.0), a.stack_inner_per);
+    try testing.expectEqual(@as(f64, 1.0), cl_c.master_inner_per);
 }
 
 test "vertical_tile: master_inner_per distributes surplus width" {

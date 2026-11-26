@@ -221,6 +221,14 @@ struct mirrors.
         per-client removal across all monitor pertags, the layout core with
         stale-leaf cleanup and focus fallback, predict insert/remove, and
         monitor cleanup; 12 tests)
+  - [x] `horizontal.c` → `src/layout/horizontal.zig` (tile, right_tile,
+        center_tile with alternating left/right stacks and both single-stack
+        modes, deck, monocle, grid with centered overflow columns, fair;
+        plus all seven predict variants. C twins guarded with
+        ACWM_ZIG_LAYOUT_HORIZONTAL; 12 tests against the shared resize
+        recorder. Also fixed a parity bug in the already-ported vertical
+        tile: C stores `w / available` with integer division before widening
+        to double, now reproduced with a regression test)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 
