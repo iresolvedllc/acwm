@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_SCENE_NODE
 #include "acwm/common/scene_node.h"
 #include <scenefx/types/wlr_scene.h>
 #include <stdlib.h>
@@ -204,3 +205,4 @@ struct wlr_scene_node *acwm_scene_node_at(struct wlr_scene_node *node,
 	}
 	return result;
 }
+#endif /* ACWM_ZIG_SCENE_NODE */

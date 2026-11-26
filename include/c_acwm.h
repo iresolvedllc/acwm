@@ -45,6 +45,7 @@
 #include "acwm/config/preset.h"
 #include "acwm/common/input-event-codes.h"
 #include "acwm/common/util.h"
+#include "acwm/common/scene_node.h"
 #include "acwm/common/server.h"
 #include "acwm/input/device.h"
 #include "acwm/input/keyboard.h"

@@ -346,6 +346,12 @@ green.
       helpers and string joins. `die`/`string_printf` and the log backend
       stay C (C-variadic functions cannot be defined in Zig). C twins
       guarded with ACWM_ZIG_UTIL; 7 tests
+- [x] Common layer slice 2 → `src/common/scene_node.zig`: payload
+      allocation/replacement with destroy-listener cleanup, ancestor lookup,
+      ignore-hit flags and the pointer hit-test walker (reverse child order,
+      subtree pruning, rect clipped-region rejection, buffer input callbacks,
+      rotation-aware sizes and node-local coordinates). C twin guarded with
+      ACWM_ZIG_SCENE_NODE; 5 tests against a fake scene graph
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
