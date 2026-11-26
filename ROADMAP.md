@@ -356,6 +356,14 @@ green.
       cairo surface wrapped in a wlr_buffer, color-change rebuilds, corner
       radii, box clamping/positioning, enabled state and teardown. C twin
       guarded with ACWM_ZIG_DIM_NODE; 3 tests with real cairo
+- [x] Animation slice → `src/animation/common.zig` (cubic curves with
+      per-type control points, 256 baked-point tables and binary search,
+      snapshot-metadata destruction, per-monitor frame requests) and
+      `src/animation/tag.zig` (tag-in direction/origin, arrange-visible
+      scratchpad/tag0/tag-switch paths, tag-out pending geometry and
+      arrange-hidden slide-out/tagout resets). Scene snapshot helpers remain
+      C; guards are ACWM_ZIG_ANIMATION_COMMON / ACWM_ZIG_ANIMATION_TAG;
+      7 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
