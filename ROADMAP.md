@@ -175,9 +175,15 @@ struct mirrors.
       event matching incl. IN_Q_OVERFLOW, 150 ms debounce timer, reload on
       change; Linux backend only — BSD kqueue branch dropped, session is
       Linux-only; 4 tests incl. a real-kernel inotify round trip)
-- [ ] `toml_parse.c` (748) — decide: port the hand-rolled TOML parser vs.
-      adopt a Zig TOML library for the test harness and keep the C parser
-      until Phase 5 cutover
+- [x] `toml_parse.c` → `src/config/toml_parse.zig` — **decision: hand-port**
+      (no external TOML dependency; the accepted syntax is project-specific
+      and diagnostics/truncation must match). Covers comment stripping with
+      quote awareness, scalar/escape handling, bool mapping, array iteration
+      and comma-joining keys, env/var formatting, bind section headers with
+      keymode+flag suffixes and all five bind prefixes, rule pair
+      accumulation and flush through parse_option, global statements,
+      multi-line statement completion, quoted keys and the error/report
+      flow. C twin guarded with ACWM_ZIG_TOML_PARSE; 11 fixture tests
 - [~] IPC (`ipc.c`, 1,400) — sliced:
   - [x] JSON builders (tags/client/monitor/layers/layouts + all-tags
         responses) → `src/ipc/ipc_builders.zig`; C twins guarded with
