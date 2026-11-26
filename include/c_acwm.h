@@ -50,6 +50,7 @@
 #include "acwm/input/pointer.h"
 #include "acwm/layout/layout.h"
 #include "acwm/ipc/ipc.h"
+#include "acwm/animation/client.h"
 #include "acwm/manage/client.h"
 #include "acwm/manage/layer.h"
 #include "acwm/manage/monitor.h"

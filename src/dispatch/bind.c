@@ -1462,6 +1462,7 @@ int32_t switch_layout(const Arg *arg) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_BIND_TAGVIEW
 int32_t tag(const Arg *arg) {
 	if (!server.selected_monitor)
 		return 0;
@@ -1946,6 +1947,8 @@ int32_t toggle_view(const Arg *arg) {
 	printstatus(IPC_WATCH_ARRANGGE);
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_TAGVIEW */
 
 static uint32_t tags_last_tag_num(uint32_t tags) {
 	uint32_t i, last = 0;

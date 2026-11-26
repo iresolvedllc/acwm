@@ -270,7 +270,19 @@ struct mirrors.
       rendering/hit-testing, and config application. C twin guarded with
       ACWM_ZIG_TEXT_NODE; 4 tests against a stub scene graph with real
       cairo/pango)
-- [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
+- [~] `dispatch/bind.c` (2,746) — sliced:
+  - [x] tag/view/action cluster → `src/dispatch/bind_tagview.zig`: tag,
+        tag_monitor (cycle/direction/spec monitor moves with float-geometry
+        rescaling), tag_silent (tag0 handling + fullscreen clearing),
+        tag_to_left/right carousel, special-workspace toggles and window
+        moves to/from tag0, scratchpad and named-scratchpad toggles,
+        fake-fullscreen/floating/fullscreen/global/gaps/group-bar/
+        maximize/overlay/render-border toggles, toggle_tag (all-tags
+        semantics) and toggle_view (size reset + printstatus). C twins
+        guarded with ACWM_ZIG_BIND_TAGVIEW; 9 recorded-side-effect tests
+  - [ ] remaining bind.c: focus/group, layout & proportion actions,
+        move/resize/smart/center, spawn/keyboard, view shifting,
+        overview/zoom/monitor and scroller/dwindle helpers
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.
