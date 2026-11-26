@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_TAB
 #include "acwm/manage/tab.h"
 #include "acwm/common/scene_node.h"
 #include "acwm/common/server.h"
@@ -447,3 +448,4 @@ void client_draw_tabbar(Client *c, struct ivec2 offsets) {
 		i++;
 	}
 }
+#endif /* ACWM_ZIG_TAB */

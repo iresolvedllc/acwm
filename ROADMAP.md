@@ -364,6 +364,13 @@ green.
       arrange-hidden slide-out/tagout resets). Scene snapshot helpers remain
       C; guards are ACWM_ZIG_ANIMATION_COMMON / ACWM_ZIG_ANIMATION_TAG;
       7 tests
+- [x] `manage/tab.c` → `src/manage/tab.zig`: layout-mode gating
+      (monocle/deck tab modes), tab-chain head/focus/leave, monitor sync
+      (kept-member filtering and chain rebuild), detach/replace relinking,
+      input-penetration propagation across the chain, bar-node lifecycle
+      (create/lower/title/config/destroy), raise/reparent helpers and the
+      side-by-side strip layout with offsets and focus flags. C twin guarded
+      with ACWM_ZIG_TAB; 7 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
