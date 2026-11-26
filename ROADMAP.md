@@ -238,6 +238,16 @@ struct mirrors.
         visible-state reconciliation, same-stack and cross-stack swaps, and
         client exchange. C twins guarded with ACWM_ZIG_LAYOUT_SCROLL;
         12 tests driving the state machine and both layout cores)
+  - [x] `arrange.c` hub → `src/layout/arrange.zig` (size-weight
+        distribution for master/stack and centered stacks, the pre-arrange
+        visibility pass with scroll-head counting, isleftstack side
+        assignment and arrange show/hide hooks, tag remap/gather with pertag
+        state moves and trailing-slot resets, the `layouts[]` table and
+        overview layout descriptor, special-view empty handling, and
+        `arrange()` with special-gap swapping, tab sync, overview dispatch,
+        post-layout tag gathering and pointer/idle/printstatus hooks. C twin
+        guarded with ACWM_ZIG_ARRANGE_HUB; the resize_* drag family stays C
+        for the next slice; 10 tests)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 

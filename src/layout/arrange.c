@@ -1098,6 +1098,7 @@ void resize_tile_client(Client *gc, bool isdrag, int32_t offsetx,
 these two functions will never be triggered.
 Just in case to facilitate the final investigation*/
 
+#ifndef ACWM_ZIG_ARRANGE_HUB
 void check_size_per_valid(Client *c) {
 	if (c->ismaster) {
 		assert(c->master_inner_per > 0.0f && c->master_inner_per <= 1.0f);
@@ -1524,3 +1525,4 @@ void arrange(Monitor *m, bool want_animation, bool from_view) {
 
 	printstatus(IPC_WATCH_ARRANGGE);
 }
+#endif /* ACWM_ZIG_ARRANGE_HUB */
