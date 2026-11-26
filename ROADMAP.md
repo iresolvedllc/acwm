@@ -352,6 +352,10 @@ green.
       subtree pruning, rect clipped-region rejection, buffer input callbacks,
       rotation-aware sizes and node-local coordinates). C twin guarded with
       ACWM_ZIG_SCENE_NODE; 5 tests against a fake scene graph
+- [x] Common/draw slice 3 → `src/draw/dim-node.zig`: the dim overlay's 1x1
+      cairo surface wrapped in a wlr_buffer, color-change rebuilds, corner
+      radii, box clamping/positioning, enabled state and teardown. C twin
+      guarded with ACWM_ZIG_DIM_NODE; 3 tests with real cairo
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_DIM_NODE
 #include "acwm/draw/dim-node.h"
 
 #include <drm_fourcc.h>
@@ -186,3 +187,4 @@ void acwm_dim_node_set_enabled(AcwmDimNode *node, bool enabled) {
 	}
 	wlr_scene_node_set_enabled(&node->scene_buffer->node, enabled);
 }
+#endif /* ACWM_ZIG_DIM_NODE */
