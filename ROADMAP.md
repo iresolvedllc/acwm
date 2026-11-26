@@ -202,8 +202,16 @@ struct mirrors.
         command responses, tag/client fixtures, dispatch tokenizing, watch
         promotion, init/cleanup round trip
   - [x] **ipc.c fully ported** — no C twins left under ACWM_ZIG_IPC_SERVER
-- [ ] Layout math: `arrange.c`, `scroll.c`, `dwindle.c`, `vertical.c`,
+- [~] Layout math: `arrange.c`, `scroll.c`, `dwindle.c`, `vertical.c`,
       `horizontal.c` — pure geometry functions, heavy table tests
+  - [x] `vertical.c` → `src/layout/vertical.zig` (vertical tile/deck/grid/
+        fair cores + all four predict variants; C twins guarded with
+        ACWM_ZIG_LAYOUT_VERTICAL; C arithmetic domains preserved — pertag
+        mfacts are float, master ratios double, 0.65 grid width double,
+        deck `round`, truncating int conversions; 9 tests against a
+        resize-recording stub covering masters/stack, inner+outer gaps,
+        smartgaps, proportional master widths, deck visibility updates,
+        single/double/2x2 grids, fair remainder rows and predict probes)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 
