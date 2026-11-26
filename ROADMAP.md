@@ -288,9 +288,16 @@ struct mirrors.
         focus_stack, over_circle overview cycling, group_focus,
         inc_nmaster and focus_by_id. C twins guarded with
         ACWM_ZIG_BIND_FOCUS; 9 tests
-  - [ ] remaining bind.c: layout & proportion actions, move/resize/smart/
-        center, spawn/keyboard, view shifting, overview/zoom/monitor and
-        scroller/dwindle helpers
+  - [x] layout/gap/proportion/window actions → `src/dispatch/bind_layout.zig`:
+        all seven gap adjusters, set_master_factor with broadcast, kill_client
+        (force/normal), move_resize bar-node resolution, move_window and
+        resize_window for floating/tiled clients, restore_minimized
+        (scratchpad eviction, minimized restore, tag/monitor reset), quit,
+        set_layout by name, set_key_mode and the scroller set_proportion /
+        switch_proportion_preset actions. C twins guarded with
+        ACWM_ZIG_BIND_LAYOUT; 8 tests
+  - [ ] remaining bind.c: move/resize/smart/center, spawn/keyboard, view
+        shifting, overview/zoom/monitor and scroller/dwindle helpers
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.

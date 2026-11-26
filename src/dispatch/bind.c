@@ -601,6 +601,7 @@ int32_t inc_nmaster(const Arg *arg) {
 
 #endif /* ACWM_ZIG_BIND_FOCUS */
 
+#ifndef ACWM_ZIG_BIND_LAYOUT
 int32_t increase_gaps(const Arg *arg) {
 	if (!server.selected_monitor)
 		return 0;
@@ -1047,6 +1048,8 @@ int32_t switch_proportion_preset(const Arg *arg) {
 	arrange(m, false, false);
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_LAYOUT */
 
 int32_t smart_move_window(const Arg *arg) {
 	Client *c = NULL, *tc = NULL;
