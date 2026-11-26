@@ -26,7 +26,12 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
+#include <wlr/backend/libinput.h>
+#include <wlr/interfaces/wlr_keyboard.h>
+#include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_keyboard.h>
+#include <wlr/types/wlr_keyboard_group.h>
+#include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/util/log.h>
 
 #include "acwm/config/parse.h"
@@ -34,7 +39,11 @@
 #include "acwm/config/preset.h"
 #include "acwm/common/input-event-codes.h"
 #include "acwm/common/server.h"
+#include "acwm/input/device.h"
+#include "acwm/input/keyboard.h"
 #include "acwm/input/pointer.h"
+#include "acwm/layout/layout.h"
+#include "acwm/ipc/ipc.h"
 #include "acwm/manage/client.h"
 #include "acwm/manage/monitor.h"
 #include "acwm/switcher/switcher.h"

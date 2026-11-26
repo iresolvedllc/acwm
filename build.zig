@@ -288,6 +288,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/cleanup.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/config/reapply.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -585,6 +587,17 @@ pub fn build(b: *std.Build) void {
     const cl_obj = b.addObject(.{ .name = "acwm-cleanup", .root_module = cl_mod });
     compositor.root_module.addObject(cl_obj);
 
+    // Zig twin of reapply.c (slice 24): hot-reload reapply layer.
+    const ra_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/config/reapply.zig"),
+    });
+    ra_mod.addImport("cc", c_mod);
+    const ra_obj = b.addObject(.{ .name = "acwm-reapply", .root_module = ra_mod });
+    compositor.root_module.addObject(ra_obj);
+
     // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
     const odi_mod = b.createModule(.{
         .target = target,
@@ -831,6 +844,28 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bind_stub.c"),
+            .flags = &.{},
+        });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // reapply: acwm + wlr stubs and data symbols.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/reapply.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput", "libcjson", "libudev" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/reapply_stub.c"),
             .flags = &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);

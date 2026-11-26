@@ -162,7 +162,11 @@ struct mirrors.
       value cap, format detection, path resolution, file-path table with
       recursive index restore, xkb layout resolution, 12 CHVT defaults,
       full parse_config pipeline; 7 tests)
-- [ ] `reapply.c` (549) — hot-reload reapply (after load)
+- [x] `reapply.c` → `src/config/reapply.zig` (hot-reload reapply: env/exec
+      re-application, client borders, tag-rule rebuild with per-client
+      mfacts, monitor-rule commit/HDR/position pass, blur scenes, cursor
+      style + timers, keyboard grouping/repeat, master defaults, tag reset
+      and the reload_config sequence; 12 tests)
 - [x] `cleanup.c` → `src/config/cleanup.zig` (deep-free of every config
       allocation + animation baked-point caches, with null/count resets and
       idempotent re-entry; 3 tests)
