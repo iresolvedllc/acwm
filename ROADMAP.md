@@ -262,7 +262,14 @@ struct mirrors.
         drag with weight rescaling, and the layout-id dispatcher. C twin
         guarded with ACWM_ZIG_ARRANGE_RESIZE; arrange.c is now fully ported;
         9 tests)
-- [ ] `draw/text-node.c` — pangocairo text shaping helpers
+- [x] `draw/text-node.c` → `src/draw/text-node.zig` (cairo/pango text
+      surfaces wrapped in a wlr_buffer implementation, font-description
+      cache, scene-rect decoration with premultiplied colors and scenefx
+      corner radii/clipped borders, jump labels, bar decorations with
+      ellipsized text, focus-dependent colors, centered text, close-button
+      rendering/hit-testing, and config application. C twin guarded with
+      ACWM_ZIG_TEXT_NODE; 4 tests against a stub scene graph with real
+      cairo/pango)
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with

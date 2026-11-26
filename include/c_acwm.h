@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <wayland-server-core.h>
 #include <wlr/backend/libinput.h>
+#include <wlr/interfaces/wlr_buffer.h>
 #include <wlr/interfaces/wlr_keyboard.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_ext_foreign_toplevel_list_v1.h>
