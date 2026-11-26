@@ -385,6 +385,13 @@ green.
       format announcement, session tracking, DRM lease grant/reject and
       seat primary/clipboard selection policy (global filter). C file now
       guarded with ACWM_ZIG_MISC; 9 tests
+- [x] `animation/layer.c` → `src/animation/layer.zig`: layer actual size,
+      exclusive-zone consumption and bound-area walk, anchor/margin target
+      geometry, nearest-edge slide direction, capture shields, shadows with
+      intersection clipping, buffer scale/fadeout effects, open and close
+      animation ticks (opacity, blur, zoom buffers, completion) and
+      fadeout snapshot creation/pending-state/commit/frame gating. C twin
+      guarded with ACWM_ZIG_ANIMATION_LAYER; 12 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
