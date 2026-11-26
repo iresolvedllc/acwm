@@ -183,7 +183,11 @@ struct mirrors.
         responses) → `src/ipc/ipc_builders.zig`; C twins guarded with
         ACWM_ZIG_IPC_BUILDERS (meson keeps them); real cJSON; 8 tests that
         parse the emitted JSON
-  - [ ] watch-client plumbing + notifiers
+  - [x] watch-client plumbing + notifiers (shared watch list as extern
+        symbols, send/remove lifecycle, device events, all watch types incl.
+        last-open-surface and focusing-client, printstatus signal emission +
+        dispatch) → `src/ipc/ipc_watch.zig`, 7 tests with socketpair round
+        trips
   - [ ] `handle_command` dispatcher (~480 lines)
 - [ ] Layout math: `arrange.c`, `scroll.c`, `dwindle.c`, `vertical.c`,
       `horizontal.c` — pure geometry functions, heavy table tests

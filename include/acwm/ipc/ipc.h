@@ -53,6 +53,10 @@ struct ipc_watch_client {
 	} target;
 };
 
+extern struct wl_list ipc_watch_clients;
+extern int ipc_device_watch_count;
+cJSON *build_all_clients_array(void);
+
 void ipc_init(struct wl_event_loop *event_loop);
 void ipc_remove_watch_client(struct ipc_watch_client *wc);
 void ipc_cleanup(void);

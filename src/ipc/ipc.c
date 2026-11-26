@@ -28,8 +28,8 @@
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 
-static struct wl_list ipc_watch_clients;
-static int ipc_device_watch_count;
+struct wl_list ipc_watch_clients;
+int ipc_device_watch_count;
 
 const char *ipc_device_type_str(struct wlr_input_device *dev) {
 	if (!dev)
@@ -240,6 +240,7 @@ void send_static_json(int fd, const char *json_str) {
 }
 
 /* ---------- Watch mode support ---------- */
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_json_to_fd(int fd, cJSON *json) {
 	char *str = cJSON_PrintUnformatted(json);
 	if (!str)
@@ -306,6 +307,8 @@ int ipc_watch_data_handler(int fd, uint32_t mask, void *data) {
 	}
 	return 0;
 }
+
+#endif /* ACWM_ZIG_IPC_WATCH */
 
 /* ---------- Socket event handling ---------- */
 int ipc_handle_client_data(int fd, uint32_t mask, void *data) {
@@ -396,6 +399,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_client(Client *c) {
 	char *json_str = NULL;
 	size_t len = 0;
@@ -472,6 +476,9 @@ void ipc_notify_all_tags(void) {
 		free(json_str);
 }
 
+#endif /* ACWM_ZIG_IPC_WATCH */
+
+#ifndef ACWM_ZIG_IPC_WATCH
 void printstatus(enum ipc_watch_type type) {
 	wl_signal_emit(&server.print_status_signal, &type);
 }
@@ -530,6 +537,8 @@ void handle_print_status(struct wl_listener *listener, void *data) {
 		acwm_ext_workspace_printstatus(m);
 	}
 }
+
+#endif /* ACWM_ZIG_IPC_WATCH */
 
 /* ---------- Init & cleanup ---------- */
 static int ipc_socket_fd = -1;
@@ -623,7 +632,7 @@ cJSON *build_client_json(Client *c) {
 
 #endif /* ACWM_ZIG_IPC_BUILDERS */
 
-static cJSON *build_all_clients_array(void) {
+cJSON *build_all_clients_array(void) {
 	cJSON *arr = cJSON_CreateArray();
 	Client *c;
 	wl_list_for_each(c, &server.clients, link) {
@@ -1150,6 +1159,7 @@ bool handle_watch_command(int fd, const char *cmd,
 	return true;
 }
 /* ---------- External notification API ---------- */
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_monitor(Monitor *m) {
 	char *json_str = NULL;
 	size_t len = 0;
@@ -1358,6 +1368,8 @@ void ipc_notify_kb_layout(void) {
 }
 
 /* ---------- Init & cleanup ---------- */
+
+#endif /* ACWM_ZIG_IPC_WATCH */
 
 void ipc_init(struct wl_event_loop *loop) {
 	wl_list_init(&ipc_watch_clients);
