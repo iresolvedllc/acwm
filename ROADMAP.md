@@ -376,6 +376,15 @@ green.
       activity notification with resume command, idle-check timer
       re-arming, inhibited/active-session handling and one-shot idle
       command. C region guarded with ACWM_ZIG_IDLE; 4 tests
+- [x] Remaining `manage/misc.c` → `src/manage/misc.zig`: process ancestry
+      and parent lookup, layout-name abbreviation table/fallback chain,
+      client hit-testing, layer focus rules, layered `node_at_point` with
+      overview and special-dim handling, idle-inhibitor bookkeeping,
+      xdg-decoration negotiation, session-lock manager/surface lifecycle
+      and focus restoration, foreign-toplevel capture requests and BGR shm
+      format announcement, session tracking, DRM lease grant/reject and
+      seat primary/clipboard selection policy (global filter). C file now
+      guarded with ACWM_ZIG_MISC; 9 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

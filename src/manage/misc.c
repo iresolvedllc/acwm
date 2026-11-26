@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_MISC
 #include "acwm/manage/misc.h"
 #include "acwm/bar/bar.h"
 #include "acwm/common/log.h"
@@ -935,3 +936,4 @@ void handle_session_lock_unlock(struct wl_listener *listener, void *data) {
 	SessionLock *lock = wl_container_of(listener, lock, unlock);
 	session_lock_cleanup(lock, 1);
 }
+#endif /* ACWM_ZIG_MISC */
