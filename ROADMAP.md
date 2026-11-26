@@ -60,7 +60,7 @@ State legend: `[x]` done · `[~]` in progress · `[ ]` planned
       `zig build` (meson stays green meanwhile; switch when Phase 4 makes
       Zig sources mandatory)
 
-## Phase 4 — Leaf ports to Zig (unit-tested) `[~] in progress`
+## Phase 4 — Leaf ports to Zig (unit-tested) ✅ complete
 
 Pattern for every slice: port the C file to Zig exporting the same C ABI
 symbols, remove the C twin from the compositor link, add unit tests to
@@ -270,7 +270,7 @@ struct mirrors.
       rendering/hit-testing, and config application. C twin guarded with
       ACWM_ZIG_TEXT_NODE; 4 tests against a stub scene graph with real
       cairo/pango)
-- [~] `dispatch/bind.c` (2,746) — sliced:
+- [x] `dispatch/bind.c` (2,746) — fully ported in seven slices:
   - [x] tag/view/action cluster → `src/dispatch/bind_tagview.zig`: tag,
         tag_monitor (cycle/direction/spec monitor moves with float-geometry
         rescaling), tag_silent (tag0 handling + fullscreen clearing),
@@ -318,11 +318,20 @@ struct mirrors.
         raising, dwindle split direction helpers (toggle/horizontal/vertical,
         current-parent flip) and load_config_file. C twins guarded with
         ACWM_ZIG_BIND_TAIL; 7 tests
-  - [ ] remaining bind.c: switch_keyboard_layout and the overview
-        enter/leave/jump cluster
+  - [x] keyboard layout + overview → `src/dispatch/bind_overview.zig`:
+        switch_keyboard_layout (layout cycle/explicit index, modifier
+        notification, standalone-keyboard filtering and seat sync), overview
+        enter/leave (visible-client counting, only-current mode, tagset
+        backup/restore, cursor/pointer reset, animation flags, tab-layout
+        arrange, tagset fixing and status refresh), fix_mon_tagset_from_overview,
+        toggle/enter/leave guards and toggle_jump. C twins guarded with
+        ACWM_ZIG_BIND_OVERVIEW; 6 tests. bind.c has no unported functions left.
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.
+**Met** — all leaf modules (config, IPC, layout, draw, dispatch) are ported
+with C twins behind per-slice guards, 168 build steps and 115 test steps
+green.
 
 ## Phase 5 — Core port on zig-wlroots (full parity)
 

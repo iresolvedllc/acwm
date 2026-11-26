@@ -1351,6 +1351,7 @@ int32_t spawn_on_empty(const Arg *arg) {
 
 #endif /* ACWM_ZIG_BIND_MOVE */
 
+#ifndef ACWM_ZIG_BIND_OVERVIEW
 int32_t switch_keyboard_layout(const Arg *arg) {
 	if (!server.keyboard_group || !server.keyboard_group->wlr_group ||
 		!server.seat) {
@@ -1411,6 +1412,8 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 }
 
 #ifndef ACWM_ZIG_BIND_MOVE
+#endif /* ACWM_ZIG_BIND_OVERVIEW */
+
 int32_t switch_layout(const Arg *arg) {
 
 	int32_t jk, ji;
@@ -2276,6 +2279,7 @@ int32_t minimize_window(const Arg *arg) {
 
 #endif /* ACWM_ZIG_BIND_VIEW */
 
+#ifndef ACWM_ZIG_BIND_OVERVIEW
 void fix_mon_tagset_from_overview(Monitor *m) {
 	if (m->tagset[m->seltags] == (m->ovbk_prev_tagset & TAGMASK)) {
 		m->tagset[m->seltags ^ 1] = m->ovbk_current_tagset;
@@ -2459,6 +2463,8 @@ int32_t toggle_jump(const Arg *arg) {
 
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_OVERVIEW */
 
 #ifndef ACWM_ZIG_BIND_TAIL
 int32_t disable_monitor(const Arg *arg) {
