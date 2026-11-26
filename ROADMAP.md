@@ -246,8 +246,16 @@ struct mirrors.
         overview layout descriptor, special-view empty handling, and
         `arrange()` with special-gap swapping, tab sync, overview dispatch,
         post-layout tag gathering and pointer/idle/printstatus hooks. C twin
-        guarded with ACWM_ZIG_ARRANGE_HUB; the resize_* drag family stays C
-        for the next slice; 10 tests)
+        guarded with ACWM_ZIG_ARRANGE_HUB; 10 tests)
+  - [x] `arrange.c` resize/drag family → `src/layout/arrange_resize.zig`
+        (frame-interval helper, set_size_per neighbour/default weight copying,
+        master horizontal/vertical drag with direction heuristics, global
+        ratio scaling and keyboard stepping, dwindle step/drag dispatch,
+        grid/fair column+row weight transfers including the asymmetric
+        VERTICAL_FAIR/FAIR boundary corrections, scroller head/stack ratio
+        drag with weight rescaling, and the layout-id dispatcher. C twin
+        guarded with ACWM_ZIG_ARRANGE_RESIZE; arrange.c is now fully ported;
+        9 tests)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 

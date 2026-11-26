@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_ARRANGE_RESIZE
 #include "acwm/layout/arrange.h"
 #include "acwm/animation/tag.h"
 #include "acwm/common/server.h"
@@ -1097,6 +1098,8 @@ void resize_tile_client(Client *gc, bool isdrag, int32_t offsetx,
 /* If there are no calculation omissions,
 these two functions will never be triggered.
 Just in case to facilitate the final investigation*/
+
+#endif /* ACWM_ZIG_ARRANGE_RESIZE */
 
 #ifndef ACWM_ZIG_ARRANGE_HUB
 void check_size_per_valid(Client *c) {
