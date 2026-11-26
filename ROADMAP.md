@@ -188,7 +188,20 @@ struct mirrors.
         last-open-surface and focusing-client, printstatus signal emission +
         dispatch) → `src/ipc/ipc_watch.zig`, 7 tests with socketpair round
         trips
-  - [ ] `handle_command` dispatcher (~480 lines)
+  - [x] command surface, watch registration, connections, socket lifecycle
+        → `src/ipc/ipc_server.zig`; C twins guarded with ACWM_ZIG_IPC_SERVER.
+        `handle_command` covers every get command (version, cursorpos,
+        keymode, keyboardlayout, last_open_surface, monitor, focusing-client,
+        client, tag, all-clients/monitors/devices/layers/tags, tags, layouts)
+        and the dispatch fast path with its `client,<id>` extraction and
+        six-token parse; `handle_watch_command` registers all 11 watch types,
+        moves the fd to a new event source and pushes initial state;
+        connection handling (nonblocking + CLOEXEC, line buffering, 1 MiB
+        cap), socket init (FD_CLOEXEC/O_NONBLOCK, sun_path bounds,
+        ACWM_INSTANCE_SIGNATURE) and cleanup. 9 tests: real socketpairs,
+        command responses, tag/client fixtures, dispatch tokenizing, watch
+        promotion, init/cleanup round trip
+  - [x] **ipc.c fully ported** — no C twins left under ACWM_ZIG_IPC_SERVER
 - [ ] Layout math: `arrange.c`, `scroll.c`, `dwindle.c`, `vertical.c`,
       `horizontal.c` — pure geometry functions, heavy table tests
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers

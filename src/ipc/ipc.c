@@ -78,7 +78,7 @@ Client *client_by_id(uint32_t id) {
 	return NULL;
 }
 
-static Client *client_by_id_all(uint32_t id) {
+Client *client_by_id_all(uint32_t id) {
 	Client *c;
 	wl_list_for_each(c, &server.clients, link) {
 		if (c->id == id)
@@ -311,6 +311,7 @@ int ipc_watch_data_handler(int fd, uint32_t mask, void *data) {
 #endif /* ACWM_ZIG_IPC_WATCH */
 
 /* ---------- Socket event handling ---------- */
+#ifndef ACWM_ZIG_IPC_SERVER
 int ipc_handle_client_data(int fd, uint32_t mask, void *data) {
 	struct ipc_client_state *client = data;
 	if (mask & (WL_EVENT_HANGUP | WL_EVENT_ERROR))
@@ -398,6 +399,8 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 		ipc_handle_client_data, client);
 	return 0;
 }
+
+#endif /* ACWM_ZIG_IPC_SERVER */
 
 #ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_client(Client *c) {
@@ -545,6 +548,7 @@ static int ipc_socket_fd = -1;
 static struct wl_event_source *ipc_event_source = NULL;
 static char ipc_socket_path[256];
 
+#ifndef ACWM_ZIG_IPC_SERVER
 void ipc_cleanup(void) {
 	if (ipc_event_source)
 		wl_event_source_remove(ipc_event_source);
@@ -557,6 +561,8 @@ void ipc_cleanup(void) {
 	wl_list_for_each_safe(wc, tmp, &ipc_watch_clients, link)
 		ipc_remove_watch_client(wc);
 }
+#endif /* ACWM_ZIG_IPC_SERVER */
+
 #ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *tags_mask_to_array(uint32_t tag_mask) {
 	cJSON *arr = cJSON_CreateArray();
@@ -677,6 +683,7 @@ cJSON *build_monitor_json(Monitor *m) {
 }
 #endif /* ACWM_ZIG_IPC_BUILDERS */
 
+#ifndef ACWM_ZIG_IPC_SERVER
 void handle_command(int client_fd, const char *cmd_raw) {
 	cJSON *resp = NULL;
 	char *json_str = NULL;
@@ -1158,6 +1165,8 @@ bool handle_watch_command(int fd, const char *cmd,
 	free(client);
 	return true;
 }
+#endif /* ACWM_ZIG_IPC_SERVER */
+
 /* ---------- External notification API ---------- */
 #ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_monitor(Monitor *m) {
@@ -1371,6 +1380,7 @@ void ipc_notify_kb_layout(void) {
 
 #endif /* ACWM_ZIG_IPC_WATCH */
 
+#ifndef ACWM_ZIG_IPC_SERVER
 void ipc_init(struct wl_event_loop *loop) {
 	wl_list_init(&ipc_watch_clients);
 
@@ -1422,3 +1432,4 @@ void ipc_init(struct wl_event_loop *loop) {
 	ipc_event_source = wl_event_loop_add_fd(
 		loop, ipc_socket_fd, WL_EVENT_READABLE, ipc_handle_connection, loop);
 }
+#endif /* ACWM_ZIG_IPC_SERVER */

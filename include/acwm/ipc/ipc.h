@@ -92,6 +92,9 @@ void printstatus(enum ipc_watch_type type);
 void handle_print_status(struct wl_listener *listener, void *data);
 
 void send_static_json(int fd, const char *json_str);
+Monitor *monitor_by_name(const char *name);
+Client *client_by_id(uint32_t id);
+Client *client_by_id_all(uint32_t id);
 
 /* ---------- One-shot command handling ---------- */
 void handle_command(int client_fd, const char *cmd_raw);
