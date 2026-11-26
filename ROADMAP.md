@@ -333,10 +333,19 @@ tests; compositor still builds green under `zig build` and meson/nix.
 with C twins behind per-slice guards, 168 build steps and 115 test steps
 green.
 
-## Phase 5 — Core port on zig-wlroots (full parity)
+## Phase 5 — Core port (full parity)
 
-- [ ] Pin zig-wlroots 0.20.x + zig-wayland; write bindings for acwm-specific
-      protocols (text-input v2/v3, parts of ext-*) and upstream them
+- [x] Core binding strategy: keep the existing C wlroots/scenefx stack via
+      the `cc` translate-c module instead of pinning a zig-wlroots fork.
+      Zig owns the compositor logic while protocol/type bindings stay
+      authoritative C headers; this preserves parity and avoids maintaining a
+      second wlroots binding layer.
+- [x] Common layer slice 1 → `src/common/util.zig`: ecalloc, wayland-string
+      UTF-8-safe copy, nonblocking fd helper, PCRE2 matching (suffixed
+      `_8` symbols), list append/swap/safe-reinsert, monotonic millisecond
+      helpers and string joins. `die`/`string_printf` and the log backend
+      stay C (C-variadic functions cannot be defined in Zig). C twins
+      guarded with ACWM_ZIG_UTIL; 7 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
