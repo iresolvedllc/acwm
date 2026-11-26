@@ -800,6 +800,7 @@ void handle_request_set_selection(struct wl_listener *listener, void *data) {
 	wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
+#ifndef ACWM_ZIG_IDLE
 static bool client_keep_idle_inhibit(Client *c) {
 	if (!c || !c->mon)
 		return false;
@@ -921,6 +922,8 @@ int32_t idle_check(void *data) {
 	rearm_idle_check();
 	return 1;
 }
+
+#endif /* ACWM_ZIG_IDLE */
 
 /* Accessor for the Zig config-parsing port (value_parse.zig): the C global
  * server struct is not imported into Zig, so expose just the tagmask. */

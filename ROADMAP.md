@@ -371,6 +371,11 @@ green.
       (create/lower/title/config/destroy), raise/reparent helpers and the
       side-by-side strip layout with offsets and focus flags. C twin guarded
       with ACWM_ZIG_TAB; 7 tests
+- [x] Built-in idle handling from `manage/misc.c` → `src/manage/idle.zig`:
+      keep-idle-inhibit polling (focus/override and fullscreen config),
+      activity notification with resume command, idle-check timer
+      re-arming, inhibited/active-session handling and one-shot idle
+      command. C region guarded with ACWM_ZIG_IDLE; 4 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
