@@ -212,6 +212,15 @@ struct mirrors.
         resize-recording stub covering masters/stack, inner+outer gaps,
         smartgaps, proportional master widths, deck visibility updates,
         single/double/2x2 grids, fair remainder rows and predict probes)
+  - [x] `dwindle.c` → `src/layout/dwindle.zig` (all 18 symbols: tree
+        count/find/first/free, removal with the manual-split proportional
+        rollback, assignment with auto/locked split direction and probe
+        contexts, generic + config-driven insertion with smart-split cursor
+        picking and 1/N manual ratios, sibling/block move, monitor swap,
+        cursor drag resize with lock capture and smart-resize inversion,
+        per-client removal across all monitor pertags, the layout core with
+        stale-leaf cleanup and focus fallback, predict insert/remove, and
+        monitor cleanup; 12 tests)
 - [ ] `draw/text-node.c` — pangocairo text shaping helpers
 - [ ] `dispatch/bind.c` tables (2,746) — after config parsing is Zig
 

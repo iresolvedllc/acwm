@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYOUT_DWINDLE
 #include "acwm/layout/dwindle.h"
 #include "acwm/common/server.h"
 #include "acwm/common/util.h"
@@ -756,3 +757,4 @@ bool dwindle_predict(Monitor *m, Client *c, struct wlr_box *out) {
 
 	return out->width > 0 && out->height > 0;
 }
+#endif /* ACWM_ZIG_LAYOUT_DWINDLE */
