@@ -1962,6 +1962,7 @@ int32_t toggle_view(const Arg *arg) {
 
 #endif /* ACWM_ZIG_BIND_TAGVIEW */
 
+#ifndef ACWM_ZIG_BIND_VIEW
 static uint32_t tags_last_tag_num(uint32_t tags) {
 	uint32_t i, last = 0;
 
@@ -2272,6 +2273,8 @@ int32_t minimize_window(const Arg *arg) {
 	}
 	return 0;
 }
+
+#endif /* ACWM_ZIG_BIND_VIEW */
 
 void fix_mon_tagset_from_overview(Monitor *m) {
 	if (m->tagset[m->seltags] == (m->ovbk_prev_tagset & TAGMASK)) {

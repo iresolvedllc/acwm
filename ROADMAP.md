@@ -303,8 +303,16 @@ struct mirrors.
         spawn_on_empty, plus switch_layout table/circle cycling.
         switch_keyboard_layout stays C for the keyboard slice; C twins
         guarded with ACWM_ZIG_BIND_MOVE; 6 tests
-  - [ ] remaining bind.c: switch_keyboard_layout, view shifting,
-        overview/zoom/monitor and scroller/dwindle helpers
+  - [x] view shifting/zoom/options → `src/dispatch/bind_view.zig`:
+        view_shift_tag and the have-client variant (carousel wrap + tag
+        gathering extent), view_to_left/right, view_insert (direct switch or
+        tag shifting), the four have-client wrappers, view/tag cross-monitor
+        routing, combo_view, zoom (promotes the visible tiled candidate),
+        setoption (parse + override + reset) and minimize_window. C twins
+        guarded with ACWM_ZIG_BIND_VIEW; 8 tests
+  - [ ] remaining bind.c: switch_keyboard_layout, overview controls,
+        monitor sleep/enable/disable, set_overview/toggle/enter/leave/jump
+        and scroller/dwindle helpers
 
 Exit criteria for Phase 4: `option_defs` + parsers + layout math in Zig with
 tests; compositor still builds green under `zig build` and meson/nix.
