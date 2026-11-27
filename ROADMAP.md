@@ -659,7 +659,19 @@ green.
       bind, all-output updates with wl_output.done scheduling and
       XWayland-only done, and manager global init. C region guarded with
       ACWM_ZIG_EXT_XDG_OUTPUT; 8 tests
-- [ ] Extension protocol: text-input
+- [x] text-input/input-method v2 from `ext-protocol/text-input.c` →
+      `src/ext-protocol/text_input.zig`: monitor lookup/usability, virtual
+      keyboard emulation detection, keyboard-grab forwarding for keys and
+      modifiers, active text-input selection and input-method activate/
+      deactivate, per-client focused-surface enter/leave, input-method
+      commit forwarding (preedit/commit/delete/done), surrounding text/
+      change-cause/content-type state, text-input enable/disable/commit/
+      destroy handling, popup scene trees and cursor-rectangle positioning
+      with positioner constraints, input-method/popup/text-input listener
+      wiring, relay create/finish/focus and focused-surface teardown. C
+      region guarded with ACWM_ZIG_EXT_TEXT_INPUT; 9 tests. The
+      ext-protocol directory is now fully ported
+- [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture
 - [ ] `acwm-portal` screencast (pipewire negotiation, ext-image-copy-capture)
 - [ ] `acwm-lock` — built-in session lock UI (ext-session-lock-v1 already
       implemented server-side; add the unlock prompt + keyring state)

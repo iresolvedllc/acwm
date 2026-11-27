@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_EXT_TEXT_INPUT
 #include "acwm/ext-protocol/text-input.h"
 #include "acwm/common/scene_node.h"
 #include "acwm/common/server.h"
@@ -513,3 +514,4 @@ void acwm_im_relay_set_focus(struct acwm_input_method_relay *relay,
 	update_text_inputs_focused_surface(relay);
 	update_active_text_input(relay);
 }
+#endif /* ACWM_ZIG_EXT_TEXT_INPUT */
