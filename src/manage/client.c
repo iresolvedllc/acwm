@@ -3936,6 +3936,7 @@ void client_replace(Client *c, Client *w, bool is_group_change_member,
 
 #endif /* ACWM_ZIG_CLIENT_TRANSITION */
 
+#ifndef ACWM_ZIG_CLIENT_GROUP
 static int32_t monitor_move_direction(const Monitor *from, const Monitor *to) {
 	if (!from || !to || from == to)
 		return UNDIR;
@@ -4594,6 +4595,8 @@ bool client_force_render(Client *c) {
 	client_send_frame_done(c, &now);
 	return true;
 }
+#endif /* ACWM_ZIG_CLIENT_GROUP */
+
 /*
  * Gets the monitor of the current XWayland client (falls back to the selected
  * monitor when not bound yet).
