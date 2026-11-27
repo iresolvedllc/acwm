@@ -25,6 +25,7 @@
 #include <wlr/xwayland.h>
 #endif
 
+#ifndef ACWM_ZIG_INPUT_KEYBOARD
 void handle_keyboard_key_watch(struct wl_listener *listener, void *data) {
 	InputDevice *id = wl_container_of(listener, id, key_watch);
 	ipc_notify_device_event(id->wlr_device);
@@ -970,3 +971,4 @@ void handle_new_virtual_keyboard(struct wl_listener *listener, void *data) {
 
 	wlr_seat_set_keyboard(server.seat, &kb->keyboard);
 }
+#endif /* ACWM_ZIG_INPUT_KEYBOARD */

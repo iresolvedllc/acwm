@@ -584,7 +584,20 @@ green.
       rubber-banding, pan commit/flick targeting, drag-to-move-resize with
       window grab, and release-based swipe binding fallback. C region
       guarded with ACWM_ZIG_INPUT_TRACKPAD; 8 tests
-- [ ] Input: pointer (1,888), keyboard (972)
+- [x] Keyboard input from `input/keyboard.c` → `src/input/keyboard.zig`:
+      device-rule matching by name/identifier/type (vendor:product, trackpad
+      detection), rule keyboard-settings detection and self-contained keymap
+      compilation, device creation into the shared group or standalone
+      groups, repeat timer and keybinding replay, shortcut-inhibitor
+      registration/removal, global window-rule key forwarding, physical
+      modifier union, standalone/virtual keyboard lifecycle with seat
+      restoration, keybinding matching (modes, mods, sym/code, press/
+      release/pass/conflict), key handling (activity, cursor hide, mode-key
+      overview/switcher, jump mode, bindings, repeat, global keys, seat
+      forwarding), modifier forwarding/layout status, layout reset across
+      grouped keyboards and virtual-keyboard setup. C region guarded with
+      ACWM_ZIG_INPUT_KEYBOARD; 10 tests
+- [ ] Input: pointer (1,888)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture

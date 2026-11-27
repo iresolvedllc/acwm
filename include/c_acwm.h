@@ -57,6 +57,9 @@
 #include <wlr/types/wlr_output_management_v1.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_keyboard_group.h>
+#include <wlr/types/wlr_keyboard_shortcuts_inhibit_v1.h>
+#include <wlr/types/wlr_virtual_keyboard_v1.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_touch.h>
 #include <wlr/types/wlr_switch.h>
 #include <wlr/types/wlr_tablet_pad.h>
@@ -74,6 +77,7 @@
 #include "acwm/common/server.h"
 #include "acwm/input/device.h"
 #include "acwm/input/keyboard.h"
+#include "acwm/ext-protocol/text-input.h"
 #include "acwm/input/pointer.h"
 #include "acwm/input/switch.h"
 #include "acwm/input/touch.h"
