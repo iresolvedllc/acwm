@@ -74,6 +74,8 @@
 #include <wlr/types/wlr_cursor_shape_v1.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/xwayland.h>
+#include <xcb/xcb.h>
+#include <xcb/randr.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_output_power_management_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -122,6 +124,7 @@
 #include "acwm/config/preset.h"
 #include "acwm/config/watcher.h"
 #include "acwm/config/error_nag.h"
+#include "acwm/config/error_store.h"
 #include "acwm/input/trackpad.h"
 #include "acwm/animation/common.h"
 #include "acwm/common/input-event-codes.h"
@@ -150,6 +153,7 @@
 #include "acwm/manage/layer.h"
 #include "acwm/manage/monitor.h"
 #include "acwm/manage/misc.h"
+#include "acwm/manage/xwayland_primary.h"
 #include "acwm/switcher/switcher.h"
 
 #endif

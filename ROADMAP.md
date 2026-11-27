@@ -643,6 +643,16 @@ green.
       colors, close/remove-client, commit-to-client, hit testing, open
       sizing across candidate scopes, cycling and the `switcher` action.
       C region guarded with ACWM_ZIG_SWITCHER; 6 tests
+- [x] X11 primary-output manager from `manage/xwayland_primary.c` →
+      `src/manage/xwayland_primary.zig`: XWayland server readiness checks,
+      XCB connection/watch lifecycle with an event-loop fd source,
+      screen/root discovery, RandR screen-resource and output-info caching
+      (bounded name/output table with refresh retry), cached primary-output
+      application with a round-trip flush, primary-rule monitor selection
+      (primary flag, rule order, first enabled fallback), display/output
+      change detection, and init/update entry points. The C body is
+      compiled only when `XWAYLAND` is set and `ACWM_ZIG_XWAYLAND_PRIMARY`
+      is not; 6 tests
 - [ ] `draw/` remainder
 - [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
       nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM

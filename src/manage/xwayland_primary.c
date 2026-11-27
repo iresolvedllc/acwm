@@ -3,7 +3,7 @@
 #include "acwm/common/server.h"
 #include "acwm/manage/monitor.h"
 
-#ifdef XWAYLAND
+#if defined(XWAYLAND) && !defined(ACWM_ZIG_XWAYLAND_PRIMARY)
 #include <stdlib.h>
 #include <string.h>
 #include <wayland-server-core.h>
