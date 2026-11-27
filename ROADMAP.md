@@ -422,6 +422,16 @@ green.
       path caching, and rule application (VRR/HDR/disable/luminance/force/
       scale/transform, internal/custom/headless modes). C region guarded
       with ACWM_ZIG_MONITOR_OUTPUT; 10 tests
+- [x] Output lifecycle/skip-frame/renderer-loss cluster from
+      `manage/monitor.c` → `src/manage/monitor_lifecycle.zig`: output
+      destroy (bar/layers/ext-workspaces/lock surface/scene output/layout
+      removal, blur/dim/timer/ICC/pending teardown), monitor close
+      (overview exit, selection fallback to the next enabled output,
+      client group moves, foreign-toplevel drop, old-name recording),
+      nested-backend request-state mode/custom handling, wayland/headless
+      output creation, output power-mode commits, skip-frame timer
+      stop/callback/check and renderer-loss idle recreation. C regions
+      guarded with ACWM_ZIG_MONITOR_LIFECYCLE; 7 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
