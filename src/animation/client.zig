@@ -1434,3 +1434,937 @@ test "clip to hide trims the clip box and toggles visibility" {
     try testing.expect(!test_client.is_clip_to_hide);
     try testing.expectEqual(@as(c_int, 2), stub_visibility_calls);
 }
+
+// ---------------------------------------------------------------------------
+// drop area, clip application and fadeout (slice 89)
+// ---------------------------------------------------------------------------
+
+extern fn client_draw_tabbar(cl: [*c]Client, offsets: c.struct_ivec2) callconv(.c) void;
+extern fn client_get_clip(cl: [*c]Client, clip: [*c]c.struct_wlr_box) callconv(.c) void;
+extern fn client_get_geometry(cl: [*c]Client, geom: [*c]c.struct_wlr_box) callconv(.c) void;
+extern fn client_is_x11(cl: [*c]Client) callconv(.c) c_int;
+extern fn client_update_xwayland_clip(cl: [*c]Client, clip: [*c]c.struct_wlr_box) callconv(.c) void;
+extern fn client_update_xwayland_dest_size(cl: [*c]Client) callconv(.c) void;
+extern fn client_is_unmanaged(cl: [*c]Client) callconv(.c) c_int;
+extern fn client_set_border_color(cl: [*c]Client, color: [*c]const f32) callconv(.c) void;
+extern fn client_apply_finish_geometry(cl: [*c]Client) callconv(.c) void;
+extern fn overview_layout_card(cl: [*c]Client) callconv(.c) void;
+extern fn overview_destroy_card(cl: [*c]Client) callconv(.c) void;
+extern fn node_at_point(x: f64, y: f64, psurface: [*c][*c]c.struct_wlr_surface, pc: [*c][*c]Client, pl: [*c][*c]c.LayerSurface, bar: [*c][*c]c.AcwmBarDecoration, nx: [*c]f64, ny: [*c]f64) callconv(.c) void;
+extern fn scene_buffer_apply_opacity(buffer: [*c]c.struct_wlr_scene_buffer, sx: i32, sy: i32, data: ?*anyopaque) callconv(.c) void;
+extern fn find_animation_curve_at(t: f64, anim_type: i32) callconv(.c) f64;
+extern fn timespec_to_ms(ts: [*c]c.struct_timespec) callconv(.c) u32;
+extern fn get_now_in_ms() callconv(.c) u32;
+extern fn request_fresh_all_monitors() callconv(.c) void;
+extern fn ecalloc(nmemb: usize, size: usize) callconv(.c) ?*anyopaque;
+
+fn wlListInit(list: *c.struct_wl_list) void {
+    list.prev = @ptrCast(list);
+    list.next = @ptrCast(list);
+}
+
+fn wlListInsert(list: *c.struct_wl_list, elm: *c.struct_wl_list) void {
+    elm.next = list.next;
+    elm.prev = @ptrCast(list);
+    list.next.*.prev = elm;
+    list.next = elm;
+}
+
+fn wlListRemove(elm: *c.struct_wl_list) void {
+    const prev = elm.prev;
+    const next = elm.next;
+    prev.*.next = next;
+    next.*.prev = prev;
+}
+
+export fn client_set_drop_area(cl: [*c]Client) callconv(.c) void {
+    var first_draw = false;
+    var drop_direction: i32 = c.UNDIR;
+
+    if (cl == null or cl.*.mon == null)
+        return;
+
+    if (!cl.*.enable_drop_area_draw and !cl.*.droparea.*.node.enabled)
+        return;
+
+    if (!cl.*.enable_drop_area_draw and cl.*.droparea.*.node.enabled) {
+        c.wlr_scene_node_lower_to_bottom(&cl.*.droparea.*.node);
+        c.wlr_scene_node_set_enabled(&cl.*.droparea.*.node, false);
+        return;
+    } else if (cl.*.enable_drop_area_draw and !cl.*.droparea.*.node.enabled) {
+        c.wlr_scene_node_raise_to_top(&cl.*.droparea.*.node);
+        c.wlr_scene_node_set_enabled(&cl.*.droparea.*.node, true);
+        first_draw = true;
+    }
+
+    const bw: i32 = @intCast(cl.*.bw);
+    const client_width = cl.*.geom.width - 2 * bw;
+    const client_height = cl.*.geom.height - 2 * bw;
+
+    if (client_width <= 0 or client_height <= 0) {
+        c.wlr_scene_node_set_enabled(&cl.*.droparea.*.node, false);
+        return;
+    }
+
+    if (c.server.drop_to_group and c.server.drop_client == cl) {
+        if (!first_draw and cl.*.drop_direction == c.UNDIR)
+            return;
+        cl.*.drop_direction = c.UNDIR;
+        c.wlr_scene_node_set_position(&cl.*.droparea.*.node, bw, bw);
+        c.wlr_scene_rect_set_size(cl.*.droparea, client_width, client_height);
+        return;
+    }
+
+    const rel_x = c.server.cursor.*.x - @as(f64, @floatFromInt(cl.*.geom.x)) - @as(f64, @floatFromInt(bw));
+    const rel_y = c.server.cursor.*.y - @as(f64, @floatFromInt(cl.*.geom.y)) - @as(f64, @floatFromInt(bw));
+
+    var drop_box: c.struct_wlr_box = undefined;
+    const cur_layout = cl.*.mon.*.pertag.*.ltidxs[get_client_tag_idx(cl)];
+    const dwindle_familiar = cur_layout.*.id == c.DWINDLE and c.config.dwindle_drop_simple_split != 0;
+
+    if (dwindle_familiar) {
+        const split_h = cl.*.geom.width >= cl.*.geom.height;
+        const ratio = c.config.dwindle_split_ratio;
+        if (split_h) {
+            if (rel_x < @as(f64, @floatFromInt(client_width)) * 0.5) {
+                drop_direction = c.LEFT;
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = @intFromFloat(@as(f64, @floatFromInt(client_width)) * ratio);
+                drop_box.height = client_height;
+            } else {
+                drop_direction = c.RIGHT;
+                drop_box.x = bw + @as(i32, @intFromFloat(@as(f64, @floatFromInt(client_width)) * ratio));
+                drop_box.y = bw;
+                drop_box.width = client_width - @as(i32, @intFromFloat(@as(f64, @floatFromInt(client_width)) * ratio));
+                drop_box.height = client_height;
+            }
+        } else {
+            if (rel_y < @as(f64, @floatFromInt(client_height)) * 0.5) {
+                drop_direction = c.UP;
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = client_width;
+                drop_box.height = @intFromFloat(@as(f64, @floatFromInt(client_height)) * ratio);
+            } else {
+                drop_direction = c.DOWN;
+                drop_box.x = bw;
+                drop_box.y = bw + @as(i32, @intFromFloat(@as(f64, @floatFromInt(client_height)) * ratio));
+                drop_box.width = client_width;
+                drop_box.height = client_height - @as(i32, @intFromFloat(@as(f64, @floatFromInt(client_height)) * ratio));
+            }
+        }
+    } else if (cur_layout.*.id == c.TILE or cur_layout.*.id == c.DECK or
+        cur_layout.*.id == c.CENTER_TILE or cur_layout.*.id == c.RIGHT_TILE)
+    {
+        if (cl.*.ismaster) {
+            if (cl.*.mon.*.visible_tiling_clients == 1) {
+                if (rel_x < @as(f64, @floatFromInt(client_width)) * 0.5) {
+                    drop_direction = c.LEFT;
+                    drop_box.x = bw;
+                    drop_box.y = bw;
+                    drop_box.width = @divTrunc(client_width, 2);
+                    drop_box.height = client_height;
+                } else {
+                    drop_direction = c.RIGHT;
+                    drop_box.x = bw + @divTrunc(client_width, 2);
+                    drop_box.y = bw;
+                    drop_box.width = @divTrunc(client_width, 2);
+                    drop_box.height = client_height;
+                }
+            } else {
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = client_width;
+                drop_box.height = client_height;
+                drop_direction = c.UNDIR;
+            }
+        } else {
+            if (rel_y < @as(f64, @floatFromInt(client_height)) * 0.5) {
+                drop_direction = c.UP;
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = client_width;
+                drop_box.height = @divTrunc(client_height, 2);
+            } else {
+                drop_direction = c.DOWN;
+                drop_box.x = bw;
+                drop_box.y = bw + @divTrunc(client_height, 2);
+                drop_box.width = client_width;
+                drop_box.height = @divTrunc(client_height, 2);
+            }
+        }
+    } else if (cur_layout.*.id == c.VERTICAL_TILE or cur_layout.*.id == c.VERTICAL_DECK) {
+        if (cl.*.ismaster) {
+            if (cl.*.mon.*.visible_tiling_clients == 1) {
+                if (rel_y < @as(f64, @floatFromInt(client_height)) * 0.5) {
+                    drop_direction = c.UP;
+                    drop_box.x = bw;
+                    drop_box.y = bw;
+                    drop_box.width = client_width;
+                    drop_box.height = @divTrunc(client_height, 2);
+                } else {
+                    drop_direction = c.DOWN;
+                    drop_box.x = bw;
+                    drop_box.y = bw + @divTrunc(client_height, 2);
+                    drop_box.width = client_width;
+                    drop_box.height = @divTrunc(client_height, 2);
+                }
+            } else {
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = client_width;
+                drop_box.height = client_height;
+                drop_direction = c.UNDIR;
+            }
+        } else {
+            if (rel_x < @as(f64, @floatFromInt(client_width)) * 0.5) {
+                drop_direction = c.LEFT;
+                drop_box.x = bw;
+                drop_box.y = bw;
+                drop_box.width = @divTrunc(client_width, 2);
+                drop_box.height = client_height;
+            } else {
+                drop_direction = c.RIGHT;
+                drop_box.x = bw + @divTrunc(client_width, 2);
+                drop_box.y = bw;
+                drop_box.width = @divTrunc(client_width, 2);
+                drop_box.height = client_height;
+            }
+        }
+    } else {
+        const dist_left = rel_x;
+        const dist_right = @as(f64, @floatFromInt(client_width)) - rel_x;
+        const dist_top = rel_y;
+        const dist_bottom = @as(f64, @floatFromInt(client_height)) - rel_y;
+
+        if (dist_left <= dist_right and dist_left <= dist_top and dist_left <= dist_bottom) {
+            drop_direction = c.LEFT;
+            drop_box.x = bw;
+            drop_box.y = bw;
+            drop_box.width = @divTrunc(client_width, 2);
+            drop_box.height = client_height;
+        } else if (dist_right <= dist_top and dist_right <= dist_bottom) {
+            drop_direction = c.RIGHT;
+            drop_box.x = bw + @divTrunc(client_width, 2);
+            drop_box.y = bw;
+            drop_box.width = @divTrunc(client_width, 2);
+            drop_box.height = client_height;
+        } else if (dist_top <= dist_bottom) {
+            drop_direction = c.UP;
+            drop_box.x = bw;
+            drop_box.y = bw;
+            drop_box.width = client_width;
+            drop_box.height = @divTrunc(client_height, 2);
+        } else {
+            drop_direction = c.DOWN;
+            drop_box.x = bw;
+            drop_box.y = bw + @divTrunc(client_height, 2);
+            drop_box.width = client_width;
+            drop_box.height = @divTrunc(client_height, 2);
+        }
+    }
+
+    if (!first_draw and cl.*.drop_direction == drop_direction)
+        return;
+    cl.*.drop_direction = drop_direction;
+
+    c.wlr_scene_node_set_position(&cl.*.droparea.*.node, drop_box.x, drop_box.y);
+    c.wlr_scene_rect_set_size(cl.*.droparea, drop_box.width, drop_box.height);
+}
+
+fn drawDecorations(cl: [*c]Client, offsets: c.struct_ivec2, surface_clip_offset: c.struct_ivec2) void {
+    client_draw_border(cl, offsets);
+    client_draw_shadow(cl, offsets);
+    client_draw_group_bar(cl, offsets);
+    client_draw_tabbar(cl, offsets);
+    client_draw_blur(cl, surface_clip_offset);
+    client_draw_shield(cl, surface_clip_offset);
+    client_draw_dim(cl, surface_clip_offset);
+}
+
+export fn client_apply_clip(cl: [*c]Client, factor: f32) callconv(.c) void {
+    if (cl.*.iskilling != 0 or !client_surface(cl).*.mapped)
+        return;
+
+    // Overview card mode: content is shown by the independent card tree; update
+    // the card position/scale here and redraw the decoration nodes to match the
+    // card geometry.
+    if (cl.*.ov_card_tree != null) {
+        const offsets = compute_edge_offsets(cl);
+
+        var card_w: i32 = 0;
+        var card_h: i32 = 0;
+        client_actual_size(cl, &card_w, &card_h);
+        var clip_box = c.struct_wlr_box{ .x = 0, .y = 0, .width = card_w, .height = card_h };
+        const surface_clip_offset = clip_to_hide(cl, &clip_box, offsets);
+
+        drawDecorations(cl, offsets, surface_clip_offset);
+
+        overview_layout_card(cl);
+        overview_card_set_corner_radii(cl, set_client_corner_location(cl));
+        return;
+    }
+
+    const offsets = compute_edge_offsets(cl);
+
+    var clip_box: c.struct_wlr_box = undefined;
+    var surface_clip_offset: c.struct_ivec2 = undefined;
+
+    const current_corner_location = set_client_corner_location(cl);
+
+    if (!client_animations_enabled(cl) and cl.*.overview_scene_surface == null) {
+        cl.*.animation.running = false;
+        cl.*.animation.tagining = false;
+        cl.*.animation.tagouting = false;
+        cl.*.need_output_flush = false;
+        cl.*.animainit_geom = cl.*.geom;
+        cl.*.current = cl.*.geom;
+        cl.*.pending = cl.*.geom;
+        cl.*.animation.current = cl.*.geom;
+
+        client_get_clip(cl, &clip_box);
+        surface_clip_offset = clip_to_hide(cl, &clip_box, offsets);
+
+        drawDecorations(cl, offsets, surface_clip_offset);
+
+        const should_render_client_surface = clip_box.width > 0 and clip_box.height > 0;
+        cl.*.is_surface_hidden = !should_render_client_surface;
+        client_update_visibility(cl);
+
+        if (!should_render_client_surface)
+            return;
+
+        // X11 is clipped with source_box + dest_size (buffer physical size *
+        // scale, clip logical size); wlr_scene clip would scale content by the
+        // physical size.
+        if (client_is_x11(cl) != 0)
+            client_update_xwayland_clip(cl, &clip_box)
+        else if (cl.*.overview_scene_surface == null)
+            c.wlr_scene_subsurface_tree_set_clip(&cl.*.scene_surface.*.node, &clip_box);
+
+        var buffer_data = std.mem.zeroes(c.BufferData);
+        buffer_data.width_scale = 1.0;
+        buffer_data.height_scale = 1.0;
+        buffer_data.width = clip_box.width;
+        buffer_data.height = clip_box.height;
+        buffer_data.corner_location = current_corner_location;
+        buffer_data.should_scale = true;
+        buffer_set_effect(cl, buffer_data);
+        return;
+    }
+
+    var width: i32 = 0;
+    var height: i32 = 0;
+    client_actual_size(cl, &width, &height);
+
+    var geometry: c.struct_wlr_box = undefined;
+    client_get_geometry(cl, &geometry);
+    clip_box = .{ .x = geometry.x, .y = geometry.y, .width = width, .height = height };
+
+    if (client_is_x11(cl) != 0) {
+        clip_box.x = 0;
+        clip_box.y = 0;
+    }
+
+    surface_clip_offset = clip_to_hide(cl, &clip_box, offsets);
+
+    client_draw_border(cl, offsets);
+    client_draw_shadow(cl, offsets);
+    client_draw_group_bar(cl, offsets);
+    client_draw_tabbar(cl, offsets);
+    client_draw_shield(cl, surface_clip_offset);
+    client_draw_dim(cl, surface_clip_offset);
+    client_draw_blur(cl, surface_clip_offset);
+
+    // During animation, sync the X11 root surface dest_size / clipping
+    // (source_box + dest_size).
+    if (client_is_x11(cl) != 0)
+        client_update_xwayland_clip(cl, &clip_box)
+    else
+        client_update_xwayland_dest_size(cl);
+
+    const should_render_client_surface = clip_box.width > 0 and clip_box.height > 0;
+    cl.*.is_surface_hidden = !should_render_client_surface;
+    client_update_visibility(cl);
+
+    if (!should_render_client_surface)
+        return;
+
+    // X11 clipping is already done above by client_update_xwayland_clip with
+    // source_box; wlr_scene clip would scale the buffer by its physical size
+    // and cannot be used for X11.
+    if (cl.*.overview_scene_surface == null and client_is_x11(cl) == 0)
+        c.wlr_scene_subsurface_tree_set_clip(&cl.*.scene_surface.*.node, &clip_box);
+
+    const actual_surface_width = geometry.width - surface_clip_offset.x - surface_clip_offset.width;
+    const actual_surface_height = geometry.height - surface_clip_offset.y - surface_clip_offset.height;
+
+    if (actual_surface_width <= 0 or actual_surface_height <= 0)
+        return;
+
+    var buffer_data = std.mem.zeroes(c.BufferData);
+    buffer_data.should_scale = true;
+    buffer_data.width = clip_box.width;
+    buffer_data.height = clip_box.height;
+    buffer_data.corner_location = current_corner_location;
+
+    if (factor == 1.0 and cl.*.overview_scene_surface == null) {
+        buffer_data.width_scale = 1.0;
+        buffer_data.height_scale = 1.0;
+    } else {
+        buffer_data.width_scale = @as(f32, @floatFromInt(buffer_data.width)) /
+            @as(f32, @floatFromInt(actual_surface_width));
+        buffer_data.height_scale = @as(f32, @floatFromInt(buffer_data.height)) /
+            @as(f32, @floatFromInt(actual_surface_height));
+    }
+
+    buffer_set_effect(cl, buffer_data);
+}
+
+export fn fadeout_client_animation_next_tick(cl: [*c]Client) callconv(.c) void {
+    if (cl == null)
+        return;
+
+    var now: c.struct_timespec = undefined;
+    _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+    const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.animation.time_started);
+    const animation_passed: f64 = if (cl.*.animation.duration != 0)
+        @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.animation.duration))
+    else
+        1.0;
+
+    const anim_type = cl.*.animation.action;
+    const factor = find_animation_curve_at(animation_passed, anim_type);
+
+    const width: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.width)) +
+        @as(f64, @floatFromInt(cl.*.current.width - cl.*.animation.initial.width)) * factor);
+    const height: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.height)) +
+        @as(f64, @floatFromInt(cl.*.current.height - cl.*.animation.initial.height)) * factor);
+    const x: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.x)) +
+        @as(f64, @floatFromInt(cl.*.current.x - cl.*.animation.initial.x)) * factor);
+    const y: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.y)) +
+        @as(f64, @floatFromInt(cl.*.current.y - cl.*.animation.initial.y)) * factor);
+
+    c.wlr_scene_node_set_position(&cl.*.scene.*.node, x, y);
+
+    cl.*.animation.current = .{ .x = x, .y = y, .width = width, .height = height };
+
+    const opacity_eased_progress = find_animation_curve_at(animation_passed, c.OPAFADEOUT);
+    const percent = c.config.fadeout_begin_opacity -
+        opacity_eased_progress * c.config.fadeout_begin_opacity;
+    var opacity = @max(percent, 0);
+
+    if (c.config.animation_fade_out != 0 and cl.*.no_fade_out == 0)
+        c.wlr_scene_node_for_each_buffer(&cl.*.scene.*.node, scene_buffer_apply_opacity, &opacity);
+
+    if (closeAnimationType(cl) == c.ANIM_TYPE_ZOOM) {
+        var buffer_data = std.mem.zeroes(c.BufferData);
+        buffer_data.width = width;
+        buffer_data.height = height;
+        buffer_data.width_scale = @floatCast(animation_passed);
+        buffer_data.height_scale = @floatCast(animation_passed);
+        c.wlr_scene_node_for_each_buffer(&cl.*.scene.*.node, snap_scene_buffer_apply_effect, &buffer_data);
+    }
+
+    if (animation_passed >= 1.0) {
+        wlListRemove(&cl.*.fadeout_link);
+        c.wlr_scene_node_destroy(&cl.*.scene.*.node);
+        c.free(cl);
+    }
+}
+
+export fn client_animation_next_tick(cl: [*c]Client) callconv(.c) void {
+    var now: c.struct_timespec = undefined;
+    _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+    const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.animation.time_started);
+    const animation_passed: f64 = if (cl.*.animation.duration != 0)
+        @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.animation.duration))
+    else
+        1.0;
+
+    const anim_type: i32 = if (cl.*.animation.action == c.NONE) c.MOVE else cl.*.animation.action;
+    const factor = find_animation_curve_at(animation_passed, anim_type);
+
+    const width: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.width)) +
+        @as(f64, @floatFromInt(cl.*.current.width - cl.*.animation.initial.width)) * factor);
+    const height: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.height)) +
+        @as(f64, @floatFromInt(cl.*.current.height - cl.*.animation.initial.height)) * factor);
+    const x: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.x)) +
+        @as(f64, @floatFromInt(cl.*.current.x - cl.*.animation.initial.x)) * factor);
+    const y: i32 = @intFromFloat(@as(f64, @floatFromInt(cl.*.animation.initial.y)) +
+        @as(f64, @floatFromInt(cl.*.current.y - cl.*.animation.initial.y)) * factor);
+
+    c.wlr_scene_node_set_position(&cl.*.scene.*.node, x, y);
+    cl.*.animation.current = .{ .x = x, .y = y, .width = width, .height = height };
+
+    cl.*.is_pending_open_animation = false;
+    client_apply_clip(cl, @floatCast(factor));
+
+    if (animation_passed >= 1.0) {
+        cl.*.animation.action = c.MOVE;
+        cl.*.animation.tagining = false;
+        cl.*.animation.running = false;
+        cl.*.animation.overining = false;
+
+        if (cl.*.animation.tagouting) {
+            cl.*.animation.tagouting = false;
+            client_update_visibility(cl);
+            cl.*.animation.tagouted = true;
+            cl.*.animation.current = cl.*.geom;
+            client_apply_clip(cl, 1.0);
+        } else {
+            // Snap to the final box: an interpolated one can be a pixel off,
+            // which leaves X11 content stretched (blurry).
+            client_apply_finish_geometry(cl);
+        }
+
+        var pointer_c: [*c]Client = null;
+        var sx: f64 = 0;
+        var sy: f64 = 0;
+        node_at_point(c.server.cursor.*.x, c.server.cursor.*.y, null, &pointer_c, null, null, &sx, &sy);
+        const surface: [*c]c.struct_wlr_surface = if (pointer_c != null and pointer_c == cl)
+            client_surface(pointer_c)
+        else
+            null;
+
+        if (surface != null and c.server.selected_monitor != null and
+            pointer_c == c.server.selected_monitor.*.sel and
+            c.server.selected_monitor.*.isoverview == 0)
+            c.wlr_seat_pointer_notify_enter(c.server.seat, surface, sx, sy);
+
+        cl.*.need_output_flush = false;
+    }
+}
+
+export fn init_fadeout_client(cl: [*c]Client) callconv(.c) void {
+    if (cl.*.mon == null or client_is_unmanaged(cl) != 0)
+        return;
+
+    if (cl.*.scene == null)
+        return;
+
+    if (cl.*.shield_when_capture != 0 and c.server.active_capture_count > 0)
+        return;
+
+    if (closeAnimationType(cl) == c.ANIM_TYPE_NONE)
+        return;
+
+    const raw = ecalloc(1, @sizeOf(Client)) orelse return;
+    const fadeout_client: *Client = @ptrCast(@alignCast(raw));
+    fadeout_client.animation_type_open = c.ANIM_TYPE_UNSET;
+    fadeout_client.animation_type_close = c.ANIM_TYPE_UNSET;
+
+    cl.*.snapshot_temp_visible = true;
+    client_update_visibility(cl);
+    client_set_border_color(cl, &c.config.bordercolor);
+    if (cl.*.ov_card_tree != null) {
+        // Closing in overview: the fadeout snapshot is based on the
+        // already-scaled card tree. Snapshotting accumulates node coordinates,
+        // but card tree coordinates are relative to (bw,bw), so a direct
+        // snapshot would land near the layer origin; temporarily move the card
+        // tree to the card's absolute screen coordinates before snapshotting.
+        const abs_x = cl.*.animation.current.x + @as(i32, @intCast(cl.*.bw));
+        const abs_y = cl.*.animation.current.y + @as(i32, @intCast(cl.*.bw));
+        c.wlr_scene_node_set_position(&cl.*.ov_card_tree.*.node, abs_x, abs_y);
+        fadeout_client.scene = c.wlr_scene_tree_snapshot(&cl.*.ov_card_tree.*.node, c.server.layers[c.LyrFadeOut]);
+        overview_destroy_card(cl);
+        cl.*.overview_scene_surface = null;
+    } else {
+        fadeout_client.scene = c.wlr_scene_tree_snapshot(&cl.*.scene.*.node, c.server.layers[c.LyrFadeOut]);
+    }
+    cl.*.snapshot_temp_visible = false;
+    client_update_visibility(cl);
+
+    if (fadeout_client.scene == null) {
+        c.free(fadeout_client);
+        return;
+    }
+
+    fadeout_client.animation.duration = c.config.animation_duration_close;
+    fadeout_client.geom = cl.*.animation.current;
+    fadeout_client.current = cl.*.animation.current;
+    fadeout_client.animainit_geom = cl.*.animation.current;
+    fadeout_client.animation.initial = cl.*.animation.current;
+    fadeout_client.mon = cl.*.mon;
+    fadeout_client.animation_type_close = cl.*.animation_type_close;
+    fadeout_client.animation.action = c.CLOSE;
+    fadeout_client.bw = cl.*.bw;
+    fadeout_client.no_fade_out = cl.*.no_fade_out;
+
+    fadeout_client.animation.initial.x = 0;
+    fadeout_client.animation.initial.y = 0;
+
+    if (closeAnimationType(cl) == c.ANIM_TYPE_FADE) {
+        fadeout_client.current.x = 0;
+        fadeout_client.current.y = 0;
+        fadeout_client.current.width = 0;
+        fadeout_client.current.height = 0;
+    } else if (closeAnimationType(cl) == c.ANIM_TYPE_SLIDE) {
+        const mon = cl.*.mon.*;
+        fadeout_client.current.y = if (cl.*.geom.y + @divTrunc(cl.*.geom.height, 2) >=
+            mon.m.y + @divTrunc(mon.m.height, 2))
+            mon.m.y + mon.m.height - cl.*.animation.current.y
+        else
+            mon.m.y - cl.*.geom.height - cl.*.animation.current.y;
+        fadeout_client.current.x = 0;
+    } else {
+        fadeout_client.current.y = @intFromFloat((@as(f64, @floatFromInt(fadeout_client.geom.height)) -
+            @as(f64, @floatFromInt(fadeout_client.geom.height)) * c.config.zoom_end_ratio) / 2);
+        fadeout_client.current.x = @intFromFloat((@as(f64, @floatFromInt(fadeout_client.geom.width)) -
+            @as(f64, @floatFromInt(fadeout_client.geom.width)) * c.config.zoom_end_ratio) / 2);
+        fadeout_client.current.width = @intFromFloat(@as(f64, @floatFromInt(fadeout_client.geom.width)) * c.config.zoom_end_ratio);
+        fadeout_client.current.height = @intFromFloat(@as(f64, @floatFromInt(fadeout_client.geom.height)) * c.config.zoom_end_ratio);
+    }
+
+    fadeout_client.animation.time_started = get_now_in_ms();
+    c.wlr_scene_node_set_enabled(&fadeout_client.scene.*.node, true);
+    wlListInsert(&c.server.fadeout_clients, &fadeout_client.fadeout_link);
+
+    request_fresh_all_monitors();
+}
+
+// ---------------------------------------------------------------------------
+// drop/clip/fadeout tests (slice 89)
+// ---------------------------------------------------------------------------
+
+extern var stub_get_clip_calls: c_int;
+extern var stub_clip: c.struct_wlr_box;
+extern var stub_get_geometry_calls: c_int;
+extern var stub_geometry: c.struct_wlr_box;
+extern var stub_is_x11: c_int;
+extern var stub_xwayland_clip_calls: c_int;
+extern var stub_xwayland_clip: c.struct_wlr_box;
+extern var stub_xwayland_dest_calls: c_int;
+extern var stub_unmanaged: c_int;
+extern var stub_border_color_calls: c_int;
+extern var stub_border_color: [4]f32;
+extern var stub_finish_geometry_calls: c_int;
+extern var stub_overview_layout_calls: c_int;
+extern var stub_overview_destroy_calls: c_int;
+extern var stub_tabbar_calls: c_int;
+extern var stub_pointer_client: [*c]Client;
+extern var stub_node_at_point_calls: c_int;
+extern var stub_opacity_calls: c_int;
+extern var stub_opacity: f64;
+extern var stub_curve: f64;
+extern var stub_now_ms: u32;
+extern var stub_get_now_ms: u32;
+extern var stub_fresh_monitors_calls: c_int;
+extern var stub_surface_clip_calls: c_int;
+extern var stub_surface_clip: c.struct_wlr_box;
+extern var stub_tree_destroy_calls: c_int;
+extern var stub_snapshot_calls: c_int;
+extern var stub_snapshot_tree: [*c]c.struct_wlr_scene_tree;
+extern var stub_pointer_enter_calls: c_int;
+
+var test_cursor: c.struct_wlr_cursor = undefined;
+var test_fadeout_tree: c.struct_wlr_scene_tree = undefined;
+var test_layers: [c.NUM_LAYERS]?*c.struct_wlr_scene_tree = undefined;
+var test_selected_mon: Monitor = undefined;
+var test_seat: c.struct_wlr_seat = undefined;
+var test_droparea: c.struct_wlr_scene_rect = undefined;
+var test_drop_layout: c.Layout = undefined;
+
+fn resetDropWorld() void {
+    resetDrawWorld();
+    test_cursor = std.mem.zeroes(c.struct_wlr_cursor);
+    test_fadeout_tree = std.mem.zeroes(c.struct_wlr_scene_tree);
+    test_layers = std.mem.zeroes([c.NUM_LAYERS]?*c.struct_wlr_scene_tree);
+    test_layers[c.LyrFadeOut] = &test_fadeout_tree;
+    test_selected_mon = std.mem.zeroes(Monitor);
+    test_seat = std.mem.zeroes(c.struct_wlr_seat);
+    test_droparea = std.mem.zeroes(c.struct_wlr_scene_rect);
+    test_drop_layout = std.mem.zeroes(c.Layout);
+    test_client.droparea = &test_droparea;
+    test_client.scene = &test_fadeout_tree;
+    test_client.geom = .{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    test_client.animation.current = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    test_pertag.ltidxs[0] = &test_drop_layout;
+    c.server.cursor = &test_cursor;
+    c.server.layers = test_layers;
+    c.server.fadeout_clients = std.mem.zeroes(c.struct_wl_list);
+    wlListInit(&c.server.fadeout_clients);
+    c.server.selected_monitor = &test_selected_mon;
+    c.server.seat = &test_seat;
+    test_client.mon = &test_mon;
+    test_client.overview_scene_surface = null;
+    test_client.ov_card_tree = null;
+    test_client.iskilling = 0;
+    test_client.isfullscreen = 0;
+    test_client.isfloating = 0;
+    test_client.isunglobal = 0;
+    test_client.is_clip_to_hide = false;
+    test_client.enable_drop_area_draw = false;
+    test_client.drop_direction = c.UNDIR;
+    test_client.ismaster = false;
+    test_client.animation.duration = 0;
+    test_client.animation.time_started = 0;
+    test_mon.visible_tiling_clients = 1;
+    c.config.animation_type_close = c.ANIM_TYPE_NONE;
+    stub_get_clip_calls = 0;
+    stub_clip = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    stub_get_geometry_calls = 0;
+    stub_geometry = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    stub_is_x11 = 0;
+    stub_xwayland_clip_calls = 0;
+    stub_xwayland_clip = std.mem.zeroes(c.struct_wlr_box);
+    stub_xwayland_dest_calls = 0;
+    stub_unmanaged = 0;
+    stub_border_color_calls = 0;
+    stub_border_color = std.mem.zeroes([4]f32);
+    stub_finish_geometry_calls = 0;
+    stub_overview_layout_calls = 0;
+    stub_overview_destroy_calls = 0;
+    stub_tabbar_calls = 0;
+    stub_pointer_client = null;
+    stub_node_at_point_calls = 0;
+    stub_opacity_calls = 0;
+    stub_opacity = 0;
+    stub_curve = -1;
+    stub_now_ms = 0;
+    stub_get_now_ms = 1000;
+    stub_fresh_monitors_calls = 0;
+    stub_surface_clip_calls = 0;
+    stub_surface_clip = std.mem.zeroes(c.struct_wlr_box);
+    stub_tree_destroy_calls = 0;
+    stub_snapshot_calls = 0;
+    stub_snapshot_tree = &test_fadeout_tree;
+    stub_pointer_enter_calls = 0;
+}
+
+fn fadeoutFromLink(link: [*c]c.struct_wl_list) *Client {
+    return @ptrFromInt(@intFromPtr(link) - @offsetOf(Client, "fadeout_link"));
+}
+
+test "drop area hides on disable and raises on first draw" {
+    resetDropWorld();
+    test_droparea.node.enabled = true;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_lower_calls);
+
+    test_client.enable_drop_area_draw = true;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_raise_calls);
+    try testing.expect(test_droparea.node.enabled);
+    try testing.expectEqual(@as(c_int, 96), stub_rect_w);
+}
+
+test "drop area picks halves in tiled layouts" {
+    resetDropWorld();
+    test_drop_layout.id = c.TILE;
+    test_client.enable_drop_area_draw = true;
+    test_droparea.node.enabled = true;
+    test_client.ismaster = false;
+    test_cursor.x = 30;
+    test_cursor.y = 25;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(i32, c.UP), test_client.drop_direction);
+    try testing.expectEqual(@as(c_int, 96), stub_rect_w);
+    try testing.expectEqual(@as(c_int, 38), stub_rect_h);
+
+    test_client.ismaster = true;
+    test_cursor.x = 70;
+    test_cursor.y = 70;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(i32, c.RIGHT), test_client.drop_direction);
+    try testing.expectEqual(@as(c_int, 48), stub_rect_w);
+    try testing.expectEqual(@as(c_int, 76), stub_rect_h);
+}
+
+test "drop area uses dwindle ratio and group drops" {
+    resetDropWorld();
+    test_drop_layout.id = c.DWINDLE;
+    c.config.dwindle_drop_simple_split = 1;
+    c.config.dwindle_split_ratio = 0.25;
+    test_client.enable_drop_area_draw = true;
+    test_droparea.node.enabled = true;
+    test_cursor.x = 20;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(i32, c.LEFT), test_client.drop_direction);
+    try testing.expectEqual(@as(c_int, 24), stub_rect_w);
+    try testing.expectEqual(@as(c_int, 76), stub_rect_h);
+
+    c.server.drop_to_group = true;
+    c.server.drop_client = &test_client;
+    client_set_drop_area(&test_client);
+    try testing.expectEqual(@as(i32, c.UNDIR), test_client.drop_direction);
+    try testing.expectEqual(@as(c_int, 96), stub_rect_w);
+}
+
+test "clip overview path redraws cards and decorations" {
+    resetDropWorld();
+    test_client.ov_card_tree = @ptrFromInt(0x5000);
+    test_client.animation.duration = 10;
+    c.config.animations = 1;
+    client_apply_clip(&test_client, 0.5);
+    try testing.expectEqual(@as(c_int, 1), stub_overview_layout_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_tabbar_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_card_radii_calls);
+    try testing.expectEqual(@as(c_int, 0), stub_get_clip_calls);
+}
+
+test "clip without animations snaps geometry and hides empty clips" {
+    resetDropWorld();
+    c.config.animations = 0;
+    stub_gesture = 0;
+    client_apply_clip(&test_client, 1.0);
+    try testing.expectEqual(@as(c_int, 1), stub_get_clip_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_surface_clip_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_tabbar_calls);
+    try testing.expect(!test_client.is_surface_hidden);
+    try testing.expectEqual(test_client.geom.width, test_client.pending.width);
+
+    stub_clip.width = 0;
+    client_apply_clip(&test_client, 1.0);
+    try testing.expect(test_client.is_surface_hidden);
+}
+
+test "clip during animation routes X11 and scales buffers" {
+    resetDropWorld();
+    c.config.animations = 1;
+    test_client.animation.duration = 10;
+    stub_is_x11 = 1;
+    stub_iterate = 1;
+    client_apply_clip(&test_client, 0.5);
+    try testing.expectEqual(@as(c_int, 1), stub_xwayland_clip_calls);
+    try testing.expectEqual(@as(c_int, 0), stub_surface_clip_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_for_each_calls);
+    // Both scales are below 1, so the scene-buffer effect declines to resize.
+    try testing.expectEqual(@as(c_int, 0), stub_dest_size_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_buffer_radii_calls);
+
+    resetDropWorld();
+    c.config.animations = 1;
+    test_client.animation.duration = 10;
+    client_apply_clip(&test_client, 1.0);
+    try testing.expectEqual(@as(c_int, 1), stub_xwayland_dest_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_surface_clip_calls);
+}
+
+test "fadeout tick interpolates, fades and destroys at the end" {
+    resetDropWorld();
+    c.config.animation_fade_out = 1;
+    c.config.fadeout_begin_opacity = 0.8;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.initial = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    test_client.current = .{ .x = 100, .y = 80, .width = 200, .height = 160 };
+    stub_now_ms = 50;
+    stub_iterate = 1;
+    fadeout_client_animation_next_tick(&test_client);
+    try testing.expectEqual(@as(i32, 150), test_client.animation.current.width);
+    try testing.expectEqual(@as(i32, 50), test_client.animation.current.x);
+    try testing.expectEqual(@as(c_int, 1), stub_opacity_calls);
+    try testing.expect(stub_opacity > 0 and stub_opacity < 0.8);
+
+    const heap = @as(*Client, @ptrCast(@alignCast(c.ecalloc(1, @sizeOf(Client)) orelse unreachable)));
+    heap.* = std.mem.zeroes(Client);
+    heap.scene = &test_fadeout_tree;
+    heap.animation.duration = 100;
+    heap.animation.time_started = 0;
+    heap.fadeout_link = std.mem.zeroes(c.struct_wl_list);
+    wlListInsert(&c.server.fadeout_clients, &heap.fadeout_link);
+    stub_now_ms = 200;
+    fadeout_client_animation_next_tick(heap);
+    try testing.expectEqual(@as(c_int, 1), stub_tree_destroy_calls);
+    try testing.expect(c.server.fadeout_clients.next == &c.server.fadeout_clients);
+}
+
+test "animation tick snaps to pending geometry and re-enters the pointer" {
+    resetDropWorld();
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.initial = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    test_client.current = .{ .x = 100, .y = 80, .width = 200, .height = 160 };
+    test_client.geom = .{ .x = 40, .y = 50, .width = 300, .height = 200 };
+    stub_now_ms = 200;
+    stub_pointer_client = &test_client;
+    test_selected_mon.sel = &test_client;
+    test_selected_mon.isoverview = 0;
+    stub_is_x11 = 0;
+    client_animation_next_tick(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_finish_geometry_calls);
+    try testing.expectEqual(@as(i32, c.MOVE), test_client.animation.action);
+    try testing.expect(!test_client.animation.running);
+    try testing.expectEqual(@as(c_int, 1), stub_pointer_enter_calls);
+    try testing.expect(!test_client.need_output_flush);
+}
+
+test "animation tick handles tag-out completion" {
+    resetDropWorld();
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.initial = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    test_client.current = test_client.animation.initial;
+    test_client.geom = .{ .x = 5, .y = 6, .width = 70, .height = 60 };
+    test_client.animation.tagouting = true;
+    test_client.iskilling = 1;
+    stub_now_ms = 200;
+    client_animation_next_tick(&test_client);
+    try testing.expect(test_client.animation.tagouted);
+    try testing.expect(!test_client.animation.tagouting);
+    try testing.expectEqual(@as(i32, 70), test_client.animation.current.width);
+    try testing.expectEqual(@as(c_int, 0), stub_finish_geometry_calls);
+}
+
+test "fadeout init guards and builds a zoom client" {
+    resetDropWorld();
+    c.config.animation_type_close = c.ANIM_TYPE_NONE;
+    init_fadeout_client(&test_client);
+    try testing.expect(c.server.fadeout_clients.next == &c.server.fadeout_clients);
+
+    c.config.animation_type_close = c.ANIM_TYPE_ZOOM;
+    c.config.zoom_end_ratio = 0.5;
+    c.config.animation_duration_close = 300;
+    test_client.animation.current = .{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    init_fadeout_client(&test_client);
+    try testing.expect(c.server.fadeout_clients.next != &c.server.fadeout_clients);
+    const fade = fadeoutFromLink(c.server.fadeout_clients.next);
+    try testing.expectEqual(@as(u32, 300), fade.animation.duration);
+    try testing.expectEqual(@as(i32, c.CLOSE), fade.animation.action);
+    try testing.expectEqual(@as(i32, 100), fade.geom.width);
+    try testing.expectEqual(@as(i32, 25), fade.current.x);
+    try testing.expectEqual(@as(i32, 20), fade.current.y);
+    try testing.expectEqual(@as(i32, 50), fade.current.width);
+    try testing.expectEqual(@as(i32, 40), fade.current.height);
+    try testing.expectEqual(@as(c_int, 1), stub_border_color_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_fresh_monitors_calls);
+}
+
+test "fadeout init applies fade and slide end states" {
+    resetDropWorld();
+    c.config.animation_type_close = c.ANIM_TYPE_FADE;
+    c.config.animation_duration_close = 100;
+    test_client.animation.current = .{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    init_fadeout_client(&test_client);
+    var fade = fadeoutFromLink(c.server.fadeout_clients.next);
+    try testing.expectEqual(@as(i32, 0), fade.current.width);
+    try testing.expectEqual(@as(i32, 0), fade.current.height);
+
+    resetDropWorld();
+    c.config.animation_type_close = c.ANIM_TYPE_SLIDE;
+    test_mon.m = .{ .x = 0, .y = 0, .width = 1000, .height = 800 };
+    test_client.geom = .{ .x = 0, .y = 500, .width = 100, .height = 80 };
+    test_client.animation.current = .{ .x = 0, .y = 600, .width = 100, .height = 80 };
+    init_fadeout_client(&test_client);
+    fade = fadeoutFromLink(c.server.fadeout_clients.next);
+    try testing.expectEqual(@as(i32, 200), fade.current.y);
+    try testing.expectEqual(@as(i32, 0), fade.current.x);
+}
+
+test "fadeout init snapshots overview cards and clears the card surface" {
+    resetDropWorld();
+    c.config.animation_type_close = c.ANIM_TYPE_FADE;
+    test_client.ov_card_tree = &test_fadeout_tree;
+    test_client.overview_scene_surface = @ptrFromInt(0x6000);
+    test_client.animation.current = .{ .x = 30, .y = 40, .width = 100, .height = 80 };
+    init_fadeout_client(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_overview_destroy_calls);
+    try testing.expect(test_client.overview_scene_surface == null);
+    try testing.expectEqual(@as(c_int, 1), stub_snapshot_calls);
+    try testing.expectEqual(@as(i32, 32), stub_pos_x[0]);
+    try testing.expectEqual(@as(i32, 42), stub_pos_y[0]);
+}

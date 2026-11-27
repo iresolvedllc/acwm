@@ -645,7 +645,21 @@ green.
       region layout including fullscreen reset; and clip-to-hide offsets
       with scroll/tag guards and visibility toggling. C region guarded
       with ACWM_ZIG_ANIM_CLIENT_B; 7 new tests (21 in the module)
-- [ ] `animation/client.c` slice 3 (drop area/clip/fade)
+- [x] `animation/client.c` slice 3 → `src/animation/client.zig` drop/
+      clip/fade: drop-area enable/disable/raise/lower, group-drop full
+      overlay, dwindle split-ratio halves, tiled/deck/center/right-tile
+      master and stack halves, vertical variants and nearest-edge
+      fallback with change suppression; clip application for overview
+      cards and normal/animated paths (geometry sync when animations are
+      off, surface/XWayland clipping, hidden-surface visibility, buffer
+      scaling and decoration redraw); fadeout tick interpolation,
+      opacity curve, zoom snapshot scaling and final teardown; animation
+      tick interpolation, completion snapping, tag-out finalisation and
+      pointer re-entry; and fadeout-client construction (guards,
+      snapshot, overview-card handling, fade/slide/zoom end states,
+      timing and monitor refresh). C region guarded with
+      ACWM_ZIG_ANIM_CLIENT_C; 12 new tests (33 in the module)
+- [ ] `animation/client.c` slice 4 (commit/resize)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/

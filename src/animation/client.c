@@ -802,6 +802,7 @@ struct ivec2 clip_to_hide(Client *c, struct wlr_box *clip_box,
 }
 #endif /* ACWM_ZIG_ANIM_CLIENT_B */
 
+#ifndef ACWM_ZIG_ANIM_CLIENT_C
 void client_set_drop_area(Client *c) {
 	bool first_draw = false;
 	int32_t drop_direction = UNDIR;
@@ -1382,6 +1383,8 @@ void init_fadeout_client(Client *c) {
 
 	request_fresh_all_monitors();
 }
+#endif /* ACWM_ZIG_ANIM_CLIENT_C */
+
 void client_apply_finish_geometry(Client *c) {
 	if (!c || !c->scene)
 		return;

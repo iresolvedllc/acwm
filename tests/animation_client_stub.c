@@ -198,3 +198,103 @@ bool wlr_box_intersection(struct wlr_box *dest, const struct wlr_box *box_a,
     dest->x = x1; dest->y = y1; dest->width = x2 - x1; dest->height = y2 - y1;
     return true;
 }
+
+/* ---- drop area / clip / fadeout (slice 89) ---- */
+int stub_get_clip_calls = 0;
+struct wlr_box stub_clip = {0, 0, 100, 80};
+void client_get_clip(Client *c, struct wlr_box *clip) {
+    (void)c; stub_get_clip_calls++; *clip = stub_clip;
+}
+int stub_get_geometry_calls = 0;
+struct wlr_box stub_geometry = {0, 0, 100, 80};
+void client_get_geometry(Client *c, struct wlr_box *geom) {
+    (void)c; stub_get_geometry_calls++; *geom = stub_geometry;
+}
+int stub_is_x11 = 0;
+int32_t client_is_x11(Client *c) { (void)c; return stub_is_x11; }
+int stub_xwayland_clip_calls = 0;
+struct wlr_box stub_xwayland_clip;
+void client_update_xwayland_clip(Client *c, struct wlr_box *clip) {
+    (void)c; stub_xwayland_clip_calls++; stub_xwayland_clip = *clip;
+}
+int stub_xwayland_dest_calls = 0;
+void client_update_xwayland_dest_size(Client *c) { (void)c; stub_xwayland_dest_calls++; }
+int stub_unmanaged = 0;
+int32_t client_is_unmanaged(Client *c) { (void)c; return stub_unmanaged; }
+int stub_border_color_calls = 0;
+float stub_border_color[4];
+void client_set_border_color(Client *c, const float color[4]) {
+    (void)c; stub_border_color_calls++;
+    memcpy(stub_border_color, color, sizeof(stub_border_color));
+}
+int stub_finish_geometry_calls = 0;
+void client_apply_finish_geometry(Client *c) { (void)c; stub_finish_geometry_calls++; }
+int stub_overview_layout_calls = 0;
+void overview_layout_card(Client *c) { (void)c; stub_overview_layout_calls++; }
+int stub_overview_destroy_calls = 0;
+void overview_destroy_card(Client *c) { (void)c; stub_overview_destroy_calls++; }
+int stub_tabbar_calls = 0;
+void client_draw_tabbar(Client *c, struct ivec2 offsets) {
+    (void)c; (void)offsets; stub_tabbar_calls++;
+}
+
+Client *stub_pointer_client = NULL;
+double stub_node_sx = 1, stub_node_sy = 2;
+int stub_node_at_point_calls = 0;
+void node_at_point(double x, double y, struct wlr_surface **psurface, Client **pc,
+                   LayerSurface **pl, AcwmBarDecoration **bar, double *nx, double *ny) {
+    (void)x; (void)y; (void)psurface; (void)pl; (void)bar;
+    stub_node_at_point_calls++;
+    if (pc) *pc = stub_pointer_client;
+    if (nx) *nx = stub_node_sx;
+    if (ny) *ny = stub_node_sy;
+}
+int stub_opacity_calls = 0;
+double stub_opacity = 0;
+void scene_buffer_apply_opacity(struct wlr_scene_buffer *buffer, int32_t sx, int32_t sy, void *data) {
+    (void)buffer; (void)sx; (void)sy;
+    stub_opacity_calls++;
+    if (data) stub_opacity = *(double *)data;
+}
+double stub_curve = -1;
+double find_animation_curve_at(double t, int32_t type) {
+    (void)type;
+    if (stub_curve >= 0) return stub_curve;
+    return t >= 1.0 ? 1.0 : (t < 0.0 ? 0.0 : t);
+}
+uint32_t stub_now_ms = 0;
+int stub_clock_calls = 0;
+int clock_gettime(clockid_t clk, struct timespec *ts) {
+    (void)clk;
+    stub_clock_calls++;
+    ts->tv_sec = (time_t)(stub_now_ms / 1000);
+    ts->tv_nsec = (long)((stub_now_ms % 1000) * 1000000);
+    return 0;
+}
+uint32_t timespec_to_ms(struct timespec *ts) {
+    return (uint32_t)(ts->tv_sec * 1000 + ts->tv_nsec / 1000000);
+}
+uint32_t stub_get_now_ms = 1000;
+uint32_t get_now_in_ms(void) { return stub_get_now_ms; }
+int stub_fresh_monitors_calls = 0;
+void request_fresh_all_monitors(void) { stub_fresh_monitors_calls++; }
+void *ecalloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
+
+int stub_surface_clip_calls = 0;
+struct wlr_box stub_surface_clip;
+void wlr_scene_subsurface_tree_set_clip(struct wlr_scene_node *node, const struct wlr_box *clip) {
+    (void)node; stub_surface_clip_calls++; stub_surface_clip = *clip;
+}
+int stub_tree_destroy_calls = 0;
+void wlr_scene_node_destroy(struct wlr_scene_node *node) { (void)node; stub_tree_destroy_calls++; }
+int stub_snapshot_calls = 0;
+struct wlr_scene_tree *stub_snapshot_tree = NULL;
+struct wlr_scene_tree *wlr_scene_tree_snapshot(struct wlr_scene_node *node, struct wlr_scene_tree *parent) {
+    (void)node; (void)parent; stub_snapshot_calls++;
+    return stub_snapshot_tree;
+}
+int stub_pointer_enter_calls = 0;
+void wlr_seat_pointer_notify_enter(struct wlr_seat *seat, struct wlr_surface *surface, double sx, double sy) {
+    (void)seat; (void)surface; (void)sx; (void)sy;
+    stub_pointer_enter_calls++;
+}
