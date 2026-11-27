@@ -630,7 +630,7 @@ test "layout change removes disabled monitors honouring sleep" {
     try testing.expectEqual(@as(i32, 0), m.w.height);
     try testing.expectEqual(@as(c_int, 1), stub_manager_set_calls);
     try testing.expectEqual(@as(c_int, 1), stub_xdg_update_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_xwayland_primary_calls);
+    try testing.expectEqual(@as(c_int, if (build_options.xwayland) 1 else 0), stub_xwayland_primary_calls);
 
     resetOpsWorld();
     baseMonitor(&m, &out, &scene_out);
@@ -716,7 +716,7 @@ test "layout change repositions clients, blur and lock surfaces" {
     try testing.expectEqual(@as(c_int, 1), stub_cursor_move_calls);
     try testing.expectEqual(@as(c_int, 1), stub_manager_set_calls);
     try testing.expectEqual(@as(c_int, 1), stub_xdg_update_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_xwayland_primary_calls);
+    try testing.expectEqual(@as(c_int, if (build_options.xwayland) 1 else 0), stub_xwayland_primary_calls);
     try testing.expectEqual(@as(c_int, 1), stub_notify_calls);
     try testing.expectEqual(@as(c_int, 1), stub_activate_calls);
 }

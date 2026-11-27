@@ -60,7 +60,7 @@ fn nodeTypeIs(node: *const c.struct_wlr_scene_node, t: c_int) bool {
 }
 
 export fn client_update_geometry(cl: *Client) callconv(.c) void {
-    if (isX11(cl)) {
+    if (build_options.xwayland and isX11(cl)) {
         xwayland_apply_scale(cl);
         client_get_geometry(cl, &cl.geom);
         if (cl.isfloating != 0) {
@@ -82,14 +82,16 @@ export fn client_init_xwayland(cl: *Client) callconv(.c) void {
             continue;
         const buffer = c.wlr_scene_buffer_from_node(child);
         if (c.wlr_scene_surface_try_from_buffer(buffer) != null) {
-            cl.xwl_root_buffer = buffer;
-            if (buffer != null)
-                buffer.*.point_accepts_input = xwayland_scene_buffer_point_accepts_input;
+            if (build_options.xwayland) {
+                cl.xwl_root_buffer = buffer;
+                if (buffer != null)
+                    buffer.*.point_accepts_input = xwayland_scene_buffer_point_accepts_input;
+            }
             break;
         }
     }
 
-    if (client_surface(cl) != null) {
+    if (build_options.xwayland and client_surface(cl) != null) {
         cl.commmitx11.notify = handle_xwayland_surface_commit;
         c.wl_signal_add(&client_surface(cl).*.events.commit, &cl.commmitx11);
     }
@@ -121,7 +123,7 @@ export fn client_init_unmanaged(cl: *Client) callconv(.c) bool {
 }
 
 export fn client_apply_xwayland(cl: *Client) callconv(.c) void {
-    if (isX11(cl))
+    if (build_options.xwayland and isX11(cl))
         xwayland_apply_scale(cl);
 }
 
@@ -134,7 +136,7 @@ export fn xwayland_scene_buffer_point_accepts_input(buffer: [*c]c.struct_wlr_sce
     var ty = sy.*;
     const scene_data = acwm_scene_node_find(&buffer.*.node);
     if (scene_data != null and scene_data.*.type == @as(u32, @intCast(c.X11))) {
-        if (scene_data.*.owner != null and c.config.xwayland_ignore_scale != 0) {
+        if (build_options.xwayland and scene_data.*.owner != null and c.config.xwayland_ignore_scale != 0) {
             const cl = @as(*Client, @ptrCast(@alignCast(scene_data.*.owner.?)));
             if (cl.xwayland_scale > 0) {
                 tx *= cl.xwayland_scale;
@@ -182,11 +184,13 @@ fn copyColor(dst: *[4]f32, src: [*c]const f32) void {
 }
 
 export fn init_client_properties(cl: *Client) callconv(.c) void {
-    cl.xwl_req_valid = false;
-    cl.xwl_req_x = 0;
-    cl.xwl_req_y = 0;
-    cl.xwl_req_w = 0;
-    cl.xwl_req_h = 0;
+    if (build_options.xwayland) {
+        cl.xwl_req_valid = false;
+        cl.xwl_req_x = 0;
+        cl.xwl_req_y = 0;
+        cl.xwl_req_w = 0;
+        cl.xwl_req_h = 0;
+    }
     cl.blur_opacity = 1.0;
     cl.is_group_focus = false;
     cl.group_prev = null;
@@ -521,6 +525,9 @@ test "update geometry only touches X11 clients" {
 }
 
 test "init xwayland finds the root buffer and listens for commits" {
+    if (!build_options.xwayland)
+        return error.SkipZigTest;
+    if (build_options.xwayland) {
     resetInitWorld();
     var cl: Client = std.mem.zeroes(Client);
     var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
@@ -543,9 +550,13 @@ test "init xwayland finds the root buffer and listens for commits" {
     try testing.expect(buffer.point_accepts_input != null);
     try testing.expectEqual(@as(c_int, 1), stub_list_insert_calls);
     try testing.expect(cl.commmitx11.notify != null);
+    }
 }
 
 test "init unmanaged configures the overlay and optional focus" {
+    if (!build_options.xwayland)
+        return error.SkipZigTest;
+    if (build_options.xwayland) {
     resetInitWorld();
     var cl: Client = std.mem.zeroes(Client);
     var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
@@ -565,9 +576,13 @@ test "init unmanaged configures the overlay and optional focus" {
     try testing.expectEqual(@as(c_int, 1), stub_focus_calls);
     try testing.expect(c.server.exclusive_focus != null);
     try testing.expect(cl.set_geometry.notify != null);
+    }
 }
 
 test "xwayland point input scales coordinates for X11 owners" {
+    if (!build_options.xwayland)
+        return error.SkipZigTest;
+    if (build_options.xwayland) {
     resetInitWorld();
     var buffer: c.struct_wlr_scene_buffer = std.mem.zeroes(c.struct_wlr_scene_buffer);
     var sx: f64 = 10;
@@ -586,6 +601,7 @@ test "xwayland point input scales coordinates for X11 owners" {
     try testing.expect(xwayland_scene_buffer_point_accepts_input(&buffer, &sx, &sy));
     try testing.expectApproxEqAbs(@as(f64, 15), stub_point_tx, 1e-6);
     try testing.expectApproxEqAbs(@as(f64, 30), stub_point_ty, 1e-6);
+    }
 }
 
 test "new xdg toplevel allocates and installs listeners" {

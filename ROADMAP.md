@@ -499,8 +499,55 @@ green.
       scratchpads, overlay reparenting, floating reinsertion/malposition)
       and floating edge/neighbour snapping with resize. C region guarded
       with ACWM_ZIG_CLIENT_RULES; 9 tests
+- [x] Client geometry/init and tiling helpers from `manage/client.c` →
+      `src/manage/client_init.zig`: geometry updates, tiling and floating
+      size application with border/tab deductions, xdg toplevel
+      configure/size negotiation, unmanaged X11 overlay setup, XWayland
+      root-buffer tracking and commit listeners, scaled scene-buffer input
+      hit-testing, property initialization and resize clamping. C region
+      guarded with ACWM_ZIG_CLIENT_INIT; 9 tests
+- [x] Client map/commit/unmap/destroy lifecycle from `manage/client.c` →
+      `src/manage/client_lifecycle.zig`: scene setup, XWayland scene/scale
+      init, map and unmap paths, destroy teardown, request handlers
+      (fullscreen/minimize/maximize/title), tag visibility sync, focus
+      stack bookkeeping and animation hooks. C region guarded with
+      ACWM_ZIG_CLIENT_LIFECYCLE; 7 tests and shared tiling helpers exported
+      from client_init
+- [x] Client focus/view/tag visibility from `manage/client.c` →
+      `src/manage/client_view.zig`: view/tag assignment, show/hide with
+      animations and overview interaction, focus/raise/unfocus, monitor
+      view dispatch, visibility reconciliation and tag-view calls. C region
+      guarded with ACWM_ZIG_CLIENT_VIEW; 7 tests
+- [x] Client floating/fullscreen/scratchpad transitions from
+      `manage/client.c` → `src/manage/client_transition.zig`: floating
+      enter/leave with mode clearing, centered/clamped geometry and peer
+      fullscreen exit, fullscreen apply/restore, fake fullscreen,
+      maximize-screen gaps/group-bar reservation and reset, minimize/
+      unminimize with tag/scratchpad preservation, scroller-stack exit,
+      pending state propagation to foreign toplevels, scratchpad show/
+      switch/named handling, border/dim updates, exchange and park/unpark/
+      replace. C region guarded with ACWM_ZIG_CLIENT_TRANSITION; 8 tests
+- [x] Monitor moves, bounds, visibility and group/decorations from
+      `manage/client.c` → `src/manage/client_group.zig`: direction-based
+      monitor jump/move with scroller/tile insertion, old-name recording,
+      bounds, layout/monitor/tag swaps, tile resize with bar reservations,
+      client ids, gesture/visibility decisions, scene target layers, layer
+      sync, group-bar lifecycle, group focus/chains/detach/replace,
+      tab-node visibility, raise/reparent and decoration clicks, frame-done
+      forwarding, force render and pending SIGKILL. C region guarded with
+      ACWM_ZIG_CLIENT_GROUP; 7 tests
+- [x] XWayland integration from `manage/client.c` →
+      `src/manage/client_xwayland.zig`: monitor fallback and client/
+      preferred scale, logical↔X11 conversion with scene origin, X11
+      geometry for normal/fullscreen windows, coordinate fixing, configure
+      routing (unmapped/unmanaged/floating/tiled), activation with
+      minimize restore/urgency, hint urgency, new-surface listener
+      registration, associate/dissociate, commit serial tracking,
+      XWayland ready (seat, primary selection, cursor, keymap timer) and
+      geometry updates. C region guarded with ACWM_ZIG_CLIENT_XWAYLAND;
+      11 tests. `manage/client.c` is now fully ported; `-Dxwayland=false`
+      also builds
 - [ ] Server/event loop + output management in Zig
-- [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
       `manage/misc.c` (incl. the idle/shim helpers)
 - [ ] Input: pointer (1,888), keyboard, touch, tablet, switch, device,

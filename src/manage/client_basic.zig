@@ -572,6 +572,7 @@ test "clip and geometry use xdg state and x11 conversion" {
     try testing.expectEqual(@as(i32, 5), geom.x);
     try testing.expectEqual(@as(i32, 90), geom.width);
 
+    if (build_options.xwayland) {
     cl.type = @intCast(c.X11);
     var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
     xs.x = 10;
@@ -588,6 +589,7 @@ test "clip and geometry use xdg state and x11 conversion" {
     client_get_clip(&cl, &clip);
     try testing.expectEqual(@as(i32, 0), clip.x);
     try testing.expectEqual(@as(i32, 96), clip.width);
+    }
 }
 
 test "parent, children and float type infer role state" {

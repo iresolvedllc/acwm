@@ -4597,6 +4597,7 @@ bool client_force_render(Client *c) {
 }
 #endif /* ACWM_ZIG_CLIENT_GROUP */
 
+#ifndef ACWM_ZIG_CLIENT_XWAYLAND
 /*
  * Gets the monitor of the current XWayland client (falls back to the selected
  * monitor when not bound yet).
@@ -4960,3 +4961,4 @@ void handle_xwayland_surface_set_geometry(struct wl_listener *listener,
 }
 
 #endif
+#endif /* ACWM_ZIG_CLIENT_XWAYLAND */

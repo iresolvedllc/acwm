@@ -122,7 +122,7 @@ export fn handle_client_map(listener: [*c]c.struct_wl_listener, data: ?*anyopaqu
 
     client_init_xwayland(cl);
 
-    if (isX11(cl))
+    if (build_options.xwayland and isX11(cl))
         xwayland_apply_scale(cl);
     client_get_geometry(cl, &cl.geom);
 
