@@ -597,7 +597,18 @@ green.
       forwarding), modifier forwarding/layout status, layout reset across
       grouped keyboards and virtual-keyboard setup. C region guarded with
       ACWM_ZIG_INPUT_KEYBOARD; 10 tests
-- [ ] Input: pointer (1,888)
+- [x] Pointer constraints/configuration from `input/pointer.c` (part 1) →
+      `src/input/pointer_constraints.zig`: surface-scale helpers, pointer
+      warp boxes, constraint region sync/nearest-point clamping, hint
+      warping, locked-constraint region tests, confine-rule tracking and
+      warp/forget, constraint surface visibility, activation/deactivation
+      and destroy/commit handlers, hot-area toggling, axis bindings with
+      apply timeouts and scroll-factor forwarding, button dispatch, cursor
+      shape requests, libinput acceleration/tap/DWT/left-handed/middle/
+      scroll/click/send-events configuration with device-rule overrides,
+      pointer device creation, frame handling and absolute motion. C region
+      guarded with ACWM_ZIG_POINTER_CONSTRAINTS; 9 tests
+- [ ] Input: pointer (1,888) — motion/resize/drag/focus/drag-and-drop
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture

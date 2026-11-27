@@ -40,8 +40,11 @@
 #include <wlr/util/region.h>
 #include <wlr/xcursor.h>
 
-static struct LastCursor last_cursor;
+struct LastCursor last_cursor;
+bool pointer_locked_applied = false;
+#define CONFINE_POINTER_MARGIN 5
 
+#ifndef ACWM_ZIG_POINTER_CONSTRAINTS
 static double pointer_surface_scale(Client *c) {
 #ifdef XWAYLAND
 	if (c && client_is_x11(c) && config.xwayland_ignore_scale &&
@@ -133,8 +136,6 @@ static bool pointer_locked_constraint_applies(
 										  floor(sy), NULL);
 }
 
-static bool pointer_locked_applied = false;
-
 static bool pointer_hint_applied = false;
 static double pointer_hint_x = 0, pointer_hint_y = 0;
 
@@ -178,8 +179,6 @@ static bool pointer_client_visible(Client *c) {
 }
 
 static Client *confine_pointer_last = NULL;
-
-#define CONFINE_POINTER_MARGIN 5
 
 static Client *pointer_confine_rule_client(void) {
 	Client *c = NULL;
@@ -811,6 +810,23 @@ void handle_cursor_motion_absolute(struct wl_listener *listener, void *data) {
 	pointer_process_motion(event->time_msec, &event->pointer->base, dx, dy, dx,
 						   dy);
 }
+
+#endif /* ACWM_ZIG_POINTER_CONSTRAINTS */
+
+#ifdef ACWM_ZIG_POINTER_CONSTRAINTS
+/* Helpers exported by the Zig constraint slice and used below. */
+double pointer_surface_scale(Client *c);
+struct wlr_box pointer_client_warp_box(Client *c);
+bool pointer_locked_constraint_applies(Client *c,
+									   struct wlr_pointer_constraint_v1 *constraint);
+void pointer_follow_constraint_hint(struct wlr_pointer_constraint_v1 *constraint,
+									Client *c);
+Client *pointer_confine_rule_client(void);
+bool pointer_constraint_surface_visible(
+	struct wlr_pointer_constraint_v1 *constraint);
+Client *pointer_confine_client(
+	struct wlr_pointer_constraint_v1 **constraint_out);
+#endif
 
 static int32_t client_resize_grab(Client *c) {
 	if (config.border_resize_size > 0)

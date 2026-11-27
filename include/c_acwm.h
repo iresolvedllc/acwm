@@ -50,6 +50,7 @@
 #include <wlr/types/wlr_xdg_activation_v1.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_pointer_gestures_v1.h>
+#include <wlr/types/wlr_cursor_shape_v1.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/xwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
