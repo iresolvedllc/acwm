@@ -643,6 +643,27 @@ green.
       colors, close/remove-client, commit-to-client, hit testing, open
       sizing across candidate scopes, cycling and the `switcher` action.
       C region guarded with ACWM_ZIG_SWITCHER; 6 tests
+- [x] Overview layout/packing from `layout/overview.c` →
+      `src/layout/overview.zig`: area-descending item ordering, candidate
+      placement with gap-aware dedup/overlap rejection and top-left choice,
+      row detection and gap-preserving horizontal centering, binary-search
+      uniform scaling with final placement and centered monitor offset,
+      batched tile resizes, column layout with proportional heights,
+      height-pressure scaling and vertical centering, tab layout with
+      focused center column and circulating side columns, jump-mode begin/
+      finish, jump-hint labelling with keycode lookup and label-node
+      updates, and overview dispatch. C region guarded with
+      ACWM_ZIG_LAYOUT_OVERVIEW; 12 tests
+- [x] X11 primary-output manager from `manage/xwayland_primary.c` →
+      `src/manage/xwayland_primary.zig`: XWayland server readiness checks,
+      XCB connection/watch lifecycle with an event-loop fd source,
+      screen/root discovery, RandR screen-resource and output-info caching
+      (bounded name/output table with refresh retry), cached primary-output
+      application with a round-trip flush, primary-rule monitor selection
+      (primary flag, rule order, first enabled fallback), display/output
+      change detection, and init/update entry points. The C body is
+      compiled only when `XWAYLAND` is set and `ACWM_ZIG_XWAYLAND_PRIMARY`
+      is not; 6 tests
 - [ ] `draw/` remainder
 - [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
       nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM
@@ -653,7 +674,20 @@ green.
       Wayland event loop, plus CLI parsing (version/debug/config/startup/
       readiness/config-check) and usage. C region guarded with
       ACWM_ZIG_MAIN; 6 tests. `setup()` remains C for the next slice
-- [ ] `main.c` setup()
+- [x] `main.c` setup() → `src/main_setup.zig`: signal setup, display and
+      event loop, tablet manager, backend/headless multi-backend, scene
+      graph/layer wrappers, fx renderer with HDR color manager and color
+      representation, shm/dmabuf/drm/syncobj, allocator, compositor and
+      protocol globals, print-status signal and bar, gamma/power/foreign
+      capture/tearing managers, output layout and xdg-output, monitor and
+      client lists, idle notifier/inhibit/timers, layer/xdg shells, session
+      lock, decorations, pointer constraints, relative pointer,
+      cursor/xcursor + input listeners, gestures, touch, seat and cursor
+      requests, keyboard group/inhibits, output manager, blur, text-input/
+      input-method relay, DRM leasing, foreign-toplevel/XDG foreign,
+      ext-workspace, XWayland startup and config error nag. Guarded with
+      ACWM_ZIG_MAIN_SETUP; `main.c` is now fully ported (only the tiny C
+      main→acwm_main wrapper remains)
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock
