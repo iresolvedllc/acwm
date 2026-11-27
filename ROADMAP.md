@@ -392,6 +392,16 @@ green.
       animation ticks (opacity, blur, zoom buffers, completion) and
       fadeout snapshot creation/pending-state/commit/frame gating. C twin
       guarded with ACWM_ZIG_ANIMATION_LAYER; 12 tests
+- [x] `manage/layer.c` → `src/manage/layer.zig`: exclusive/non-exclusive
+      arrangement and popup sync, layer focus with IME relay, exclusive
+      focus reset, bar-strip reservations and stale-geometry refresh,
+      blur-buffer iteration/wallpaper choice/background cache invalidation,
+      map-time rules (shield/blur/animation/shadow), shield/shadow/blur
+      scene creation, commit handling (initial configure, empty buffers,
+      animated moves, layer reparenting/list moves, keyboard-interactivity
+      reset, blur refresh), popup creation/commit/reposition/destroy with
+      unconstraining, surface creation/output fallback, node teardown and
+      unmap cleanup. C twin guarded with ACWM_ZIG_LAYER; 11 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
