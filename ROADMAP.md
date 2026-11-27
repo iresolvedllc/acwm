@@ -649,7 +649,17 @@ green.
       setup/fallback, per-output toggle with damage/commit/revert and
       resolution refresh, and all/named/selected monitor toggling. C
       regions guarded with ACWM_ZIG_EXT_WORKSPACE_HDR; 9 tests
-- [ ] Extension protocols: text-input, xdg-output
+- [x] xdg-output from `ext-protocol/xdg-output.c` →
+      `src/ext-protocol/xdg_output.zig`: XWayland resource detection,
+      rotation/scale-aware logical and physical values with output-layout
+      offsets and XWayland origin, logical/physical send baselines,
+      change detection, per-resource update, resource/description/destroy
+      handling, output create/find/destroy with layout-output teardown,
+      manager get-output wiring (names/descriptions/details/done), manager
+      bind, all-output updates with wl_output.done scheduling and
+      XWayland-only done, and manager global init. C region guarded with
+      ACWM_ZIG_EXT_XDG_OUTPUT; 8 tests
+- [ ] Extension protocol: text-input
 - [ ] `acwm-portal` screencast (pipewire negotiation, ext-image-copy-capture)
 - [ ] `acwm-lock` — built-in session lock UI (ext-session-lock-v1 already
       implemented server-side; add the unlock prompt + keyring state)

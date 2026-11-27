@@ -92,6 +92,7 @@
 #include "acwm/ext-protocol/foreign-toplevel.h"
 #include "acwm/ext-protocol/ext-workspace.h"
 #include "acwm/ext-protocol/hdr.h"
+#include "acwm/ext-protocol/xdg-output.h"
 #include "acwm/input/pointer.h"
 #include "acwm/input/switch.h"
 #include "acwm/input/touch.h"

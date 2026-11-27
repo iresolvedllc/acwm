@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_EXT_XDG_OUTPUT
 #include "acwm/ext-protocol/xdg-output.h"
 #include "acwm/common/server.h"
 #include "acwm/config/parse.h"
@@ -409,3 +410,4 @@ static const struct zxdg_output_manager_v1_interface xdg_output_manager_impl = {
 	.destroy = handle_xdg_output_manager_destroy,
 	.get_xdg_output = handle_xdg_output_manager_get_output,
 };
+#endif /* ACWM_ZIG_EXT_XDG_OUTPUT */
