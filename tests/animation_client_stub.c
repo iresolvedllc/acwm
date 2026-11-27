@@ -319,3 +319,33 @@ void client_update_border_color(Client *c) { (void)c; stub_border_color_update_c
 bool wlr_box_equal(const struct wlr_box *a, const struct wlr_box *b) {
     return a->x == b->x && a->y == b->y && a->width == b->width && a->height == b->height;
 }
+
+/* ---- focus animation / draw frame (slice 91) ---- */
+float stub_get_border_color[4] = {0.1f, 0.2f, 0.3f, 1.0f};
+float stub_get_dim_color[4] = {0.4f, 0.5f, 0.6f, 1.0f};
+float *get_border_color(Client *c) { (void)c; return stub_get_border_color; }
+float *get_dim_color(Client *c) { (void)c; return stub_get_dim_color; }
+int stub_set_opacity_calls = 0;
+float stub_set_opacity_value = -1;
+void client_set_opacity(Client *c, double opacity) {
+    (void)c; stub_set_opacity_calls++; stub_set_opacity_value = opacity;
+}
+int stub_state_colors_calls = 0;
+float stub_state_border[4], stub_state_dim[4];
+void client_set_state_colors(Client *c, const float border_color[4], const float dim_color[4]) {
+    (void)c; stub_state_colors_calls++;
+    memcpy(stub_state_border, border_color, sizeof(stub_state_border));
+    memcpy(stub_state_dim, dim_color, sizeof(stub_state_dim));
+}
+int stub_blur_strength_calls = 0, stub_blur_alpha_calls = 0;
+float stub_blur_strength = -1, stub_blur_alpha = -1;
+void wlr_scene_blur_set_strength(struct wlr_scene_blur *blur, float strength) {
+    (void)blur; stub_blur_strength_calls++; stub_blur_strength = strength;
+}
+void wlr_scene_blur_set_alpha(struct wlr_scene_blur *blur, float alpha) {
+    (void)blur; stub_blur_alpha_calls++; stub_blur_alpha = alpha;
+}
+int stub_blur_wallpaper = 0;
+bool client_blur_uses_wallpaper(Client *c) { (void)c; return stub_blur_wallpaper != 0; }
+int stub_force_render_result = 0;
+bool client_force_render(Client *c) { (void)c; return stub_force_render_result != 0; }

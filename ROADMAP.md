@@ -672,8 +672,19 @@ green.
       overview-enter backup, grab-path immediate redraw/clipping, and
       pending commit/border-color update). C region guarded with
       ACWM_ZIG_ANIM_CLIENT_D; 9 new tests (42 in the module)
-- [ ] `animation/client.c` slice 5 (focus/draw frame)
-- [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
+- [x] `animation/client.c` slice 5 → `src/animation/client.zig` focus/
+      frame: fadeout frame entry, focus-animation start with target
+      opacity/colors and current snapshots, eased interpolation, focus
+      step/apply with color and opacity updates, focused/unfocused
+      setters (border raise/lower and animation-off fallback), open
+      fade-in with target clamping, blur strength/alpha fading and
+      wallpaper guard, selected/unselected opacity settling, and the
+      draw-frame entry point (force render, gesture-driven focus,
+      no-flush focus, animation tick vs finished geometry). C region
+      guarded with ACWM_ZIG_ANIM_CLIENT_E; 9 new tests (51 in the
+      module). `animation/client.c` and the animation directory are fully
+      ported
+- [x] `animation/` (common, tag, layer, client) is fully ported; scenefx 0.5 stays linked via C FFI for blur/shadow/effects
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/
       destroy tracking, card layout with root clipping/sub-surface scaling

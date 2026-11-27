@@ -2939,3 +2939,444 @@ test "resize overview entry uses backup geometry and flags the animation" {
     try testing.expectEqual(@as(i32, c.OVERVIEW), test_client.animation.action);
     try testing.expectEqual(@as(c_int, 0), stub_set_size_calls);
 }
+
+// ---------------------------------------------------------------------------
+// focus animation + frame entry points (slice 91)
+// ---------------------------------------------------------------------------
+
+extern fn get_border_color(cl: [*c]Client) callconv(.c) [*c]f32;
+extern fn get_dim_color(cl: [*c]Client) callconv(.c) [*c]f32;
+extern fn client_set_opacity(cl: [*c]Client, opacity: f64) callconv(.c) void;
+extern fn client_set_state_colors(cl: [*c]Client, border_color: [*c]const f32, dim_color: [*c]const f32) callconv(.c) void;
+extern fn client_blur_uses_wallpaper(cl: [*c]Client) callconv(.c) bool;
+extern fn client_force_render(cl: [*c]Client) callconv(.c) bool;
+
+export fn client_draw_fadeout_frame(cl: [*c]Client) callconv(.c) bool {
+    if (cl == null)
+        return false;
+
+    fadeout_client_animation_next_tick(cl);
+    return true;
+}
+
+export fn client_start_focus_animation(cl: [*c]Client, focused: bool) callconv(.c) void {
+    const border_color = get_border_color(cl);
+    const dim_color = get_dim_color(cl);
+
+    cl.*.opacity_animation.duration = c.config.animation_duration_focus;
+    cl.*.opacity_animation.target_opacity = if (focused) cl.*.focused_opacity else cl.*.unfocused_opacity;
+    @memcpy(cl.*.opacity_animation.target_border_color[0..4], border_color[0..4]);
+    @memcpy(cl.*.opacity_animation.target_dim_color[0..4], dim_color[0..4]);
+    cl.*.opacity_animation.initial_opacity = cl.*.opacity_animation.current_opacity;
+    @memcpy(cl.*.opacity_animation.initial_border_color[0..4], cl.*.opacity_animation.current_border_color[0..4]);
+    @memcpy(cl.*.opacity_animation.initial_dim_color[0..4], cl.*.opacity_animation.current_dim_color[0..4]);
+    cl.*.opacity_animation.time_started = get_now_in_ms();
+    cl.*.opacity_animation.running = true;
+}
+
+fn interpolateFocusAnimation(cl: [*c]Client, linear_progress: f64) void {
+    const eased_progress = find_animation_curve_at(linear_progress, c.FOCUS);
+
+    cl.*.opacity_animation.current_opacity = cl.*.opacity_animation.initial_opacity +
+        (cl.*.opacity_animation.target_opacity - cl.*.opacity_animation.initial_opacity) *
+            @as(f32, @floatCast(eased_progress));
+
+    var i: usize = 0;
+    while (i < 4) : (i += 1) {
+        cl.*.opacity_animation.current_border_color[i] =
+            cl.*.opacity_animation.initial_border_color[i] +
+            (cl.*.opacity_animation.target_border_color[i] -
+                cl.*.opacity_animation.initial_border_color[i]) * @as(f32, @floatCast(eased_progress));
+        cl.*.opacity_animation.current_dim_color[i] =
+            cl.*.opacity_animation.initial_dim_color[i] +
+            (cl.*.opacity_animation.target_dim_color[i] -
+                cl.*.opacity_animation.initial_dim_color[i]) * @as(f32, @floatCast(eased_progress));
+    }
+}
+
+export fn client_step_focus_animation(cl: [*c]Client, linear_progress: f64) callconv(.c) bool {
+    interpolateFocusAnimation(cl, linear_progress);
+
+    client_set_opacity(cl, cl.*.opacity_animation.current_opacity);
+    client_set_state_colors(cl, &cl.*.opacity_animation.current_border_color, &cl.*.opacity_animation.current_dim_color);
+
+    cl.*.opacity_animation.running = linear_progress < 1.0;
+    return cl.*.opacity_animation.running;
+}
+
+export fn client_set_unfocused_opacity_animation(cl: [*c]Client) callconv(.c) void {
+    c.wlr_scene_node_raise_to_top(&cl.*.border.*.node);
+    if (c.config.animations == 0) {
+        client_update_border_color(cl);
+        return;
+    }
+
+    client_start_focus_animation(cl, false);
+}
+
+export fn client_set_focused_opacity_animation(cl: [*c]Client) callconv(.c) void {
+    c.wlr_scene_node_lower_to_bottom(&cl.*.border.*.node);
+
+    if (c.config.animations == 0) {
+        client_update_border_color(cl);
+        return;
+    }
+
+    client_start_focus_animation(cl, true);
+}
+
+export fn client_apply_focus_opacity(cl: [*c]Client) callconv(.c) bool {
+    if (c.config.blur != 0 and cl.*.no_blur == 0 and cl.*.blur_opacity != 1.0 and
+        cl.*.animation.action != c.OPEN)
+    {
+        cl.*.blur_opacity = 1.0;
+        c.wlr_scene_blur_set_strength(cl.*.blur, 1.0);
+        c.wlr_scene_blur_set_alpha(cl.*.blur, 1.0);
+    }
+
+    const border_color = get_border_color(cl);
+    if (cl.*.isfullscreen != 0) {
+        cl.*.opacity_animation.running = false;
+        client_set_opacity(cl, 1);
+    } else if (cl.*.animation.running and cl.*.animation.action == c.OPEN) {
+        var now: c.struct_timespec = undefined;
+        _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+        const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.animation.time_started);
+        const linear_progress: f64 = if (cl.*.animation.duration != 0)
+            @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.animation.duration))
+        else
+            1.0;
+
+        const opacity_eased_progress = find_animation_curve_at(linear_progress, c.OPAFADEIN);
+        const percent: f32 = if (c.config.animation_fade_in != 0 and cl.*.no_fade_in == 0)
+            @floatCast(opacity_eased_progress)
+        else
+            1.0;
+        var opacity: f32 = if (c.server.selected_monitor != null and
+            cl == c.server.selected_monitor.*.sel)
+            cl.*.focused_opacity
+        else
+            cl.*.unfocused_opacity;
+        var target_opacity = percent * (1.0 - c.config.fadein_begin_opacity) +
+            c.config.fadein_begin_opacity;
+
+        if (c.config.animations != 0 and cl.*.opacity_animation.running) {
+            const focus_passed: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.opacity_animation.time_started);
+            const focus_progress: f64 = if (cl.*.opacity_animation.duration != 0)
+                @as(f64, @floatFromInt(focus_passed)) / @as(f64, @floatFromInt(cl.*.opacity_animation.duration))
+            else
+                1.0;
+
+            interpolateFocusAnimation(cl, focus_progress);
+            opacity = cl.*.opacity_animation.current_opacity;
+            if (focus_progress >= 1.0)
+                cl.*.opacity_animation.running = false;
+        } else {
+            @memcpy(cl.*.opacity_animation.current_border_color[0..4], cl.*.opacity_animation.target_border_color[0..4]);
+            @memcpy(cl.*.opacity_animation.current_dim_color[0..4], cl.*.opacity_animation.target_dim_color[0..4]);
+        }
+
+        if (target_opacity > opacity)
+            target_opacity = opacity;
+
+        cl.*.opacity_animation.current_opacity = target_opacity;
+        client_set_opacity(cl, target_opacity);
+        if (c.config.blur != 0 and cl.*.no_blur == 0 and !client_blur_uses_wallpaper(cl)) {
+            const blur_val = @min(percent * (1.0 - c.config.fadein_begin_opacity) +
+                c.config.fadein_begin_opacity, 1.0);
+            cl.*.blur_opacity = blur_val;
+            c.wlr_scene_blur_set_strength(cl.*.blur, blur_val);
+            c.wlr_scene_blur_set_alpha(cl.*.blur, blur_val);
+        }
+        client_set_state_colors(cl, &cl.*.opacity_animation.current_border_color, &cl.*.opacity_animation.current_dim_color);
+    } else if (c.config.animations != 0 and cl.*.opacity_animation.running) {
+        var now: c.struct_timespec = undefined;
+        _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+        const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.opacity_animation.time_started);
+        const linear_progress: f64 = if (cl.*.opacity_animation.duration != 0)
+            @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.opacity_animation.duration))
+        else
+            1.0;
+
+        if (client_step_focus_animation(cl, linear_progress))
+            return true;
+    } else if (c.server.selected_monitor != null and cl == c.server.selected_monitor.*.sel) {
+        cl.*.opacity_animation.running = false;
+        cl.*.opacity_animation.current_opacity = cl.*.focused_opacity;
+        @memcpy(cl.*.opacity_animation.current_border_color[0..4], border_color[0..4]);
+        const dim_color = get_dim_color(cl);
+        @memcpy(cl.*.opacity_animation.current_dim_color[0..4], dim_color[0..4]);
+        client_set_opacity(cl, cl.*.focused_opacity);
+    } else {
+        cl.*.opacity_animation.running = false;
+        cl.*.opacity_animation.current_opacity = cl.*.unfocused_opacity;
+        @memcpy(cl.*.opacity_animation.current_border_color[0..4], border_color[0..4]);
+        const dim_color = get_dim_color(cl);
+        @memcpy(cl.*.opacity_animation.current_dim_color[0..4], dim_color[0..4]);
+        client_set_opacity(cl, cl.*.unfocused_opacity);
+    }
+
+    return false;
+}
+
+export fn client_draw_frame(cl: [*c]Client) callconv(.c) bool {
+    var need_next_tick = false;
+
+    if (cl == null or !client_surface(cl).*.mapped)
+        return false;
+
+    // always render when scene is disabled
+    if (cl.*.force_render != 0 and !cl.*.scene.*.node.enabled) {
+        const force_render = client_force_render(cl);
+        need_next_tick = force_render or need_next_tick;
+    }
+
+    if (c.server.gesture_drive_active and cl.*.mon == c.server.gesture_drive_mon and
+        cl.*.animation.running and cl.*.need_output_flush)
+        return client_apply_focus_opacity(cl);
+
+    if (!cl.*.need_output_flush)
+        return client_apply_focus_opacity(cl) or need_next_tick;
+
+    if (c.config.animations != 0 and cl.*.animation.running) {
+        need_next_tick = true;
+        client_animation_next_tick(cl);
+    } else {
+        client_apply_finish_geometry(cl);
+    }
+
+    const need_fade_focus = client_apply_focus_opacity(cl);
+
+    return need_next_tick or need_fade_focus;
+}
+
+// ---------------------------------------------------------------------------
+// focus/frame tests (slice 91)
+// ---------------------------------------------------------------------------
+
+extern var stub_get_border_color: [4]f32;
+extern var stub_get_dim_color: [4]f32;
+extern var stub_set_opacity_calls: c_int;
+extern var stub_set_opacity_value: f32;
+extern var stub_state_colors_calls: c_int;
+extern var stub_state_border: [4]f32;
+extern var stub_state_dim: [4]f32;
+extern var stub_blur_strength_calls: c_int;
+extern var stub_blur_alpha_calls: c_int;
+extern var stub_blur_strength: f32;
+extern var stub_blur_alpha: f32;
+extern var stub_blur_wallpaper: c_int;
+extern var stub_force_render_result: c_int;
+extern var stub_clock_calls: c_int;
+
+fn resetFocusWorld() void {
+    resetResizeWorld();
+    test_client.border = &test_border;
+    test_client.blur = &test_blur;
+    test_client.scene.*.node.enabled = true;
+    test_client.isfullscreen = 0;
+    test_client.force_render = 0;
+    test_client.need_output_flush = false;
+    test_client.blur_opacity = 1.0;
+    test_client.no_blur = 0;
+    test_client.no_fade_in = 0;
+    test_client.focused_opacity = 1.0;
+    test_client.unfocused_opacity = 0.8;
+    test_client.animation.action = c.MOVE;
+    test_client.animation.running = false;
+    test_client.opacity_animation = std.mem.zeroes(c.struct_acwm_opacity_animation);
+    test_client.opacity_animation.current_opacity = 0.5;
+    test_client.opacity_animation.current_border_color = .{ 0.01, 0.02, 0.03, 0.04 };
+    test_client.opacity_animation.current_dim_color = .{ 0.05, 0.06, 0.07, 0.08 };
+    c.config.animation_duration_focus = 120;
+    c.config.fadein_begin_opacity = 0.2;
+    c.config.animation_fade_in = 1;
+    c.server.selected_monitor = null;
+    c.server.gesture_drive_active = false;
+    c.server.gesture_drive_mon = null;
+    stub_get_border_color = .{ 0.1, 0.2, 0.3, 1.0 };
+    stub_get_dim_color = .{ 0.4, 0.5, 0.6, 1.0 };
+    stub_set_opacity_calls = 0;
+    stub_set_opacity_value = -1;
+    stub_state_colors_calls = 0;
+    stub_state_border = std.mem.zeroes([4]f32);
+    stub_state_dim = std.mem.zeroes([4]f32);
+    stub_blur_strength_calls = 0;
+    stub_blur_alpha_calls = 0;
+    stub_blur_strength = -1;
+    stub_blur_alpha = -1;
+    stub_blur_wallpaper = 0;
+    stub_force_render_result = 0;
+    stub_lower_calls = 0;
+    stub_raise_calls = 0;
+    stub_border_color_update_calls = 0;
+    stub_curve = -1;
+    stub_now_ms = 0;
+    stub_get_now_ms = 1000;
+    stub_clock_calls = 0;
+}
+
+test "start focus animation captures targets and current colors" {
+    resetFocusWorld();
+    client_start_focus_animation(&test_client, false);
+    try testing.expectEqual(@as(u32, 120), test_client.opacity_animation.duration);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.target_opacity);
+    try testing.expectEqual(@as(f32, 0.5), test_client.opacity_animation.initial_opacity);
+    try testing.expectEqual(@as(f32, 0.1), test_client.opacity_animation.target_border_color[0]);
+    try testing.expectEqual(@as(f32, 0.01), test_client.opacity_animation.initial_border_color[0]);
+    try testing.expectEqual(@as(u32, 1000), test_client.opacity_animation.time_started);
+    try testing.expect(test_client.opacity_animation.running);
+}
+
+test "step focus animation interpolates opacity and colors" {
+    resetFocusWorld();
+    test_client.opacity_animation.initial_opacity = 0.0;
+    test_client.opacity_animation.target_opacity = 1.0;
+    test_client.opacity_animation.initial_border_color = .{ 0, 0, 0, 0 };
+    test_client.opacity_animation.target_border_color = .{ 1, 1, 1, 1 };
+    test_client.opacity_animation.initial_dim_color = .{ 0, 0, 0, 0 };
+    test_client.opacity_animation.target_dim_color = .{ 1, 1, 1, 1 };
+    const running = client_step_focus_animation(&test_client, 0.5);
+    try testing.expect(running);
+    try testing.expectEqual(@as(f32, 0.5), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.5), stub_state_border[0]);
+    try testing.expectEqual(@as(f32, 0.5), stub_state_dim[0]);
+
+    const still_running = client_step_focus_animation(&test_client, 1.0);
+    try testing.expect(!still_running);
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expect(!test_client.opacity_animation.running);
+}
+
+test "focus setters raise/lower and honor disabled animations" {
+    resetFocusWorld();
+    c.config.animations = 0;
+    client_set_unfocused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_raise_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_border_color_update_calls);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    client_set_focused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_lower_calls);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    c.config.animations = 1;
+    client_set_focused_opacity_animation(&test_client);
+    try testing.expect(test_client.opacity_animation.running);
+    try testing.expectEqual(@as(f32, 1.0), test_client.opacity_animation.target_opacity);
+    client_set_unfocused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.target_opacity);
+}
+
+test "focus opacity handles fullscreen and blur reset" {
+    resetFocusWorld();
+    test_client.isfullscreen = 1;
+    try testing.expect(!client_apply_focus_opacity(&test_client));
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    resetFocusWorld();
+    c.config.blur = 1;
+    test_client.blur_opacity = 0.5;
+    test_client.animation.action = c.MOVE;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 1.0), test_client.blur_opacity);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_strength_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_alpha_calls);
+    try testing.expectEqual(@as(f32, 1.0), stub_blur_strength);
+}
+
+test "focus opacity fades an opening window and blur" {
+    resetFocusWorld();
+    c.config.animations = 1;
+    c.config.blur = 1;
+    test_client.animation.action = c.OPEN;
+    test_client.animation.running = true;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.focused_opacity = 1.0;
+    stub_now_ms = 50;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 0.6), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.6), test_client.opacity_animation.current_opacity);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_strength_calls);
+    try testing.expectEqual(@as(f32, 0.6), stub_blur_strength);
+    try testing.expectEqual(@as(f32, 0.6), test_client.blur_opacity);
+}
+
+test "focus opacity steps a running focus animation" {
+    resetFocusWorld();
+    c.config.animations = 1;
+    test_client.opacity_animation.running = true;
+    test_client.opacity_animation.duration = 100;
+    test_client.opacity_animation.time_started = 0;
+    test_client.opacity_animation.initial_opacity = 0;
+    test_client.opacity_animation.target_opacity = 1;
+    stub_now_ms = 50;
+    const need_more = client_apply_focus_opacity(&test_client);
+    try testing.expect(need_more);
+    try testing.expectEqual(@as(f32, 0.5), stub_set_opacity_value);
+    try testing.expect(test_client.opacity_animation.running);
+}
+
+test "focus opacity settles on selected and unselected clients" {
+    resetFocusWorld();
+    c.server.selected_monitor = &test_selected_mon;
+    test_selected_mon.sel = &test_client;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.1), test_client.opacity_animation.current_border_color[0]);
+
+    test_selected_mon.sel = null;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 0.8), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.current_opacity);
+}
+
+test "draw frame covers force render, gesture and tick paths" {
+    resetFocusWorld();
+    try testing.expect(!client_draw_frame(null));
+    test_draw_surface.mapped = false;
+    try testing.expect(!client_draw_frame(&test_client));
+    test_draw_surface.mapped = true;
+
+    test_client.force_render = 1;
+    test_fadeout_tree.node.enabled = false;
+    test_client.need_output_flush = false;
+    stub_force_render_result = 1;
+    try testing.expect(client_draw_frame(&test_client));
+
+    resetFocusWorld();
+    c.server.gesture_drive_active = true;
+    c.server.gesture_drive_mon = &test_mon;
+    test_client.animation.running = true;
+    test_client.need_output_flush = true;
+    c.server.selected_monitor = null;
+    _ = client_draw_frame(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_set_opacity_calls);
+
+    resetFocusWorld();
+    c.config.animations = 1;
+    test_client.animation.running = true;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.initial = test_client.animation.current;
+    test_client.current = test_client.animation.current;
+    test_client.geom = test_client.animation.current;
+    test_client.need_output_flush = true;
+    stub_now_ms = 50;
+    try testing.expect(client_draw_frame(&test_client));
+}
+
+test "draw fadeout frame ticks and reports success" {
+    resetFocusWorld();
+    try testing.expect(!client_draw_fadeout_frame(null));
+    test_client.scene = &test_fadeout_tree;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    stub_now_ms = 50;
+    _ = client_draw_fadeout_frame(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_clock_calls);
+}

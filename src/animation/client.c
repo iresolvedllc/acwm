@@ -1665,6 +1665,7 @@ void resize(Client *c, struct wlr_box geo, ResizeOpts opts) {
 
 #endif /* ACWM_ZIG_ANIM_CLIENT_D */
 
+#ifndef ACWM_ZIG_ANIM_CLIENT_E
 bool client_draw_fadeout_frame(Client *c) {
 	if (!c)
 		return false;
@@ -1888,3 +1889,4 @@ bool client_draw_frame(Client *c) {
 
 	return need_next_tick || need_fade_focus;
 }
+#endif /* ACWM_ZIG_ANIM_CLIENT_E */
