@@ -473,6 +473,7 @@ void run(char *startup_cmd, int readiness_fd) {
 void handle_signal(int32_t signo);
 void restore_child_signals(void);
 
+#ifndef ACWM_ZIG_MAIN_SETUP
 void setup(void) {
 	setenv("XDG_CURRENT_DESKTOP", "acwm", 1);
 	setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
@@ -1017,6 +1018,8 @@ usage:
 	return EXIT_SUCCESS;
 }
 #endif /* ACWM_ZIG_MAIN */
+#endif /* ACWM_ZIG_MAIN_SETUP */
+
 #ifdef ACWM_ZIG_MAIN
 int32_t acwm_main(int32_t argc, char *argv[]);
 int32_t main(int32_t argc, char *argv[]) { return acwm_main(argc, argv); }

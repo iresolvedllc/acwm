@@ -653,7 +653,20 @@ green.
       Wayland event loop, plus CLI parsing (version/debug/config/startup/
       readiness/config-check) and usage. C region guarded with
       ACWM_ZIG_MAIN; 6 tests. `setup()` remains C for the next slice
-- [ ] `main.c` setup()
+- [x] `main.c` setup() → `src/main_setup.zig`: signal setup, display and
+      event loop, tablet manager, backend/headless multi-backend, scene
+      graph/layer wrappers, fx renderer with HDR color manager and color
+      representation, shm/dmabuf/drm/syncobj, allocator, compositor and
+      protocol globals, print-status signal and bar, gamma/power/foreign
+      capture/tearing managers, output layout and xdg-output, monitor and
+      client lists, idle notifier/inhibit/timers, layer/xdg shells, session
+      lock, decorations, pointer constraints, relative pointer,
+      cursor/xcursor + input listeners, gestures, touch, seat and cursor
+      requests, keyboard group/inhibits, output manager, blur, text-input/
+      input-method relay, DRM leasing, foreign-toplevel/XDG foreign,
+      ext-workspace, XWayland startup and config error nag. Guarded with
+      ACWM_ZIG_MAIN_SETUP; `main.c` is now fully ported (only the tiny C
+      main→acwm_main wrapper remains)
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock
