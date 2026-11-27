@@ -443,6 +443,18 @@ green.
       layer/fadeout/client drawing, skip-frame commit suppression and VRR
       enable/disable policy. XWayland calls are gated by a build option.
       C regions guarded with ACWM_ZIG_MONITOR_OPS; 5 tests
+- [x] `handle_new_output` from `manage/monitor.c` →
+      `src/manage/monitor_new.zig`: renderer init and non-desktop DRM-lease
+      offers, headless naming, monitor/state allocation and defaults,
+      temporary rule state with first-match application, preferred/custom
+      mode fallback, final state assembly (enabled/mode/scale/transform/
+      adaptive sync), HDR setup, scene-output creation/build/commit with
+      ICC, layout placement (auto/manual), scene-layout and monitor-list
+      registration, pertag defaults, chvt tag restore, tag rules, optimized
+      blur, dim rect, ext-workspace group and per-tag workspaces, initial
+      layout/bar creation and frame/destroy/request-state listeners. C
+      region guarded with ACWM_ZIG_MONITOR_NEW; 5 tests. monitor.c is now
+      fully ported
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

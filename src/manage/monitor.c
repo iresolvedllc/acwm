@@ -607,6 +607,7 @@ bool apply_rule_to_state(Monitor *m, const ConfigMonitorRule *rule,
 
 #endif /* ACWM_ZIG_MONITOR_OUTPUT */
 
+#ifndef ACWM_ZIG_MONITOR_NEW
 void handle_new_output(struct wl_listener *listener, void *data) {
 	struct wlr_output *wlr_output = data;
 	const ConfigMonitorRule *r;
@@ -862,6 +863,8 @@ void handle_new_output(struct wl_listener *listener, void *data) {
 }
 
 #ifndef ACWM_ZIG_MONITOR_LIFECYCLE
+#endif /* ACWM_ZIG_MONITOR_NEW */
+
 void handle_output_destroy(struct wl_listener *listener, void *data) {
 	Monitor *m = wl_container_of(listener, m, destroy);
 	LayerSurface *l = NULL, *tmp = NULL;
