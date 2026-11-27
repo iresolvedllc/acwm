@@ -566,7 +566,16 @@ green.
       emulation (absolute motion, button press/release, emulated frames),
       global touch disable/finish-all and per-device IPC notifications. C
       region guarded with ACWM_ZIG_INPUT_TOUCH; 9 tests
-- [ ] Input: pointer (1,888), keyboard (972), tablet (436), trackpad (959)
+- [x] Tablet input from `input/tablet.c` → `src/input/tablet.zig`: tablet
+      and pad creation through tablet-v2 with libinput modes/cursor attach,
+      sibling pad/tablet matching by libinput group, attach/destroy
+      listener lifecycles, tool allocation and proximity handling,
+      device-rule output mapping, cursor move vs absolute warp, sloppy
+      focus, surface enter/leave with pad enter/leave, X11 coordinate
+      scaling, axis notifications (pressure/distance/tilt/rotation/slider/
+      wheel), buttons, tips with implicit grabs and seat fallback. C region
+      guarded with ACWM_ZIG_INPUT_TABLET; 10 tests
+- [ ] Input: pointer (1,888), keyboard (972), trackpad (959)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture

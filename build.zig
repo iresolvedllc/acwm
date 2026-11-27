@@ -301,7 +301,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW", "-DACWM_ZIG_CLIENT_BASIC", "-DACWM_ZIG_CLIENT_STATE", "-DACWM_ZIG_CLIENT_LOOKUP", "-DACWM_ZIG_CLIENT_RULES", "-DACWM_ZIG_CLIENT_INIT", "-DACWM_ZIG_CLIENT_LIFECYCLE", "-DACWM_ZIG_CLIENT_VIEW", "-DACWM_ZIG_CLIENT_TRANSITION", "-DACWM_ZIG_CLIENT_GROUP", "-DACWM_ZIG_CLIENT_XWAYLAND", "-DACWM_ZIG_INPUT_DEVICE", "-DACWM_ZIG_INPUT_TOUCH" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW", "-DACWM_ZIG_CLIENT_BASIC", "-DACWM_ZIG_CLIENT_STATE", "-DACWM_ZIG_CLIENT_LOOKUP", "-DACWM_ZIG_CLIENT_RULES", "-DACWM_ZIG_CLIENT_INIT", "-DACWM_ZIG_CLIENT_LIFECYCLE", "-DACWM_ZIG_CLIENT_VIEW", "-DACWM_ZIG_CLIENT_TRANSITION", "-DACWM_ZIG_CLIENT_GROUP", "-DACWM_ZIG_CLIENT_XWAYLAND", "-DACWM_ZIG_INPUT_DEVICE", "-DACWM_ZIG_INPUT_TOUCH", "-DACWM_ZIG_INPUT_TABLET" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -1120,6 +1120,22 @@ pub fn build(b: *std.Build) void {
         compositor.root_module.addObject(cxw_obj);
     }
 
+    // Zig twin of tablet input (slice 70).
+    {
+        const itab_opts = b.addOptions();
+        itab_opts.addOption(bool, "xwayland", xwayland);
+        const itab_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/input/tablet.zig"),
+        });
+        itab_mod.addImport("cc", c_mod);
+        itab_mod.addImport("build_options", itab_opts.createModule());
+        const itab_obj = b.addObject(.{ .name = "acwm-input-tablet", .root_module = itab_mod });
+        compositor.root_module.addObject(itab_obj);
+    }
+
     // Zig twin of touch input (slice 69).
     {
         const itouch_opts = b.addOptions();
@@ -1397,6 +1413,32 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/option_bind_stub.c"),
             .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // tablet input: tablet-v2/cursor/pad stubs.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/input/tablet.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput", "libcjson", "xcb", "xcb-icccm" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const tab_opts = b.addOptions();
+        tab_opts.addOption(bool, "xwayland", xwayland);
+        test_mod.addImport("build_options", tab_opts.createModule());
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/tablet_stub.c"),
+            .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
+        });
+        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
