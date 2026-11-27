@@ -432,6 +432,17 @@ green.
       output creation, output power-mode commits, skip-frame timer
       stop/callback/check and renderer-loss idle recreation. C regions
       guarded with ACWM_ZIG_MONITOR_LIFECYCLE; 7 tests
+- [x] Output layout/manager/frame cluster from `manage/monitor.c` →
+      `src/manage/monitor_ops.zig`: layout reconciliation (disabled-monitor
+      removal with sleep exception, auto-insert, root/locked backgrounds,
+      per-output geometry, floating offset and old-name restore, XWayland
+      scale, scene-output/blur/dim/lock-surface sync, arrangement,
+      fullscreen resize, selection), orphan client adoption and tag
+      assignment, cursor reset, output-manager apply/test with commits,
+      layout adds, success/failure replies and reconfiguration, per-frame
+      layer/fadeout/client drawing, skip-frame commit suppression and VRR
+      enable/disable policy. XWayland calls are gated by a build option.
+      C regions guarded with ACWM_ZIG_MONITOR_OPS; 5 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

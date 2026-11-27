@@ -1038,6 +1038,7 @@ void create_output(struct wlr_backend *b, void *data) {
 
 #endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
 
+#ifndef ACWM_ZIG_MONITOR_OPS
 void handle_output_layout_change(struct wl_listener *listener, void *data) {
 	/*
 	 * Called whenever the output layout changes: adding or removing a
@@ -1289,6 +1290,8 @@ void handle_output_manager_test(struct wl_listener *listener, void *data) {
 }
 
 #ifndef ACWM_ZIG_MONITOR_LIFECYCLE
+#endif /* ACWM_ZIG_MONITOR_OPS */
+
 void handle_output_power_manager_set_mode(struct wl_listener *listener,
 										  void *data) {
 	struct wlr_output_power_v1_set_mode_event *event = data;
@@ -1343,6 +1346,7 @@ void monitor_check_skip_frame_timeout(Monitor *m) {
 
 #endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
 
+#ifndef ACWM_ZIG_MONITOR_OPS
 void handle_output_frame(struct wl_listener *listener, void *data) {
 	Monitor *m = wl_container_of(listener, m, frame);
 	Client *c = NULL, *tmp = NULL;
@@ -1439,6 +1443,8 @@ void check_vrr_enable(Client *c) {
 		acwm_output_commit(m);
 	}
 }
+
+#endif /* ACWM_ZIG_MONITOR_OPS */
 
 /*
  * Output / Monitor: output creation/destruction, mode/adaptive sync/ICC,
