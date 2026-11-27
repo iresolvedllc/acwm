@@ -1432,6 +1432,7 @@ Client *get_focused_stack_client(Client *sc, Client *custom_focus_client) {
 
 #endif /* ACWM_ZIG_CLIENT_LOOKUP */
 
+#ifndef ACWM_ZIG_CLIENT_RULES
 void apply_rule_properties(Client *c, const ConfigWinRule *r) {
 	APPLY_INT_PROP(c, r, isterm);
 	APPLY_INT_PROP(c, r, allow_csd);
@@ -1856,6 +1857,8 @@ void apply_window_snap(Client *c) {
 	c->float_geom = c->geom;
 	resize(c, c->geom, (ResizeOpts){.interact = 0});
 }
+#endif /* ACWM_ZIG_CLIENT_RULES */
+
 /*
  * Client management: window lifecycle, rules, focus, tiled/floating/fullscreen
  * state switching, and XWayland client handling.

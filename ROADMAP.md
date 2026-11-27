@@ -487,6 +487,18 @@ green.
       decks, scrollers, center-tile) and focus-memory stack selection with
       dwindle branch restrictions. C region guarded with
       ACWM_ZIG_CLIENT_LOOKUP; 11 tests
+- [x] Client rules and floating snap from `manage/client.c` →
+      `src/manage/client_rules.zig`: full window-rule property application
+      (int sentinels, float thresholds, animation types), overlap-aware
+      floating placement, monitor-tag reset (special/overview/masks),
+      per-tag open-as-floating, pre-map rule application (tags, monitors,
+      size fractions, offsets, custom flags, once rules, size bounds),
+      parent-tag inheritance, monitor-spec targeting, mapped-path actions
+      (swallow/terminal adoption, focus suppression, monitor assignment,
+      fullscreen backup, tag-view animation, fullscreen-peer exit, named
+      scratchpads, overlay reparenting, floating reinsertion/malposition)
+      and floating edge/neighbour snapping with resize. C region guarded
+      with ACWM_ZIG_CLIENT_RULES; 9 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
