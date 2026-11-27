@@ -43,6 +43,7 @@
 #include <wlr/types/wlr_single_pixel_buffer_v1.h>
 #include <wlr/types/wlr_switch.h>
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
 bool is_special_active(const Monitor *m) {
 	return m && !m->isoverview && (m->tagset[m->seltags] & TAG0_MASK);
 }
@@ -354,6 +355,8 @@ bool blur_layer_on_wallpaper(uint32_t layer) {
 		return false;
 	}
 }
+
+#endif /* ACWM_ZIG_MONITOR_QUERY */
 
 bool acwm_scene_output_commit(struct wlr_scene_output *scene_output,
 							   struct wlr_output_state *state) {
@@ -912,7 +915,9 @@ void handle_output_destroy(struct wl_listener *listener, void *data) {
 	free(m);
 }
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
 void set_selected_monitor(Monitor *m) { server.selected_monitor = m; }
+#endif /* ACWM_ZIG_MONITOR_QUERY */
 
 void monitor_close(Monitor *m) {
 	/* update selected_monitor if needed and
@@ -1459,6 +1464,7 @@ void handle_renderer_lost(struct wl_listener *listener, void *data) {
 		wl_event_loop_add_idle(server.event_loop, do_renderer_recreate, NULL);
 }
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
 void setgaps(int32_t oh, int32_t ov, int32_t ih, int32_t iv) {
 	if (!server.selected_monitor)
 		return;
@@ -1476,3 +1482,4 @@ void setgaps(int32_t oh, int32_t ov, int32_t ih, int32_t iv) {
 	}
 	arrange(server.selected_monitor, false, false);
 }
+#endif /* ACWM_ZIG_MONITOR_QUERY */

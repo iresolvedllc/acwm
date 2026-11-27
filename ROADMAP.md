@@ -402,6 +402,16 @@ green.
       reset, blur refresh), popup creation/commit/reposition/destroy with
       unconstraining, surface creation/output fallback, node teardown and
       unmap cleanup. C twin guarded with ACWM_ZIG_LAYER; 11 tests
+- [x] Monitor query/tag layer from `manage/monitor.c` →
+      `src/manage/monitor_query.zig`: special-view detection, current tag
+      selection, live-special-client scan, active tagset fallback,
+      directional/cyclic monitor selection, layout predicates, special top
+      layer reparenting, dim-rect sync, tag status (urgent/occupied),
+      first-tag number/mask resolution, point/nearest monitor lookup,
+      monitor-spec matching (name/make/model/serial), device-rule monitor
+      targeting, wallpaper-layer classification, selected-monitor setter
+      and gap updates with special-view variants. C region guarded with
+      ACWM_ZIG_MONITOR_QUERY; 9 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
