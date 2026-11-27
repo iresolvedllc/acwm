@@ -15,6 +15,7 @@
 #include <wlr/types/wlr_tablet_tool.h>
 #include <wlr/types/wlr_touch.h>
 
+#ifndef ACWM_ZIG_INPUT_DEVICE
 void handle_input_device_destroy(struct wl_listener *listener, void *data) {
 	InputDevice *input_dev =
 		wl_container_of(listener, input_dev, destroy_listener);
@@ -149,3 +150,4 @@ void handle_new_input_device(struct wl_listener *listener, void *data) {
 
 	seat_device_add(device);
 }
+#endif /* ACWM_ZIG_INPUT_DEVICE */

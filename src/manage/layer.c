@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYER
 #include "acwm/manage/layer.h"
 #include "acwm/bar/bar.h"
 #include "acwm/animation/layer.h"
@@ -584,3 +585,4 @@ void handle_layer_surface_unmap(struct wl_listener *listener, void *data) {
 	l->shadow = NULL;
 	l->being_unmapped = false;
 }
+#endif /* ACWM_ZIG_LAYER */

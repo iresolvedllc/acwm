@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_ANIMATION_LAYER
 #include "acwm/animation/layer.h"
 #include "acwm/animation/common.h"
 #include "acwm/common/server.h"
@@ -660,3 +661,4 @@ bool layer_draw_fadeout_frame(LayerSurface *l) {
 	fadeout_layer_animation_next_tick(l);
 	return true;
 }
+#endif /* ACWM_ZIG_ANIMATION_LAYER */

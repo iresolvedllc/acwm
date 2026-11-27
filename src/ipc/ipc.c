@@ -28,8 +28,8 @@
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 
-static struct wl_list ipc_watch_clients;
-static int ipc_device_watch_count;
+struct wl_list ipc_watch_clients;
+int ipc_device_watch_count;
 
 const char *ipc_device_type_str(struct wlr_input_device *dev) {
 	if (!dev)
@@ -78,7 +78,7 @@ Client *client_by_id(uint32_t id) {
 	return NULL;
 }
 
-static Client *client_by_id_all(uint32_t id) {
+Client *client_by_id_all(uint32_t id) {
 	Client *c;
 	wl_list_for_each(c, &server.clients, link) {
 		if (c->id == id)
@@ -106,6 +106,7 @@ const char *ipc_get_layout_str(void) {
 	snprintf(layout, sizeof(layout), "%s", name ? name : "");
 	return layout;
 }
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *build_tags_json(Monitor *m) {
 	cJSON *tags_array = cJSON_CreateArray();
 	Client *c = NULL;
@@ -231,12 +232,15 @@ cJSON *build_layers_response(void) {
 	return resp;
 }
 
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
 void send_static_json(int fd, const char *json_str) {
 	size_t len = strlen(json_str);
 	send(fd, json_str, len, 0);
 }
 
 /* ---------- Watch mode support ---------- */
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_json_to_fd(int fd, cJSON *json) {
 	char *str = cJSON_PrintUnformatted(json);
 	if (!str)
@@ -304,7 +308,10 @@ int ipc_watch_data_handler(int fd, uint32_t mask, void *data) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_IPC_WATCH */
+
 /* ---------- Socket event handling ---------- */
+#ifndef ACWM_ZIG_IPC_SERVER
 int ipc_handle_client_data(int fd, uint32_t mask, void *data) {
 	struct ipc_client_state *client = data;
 	if (mask & (WL_EVENT_HANGUP | WL_EVENT_ERROR))
@@ -393,6 +400,9 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_IPC_SERVER */
+
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_client(Client *c) {
 	char *json_str = NULL;
 	size_t len = 0;
@@ -469,6 +479,9 @@ void ipc_notify_all_tags(void) {
 		free(json_str);
 }
 
+#endif /* ACWM_ZIG_IPC_WATCH */
+
+#ifndef ACWM_ZIG_IPC_WATCH
 void printstatus(enum ipc_watch_type type) {
 	wl_signal_emit(&server.print_status_signal, &type);
 }
@@ -528,11 +541,14 @@ void handle_print_status(struct wl_listener *listener, void *data) {
 	}
 }
 
+#endif /* ACWM_ZIG_IPC_WATCH */
+
 /* ---------- Init & cleanup ---------- */
 static int ipc_socket_fd = -1;
 static struct wl_event_source *ipc_event_source = NULL;
 static char ipc_socket_path[256];
 
+#ifndef ACWM_ZIG_IPC_SERVER
 void ipc_cleanup(void) {
 	if (ipc_event_source)
 		wl_event_source_remove(ipc_event_source);
@@ -545,6 +561,9 @@ void ipc_cleanup(void) {
 	wl_list_for_each_safe(wc, tmp, &ipc_watch_clients, link)
 		ipc_remove_watch_client(wc);
 }
+#endif /* ACWM_ZIG_IPC_SERVER */
+
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *tags_mask_to_array(uint32_t tag_mask) {
 	cJSON *arr = cJSON_CreateArray();
 	if (tag_mask & TAG0_MASK)
@@ -568,6 +587,9 @@ cJSON *monitor_active_tags(Monitor *m) {
 	return arr;
 }
 
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
+#ifndef ACWM_ZIG_IPC_BUILDERS
 static const char *client_output_name(Client *c) {
 	if (c->mon)
 		return c->mon->wlr_output->name;
@@ -614,7 +636,9 @@ cJSON *build_client_json(Client *c) {
 	return obj;
 }
 
-static cJSON *build_all_clients_array(void) {
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
+cJSON *build_all_clients_array(void) {
 	cJSON *arr = cJSON_CreateArray();
 	Client *c;
 	wl_list_for_each(c, &server.clients, link) {
@@ -628,6 +652,7 @@ static cJSON *build_all_clients_array(void) {
 	return arr;
 }
 
+#ifndef ACWM_ZIG_IPC_BUILDERS
 cJSON *build_monitor_json(Monitor *m) {
 	cJSON *resp = cJSON_CreateObject();
 	cJSON_AddStringToObject(resp, "name", m->wlr_output->name);
@@ -656,6 +681,9 @@ cJSON *build_monitor_json(Monitor *m) {
 						  cJSON_CreateString(ipc_get_layout_str()));
 	return resp;
 }
+#endif /* ACWM_ZIG_IPC_BUILDERS */
+
+#ifndef ACWM_ZIG_IPC_SERVER
 void handle_command(int client_fd, const char *cmd_raw) {
 	cJSON *resp = NULL;
 	char *json_str = NULL;
@@ -1137,7 +1165,10 @@ bool handle_watch_command(int fd, const char *cmd,
 	free(client);
 	return true;
 }
+#endif /* ACWM_ZIG_IPC_SERVER */
+
 /* ---------- External notification API ---------- */
+#ifndef ACWM_ZIG_IPC_WATCH
 void ipc_notify_monitor(Monitor *m) {
 	char *json_str = NULL;
 	size_t len = 0;
@@ -1347,6 +1378,9 @@ void ipc_notify_kb_layout(void) {
 
 /* ---------- Init & cleanup ---------- */
 
+#endif /* ACWM_ZIG_IPC_WATCH */
+
+#ifndef ACWM_ZIG_IPC_SERVER
 void ipc_init(struct wl_event_loop *loop) {
 	wl_list_init(&ipc_watch_clients);
 
@@ -1398,3 +1432,4 @@ void ipc_init(struct wl_event_loop *loop) {
 	ipc_event_source = wl_event_loop_add_fd(
 		loop, ipc_socket_fd, WL_EVENT_READABLE, ipc_handle_connection, loop);
 }
+#endif /* ACWM_ZIG_IPC_SERVER */

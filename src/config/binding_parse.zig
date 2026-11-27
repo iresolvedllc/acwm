@@ -23,13 +23,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 /// value_parse twins in the compositor link; stubbed in tests.
 extern fn trim_whitespace(str: ?[*:0]u8) callconv(.c) void;
 extern fn parse_direction(str: [*:0]const u8) callconv(.c) i32;

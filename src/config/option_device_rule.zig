@@ -32,13 +32,7 @@ const c = @import("cc");
 const WLR_ERROR: c_uint = 1;
 const WLR_INFO: c_uint = 2;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn trim_whitespace(str: ?[*:0]u8) callconv(.c) void;
 
 extern "c" fn realloc(ptr: ?*anyopaque, size: usize) ?*anyopaque;

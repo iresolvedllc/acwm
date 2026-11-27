@@ -20,13 +20,7 @@ const Io = std.Io;
 const WLR_ERROR: c_uint = 1;
 const WLR_INFO: c_uint = 2;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn acwm_error_untagged(verbosity: c_uint, fmt: [*:0]const u8, ...) callconv(.c) void;
 /// C-side shim (src/manage/misc.c): returns server.tagmask.
 extern fn acwm_current_tagmask() callconv(.c) c_uint;
@@ -181,13 +175,11 @@ export fn parse_double_array(
         const val = strtod(token.?, &endptr);
         const ep = endptr.?;
         if (ep == token.? or ep[0] != 0) {
-            acwm_error_impl(false, WLR_ERROR, "value_parse.zig", 0,
-                "Invalid number in array: \x1b[1m\x1b[31m%s\x1b[0m\n", token.?);
+            acwm_error_impl(false, WLR_ERROR, "value_parse.zig", 0, "Invalid number in array: \x1b[1m\x1b[31m%s\x1b[0m\n", token.?);
             return -1;
         }
         if (val < 0.0) {
-            acwm_error_impl(false, WLR_ERROR, "value_parse.zig", 0,
-                "Invalid number in array (must be non-negative): \x1b[1m\x1b[31m%s\x1b[0m\n", token.?);
+            acwm_error_impl(false, WLR_ERROR, "value_parse.zig", 0, "Invalid number in array (must be non-negative): \x1b[1m\x1b[31m%s\x1b[0m\n", token.?);
             return -1;
         }
         output[@intCast(count)] = val;
@@ -227,9 +219,7 @@ export fn report_config_line_error(
     line_number: c_int,
     line: [*:0]const u8,
 ) callconv(.c) void {
-    acwm_error_untagged(WLR_INFO,
-        "\x1b[1;31m╰─\x1b[1;33m[Index]\x1b[0m \x1b[1;36m%s\x1b[0m:\x1b[1;35m%d\x1b[0m\n   \x1b[1;36m╰─\x1b[0;33m%s\x1b[0m\n\n",
-        full_path, line_number, line);
+    acwm_error_untagged(WLR_INFO, "\x1b[1;31m╰─\x1b[1;33m[Index]\x1b[0m \x1b[1;36m%s\x1b[0m:\x1b[1;35m%d\x1b[0m\n   \x1b[1;36m╰─\x1b[0;33m%s\x1b[0m\n\n", full_path, line_number, line);
 }
 
 export fn convert_hex_to_rgba(color: [*]f32, hex: u32) callconv(.c) void {

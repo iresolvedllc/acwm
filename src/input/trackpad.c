@@ -33,6 +33,7 @@
 #include <wlr/types/wlr_virtual_pointer_v1.h>
 #include <wlr/util/region.h>
 
+#ifndef ACWM_ZIG_INPUT_TRACKPAD
 bool pointer_is_trackpad(struct wlr_pointer *pointer) {
 	struct libinput_device *device;
 
@@ -957,3 +958,4 @@ int32_t pointer_process_swipe_end(struct wlr_pointer_swipe_end_event *event) {
 
 	return fire_gesture_motion(motion, server.swipe_fingers) ? 1 : 0;
 }
+#endif /* ACWM_ZIG_INPUT_TRACKPAD */

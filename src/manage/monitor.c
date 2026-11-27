@@ -43,6 +43,7 @@
 #include <wlr/types/wlr_single_pixel_buffer_v1.h>
 #include <wlr/types/wlr_switch.h>
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
 bool is_special_active(const Monitor *m) {
 	return m && !m->isoverview && (m->tagset[m->seltags] & TAG0_MASK);
 }
@@ -355,6 +356,9 @@ bool blur_layer_on_wallpaper(uint32_t layer) {
 	}
 }
 
+#endif /* ACWM_ZIG_MONITOR_QUERY */
+
+#ifndef ACWM_ZIG_MONITOR_OUTPUT
 bool acwm_scene_output_commit(struct wlr_scene_output *scene_output,
 							   struct wlr_output_state *state) {
 	struct wlr_output *wlr_output = scene_output->output;
@@ -601,6 +605,9 @@ bool apply_rule_to_state(Monitor *m, const ConfigMonitorRule *rule,
 	return mode_set;
 }
 
+#endif /* ACWM_ZIG_MONITOR_OUTPUT */
+
+#ifndef ACWM_ZIG_MONITOR_NEW
 void handle_new_output(struct wl_listener *listener, void *data) {
 	struct wlr_output *wlr_output = data;
 	const ConfigMonitorRule *r;
@@ -855,6 +862,9 @@ void handle_new_output(struct wl_listener *listener, void *data) {
 	printstatus(IPC_WATCH_ARRANGGE);
 }
 
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
+#endif /* ACWM_ZIG_MONITOR_NEW */
+
 void handle_output_destroy(struct wl_listener *listener, void *data) {
 	Monitor *m = wl_container_of(listener, m, destroy);
 	LayerSurface *l = NULL, *tmp = NULL;
@@ -912,8 +922,11 @@ void handle_output_destroy(struct wl_listener *listener, void *data) {
 	free(m);
 }
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
 void set_selected_monitor(Monitor *m) { server.selected_monitor = m; }
+#endif /* ACWM_ZIG_MONITOR_QUERY */
 
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
 void monitor_close(Monitor *m) {
 	/* update selected_monitor if needed and
 	 * move closed monitor's clients to the focused one */
@@ -971,6 +984,11 @@ void monitor_close(Monitor *m) {
 	}
 }
 
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
 void handle_output_request_state(struct wl_listener *listener, void *data) {
 	/* This ensures nested backends can be resized */
 	Monitor *m = wl_container_of(listener, m, request_state);
@@ -1021,6 +1039,9 @@ void create_output(struct wlr_backend *b, void *data) {
 #endif
 }
 
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
+#ifndef ACWM_ZIG_MONITOR_OPS
 void handle_output_layout_change(struct wl_listener *listener, void *data) {
 	/*
 	 * Called whenever the output layout changes: adding or removing a
@@ -1271,6 +1292,9 @@ void handle_output_manager_test(struct wl_listener *listener, void *data) {
 	output_manager_apply_or_test(config, 1);
 }
 
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
+#endif /* ACWM_ZIG_MONITOR_OPS */
+
 void handle_output_power_manager_set_mode(struct wl_listener *listener,
 										  void *data) {
 	struct wlr_output_power_v1_set_mode_event *event = data;
@@ -1285,6 +1309,9 @@ void handle_output_power_manager_set_mode(struct wl_listener *listener,
 	handle_output_layout_change(NULL, NULL);
 }
 
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
 void monitor_stop_skip_frame_timer(Monitor *m) {
 	if (m->skip_frame_timeout)
 		wl_event_source_timer_update(m->skip_frame_timeout, 0);
@@ -1320,6 +1347,9 @@ void monitor_check_skip_frame_timeout(Monitor *m) {
 	}
 }
 
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
+#ifndef ACWM_ZIG_MONITOR_OPS
 void handle_output_frame(struct wl_listener *listener, void *data) {
 	Monitor *m = wl_container_of(listener, m, frame);
 	Client *c = NULL, *tmp = NULL;
@@ -1417,10 +1447,13 @@ void check_vrr_enable(Client *c) {
 	}
 }
 
+#endif /* ACWM_ZIG_MONITOR_OPS */
+
 /*
  * Output / Monitor: output creation/destruction, mode/adaptive sync/ICC,
  * output manager protocol, rendering, and frame-skip control.
  */
+#ifndef ACWM_ZIG_MONITOR_LIFECYCLE
 static void do_renderer_recreate(void *data) {
 	struct wlr_renderer *old_drw = server.renderer;
 	struct wlr_allocator *old_alloc = server.allocator;
@@ -1459,6 +1492,9 @@ void handle_renderer_lost(struct wl_listener *listener, void *data) {
 		wl_event_loop_add_idle(server.event_loop, do_renderer_recreate, NULL);
 }
 
+#ifndef ACWM_ZIG_MONITOR_QUERY
+#endif /* ACWM_ZIG_MONITOR_LIFECYCLE */
+
 void setgaps(int32_t oh, int32_t ov, int32_t ih, int32_t iv) {
 	if (!server.selected_monitor)
 		return;
@@ -1476,3 +1512,4 @@ void setgaps(int32_t oh, int32_t ov, int32_t ih, int32_t iv) {
 	}
 	arrange(server.selected_monitor, false, false);
 }
+#endif /* ACWM_ZIG_MONITOR_QUERY */

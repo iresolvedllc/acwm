@@ -159,7 +159,8 @@ fn tmpdirFor(comptime tag: []const u8) ![:0]u8 {
     const used = std.fmt.bufPrintSentinel(
         &tmpl,
         "/tmp/opencode/acwm-store-" ++ tag ++ "-{d}-XXXXXX",
-        .{c.getpid()}, 0,
+        .{c.getpid()},
+        0,
     ) catch unreachable;
     const dir = c.mkdtemp(used.ptr) orelse return error.MkdtempFailed;
     // mkdtemp's result points into the stack buffer above — copy it out.
@@ -193,7 +194,8 @@ test "path prefers $XDG_RUNTIME_DIR/acwm and prepares it 0700" {
     const want_dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm/config-errors.log",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(want_dir);
     try testing.expectEqualStrings(want_dir, path);
@@ -203,7 +205,8 @@ test "path prefers $XDG_RUNTIME_DIR/acwm and prepares it 0700" {
     const dir_z = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(dir_z);
     try testing.expectEqual(@as(c_int, 0), c.stat(dir_z.ptr, &st));
@@ -220,7 +223,8 @@ test "loose-permission dir is tightened to 0700" {
     const dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(dir);
     try testing.expectEqual(@as(c_int, 0), c.mkdir(dir.ptr, 0o755));
@@ -317,7 +321,8 @@ test "O_NOFOLLOW refuses a symlinked store file" {
     const dir = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(dir);
     try testing.expectEqual(@as(c_int, 0), c.mkdir(dir.ptr, 0o700));
@@ -326,7 +331,8 @@ test "O_NOFOLLOW refuses a symlinked store file" {
     const victim = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/victim.txt",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(victim);
     const vf = c.fopen(victim, "w") orelse unreachable;
@@ -336,7 +342,8 @@ test "O_NOFOLLOW refuses a symlinked store file" {
     const link = std.fmt.allocPrintSentinel(
         testing.allocator,
         "{s}/acwm/config-errors.log",
-        .{tmp}, 0,
+        .{tmp},
+        0,
     ) catch unreachable;
     defer testing.allocator.free(link);
     try testing.expectEqual(@as(c_int, 0), c.symlink(victim.ptr, link.ptr));

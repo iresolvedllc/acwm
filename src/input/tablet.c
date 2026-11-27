@@ -16,6 +16,7 @@
 #include <wlr/types/wlr_idle_notify_v1.h>
 #include <wlr/types/wlr_input_device.h>
 
+#ifndef ACWM_ZIG_INPUT_TABLET
 void tablet_create(struct wlr_input_device *device) {
 	struct Tablet *tablet = calloc(1, sizeof(struct Tablet));
 	if (!tablet) {
@@ -434,3 +435,4 @@ void handle_tablet_tool_tip(struct wl_listener *listener, void *data) {
 	wlr_tablet_v2_tablet_tool_notify_down(tool->tool_v2);
 	wlr_tablet_tool_v2_start_implicit_grab(tool->tool_v2);
 }
+#endif /* ACWM_ZIG_INPUT_TABLET */

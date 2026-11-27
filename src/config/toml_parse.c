@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_TOML_PARSE
 #include "acwm/config/internal.h"
 #include "acwm/config/parse.h"
 
@@ -746,3 +747,4 @@ bool parse_toml_stream(Config *config, FILE *file, const char *full_path) {
 
 	return parse_correct;
 }
+#endif /* ACWM_ZIG_TOML_PARSE */

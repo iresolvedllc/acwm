@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_ANIMATION_TAG
 #include "acwm/animation/tag.h"
 #include "acwm/animation/client.h"
 #include "acwm/common/server.h"
@@ -236,3 +237,4 @@ void set_arrange_hidden(Monitor *m, Client *c, bool want_animation) {
 			c->geom;
 	}
 }
+#endif /* ACWM_ZIG_ANIMATION_TAG */

@@ -242,6 +242,7 @@ int32_t exchange_stack_client(const Arg *arg) {
 bool view_shift_tag(const Arg *arg, int dir);
 bool view_shift_tag_have_client(const Arg *arg, int dir);
 
+#ifndef ACWM_ZIG_BIND_FOCUS
 int32_t focus_direction(const Arg *arg) {
 
 	if (!server.selected_monitor)
@@ -598,6 +599,9 @@ int32_t inc_nmaster(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_FOCUS */
+
+#ifndef ACWM_ZIG_BIND_LAYOUT
 int32_t increase_gaps(const Arg *arg) {
 	if (!server.selected_monitor)
 		return 0;
@@ -1045,6 +1049,9 @@ int32_t switch_proportion_preset(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_LAYOUT */
+
+#ifndef ACWM_ZIG_BIND_MOVE
 int32_t smart_move_window(const Arg *arg) {
 	Client *c = NULL, *tc = NULL;
 	int32_t nx, ny;
@@ -1342,6 +1349,9 @@ int32_t spawn_on_empty(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_MOVE */
+
+#ifndef ACWM_ZIG_BIND_OVERVIEW
 int32_t switch_keyboard_layout(const Arg *arg) {
 	if (!server.keyboard_group || !server.keyboard_group->wlr_group ||
 		!server.seat) {
@@ -1400,6 +1410,9 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 	printstatus(IPC_WATCH_KB_LAYOUT);
 	return 0;
 }
+
+#ifndef ACWM_ZIG_BIND_MOVE
+#endif /* ACWM_ZIG_BIND_OVERVIEW */
 
 int32_t switch_layout(const Arg *arg) {
 
@@ -1461,6 +1474,9 @@ int32_t switch_layout(const Arg *arg) {
 	}
 	return 0;
 }
+
+#ifndef ACWM_ZIG_BIND_TAGVIEW
+#endif /* ACWM_ZIG_BIND_MOVE */
 
 int32_t tag(const Arg *arg) {
 	if (!server.selected_monitor)
@@ -1947,6 +1963,9 @@ int32_t toggle_view(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_TAGVIEW */
+
+#ifndef ACWM_ZIG_BIND_VIEW
 static uint32_t tags_last_tag_num(uint32_t tags) {
 	uint32_t i, last = 0;
 
@@ -2258,6 +2277,9 @@ int32_t minimize_window(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_VIEW */
+
+#ifndef ACWM_ZIG_BIND_OVERVIEW
 void fix_mon_tagset_from_overview(Monitor *m) {
 	if (m->tagset[m->seltags] == (m->ovbk_prev_tagset & TAGMASK)) {
 		m->tagset[m->seltags ^ 1] = m->ovbk_current_tagset;
@@ -2442,6 +2464,9 @@ int32_t toggle_jump(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_OVERVIEW */
+
+#ifndef ACWM_ZIG_BIND_TAIL
 int32_t disable_monitor(const Arg *arg) {
 	Monitor *m = NULL;
 
@@ -2731,6 +2756,7 @@ int32_t dwindle_toggle_current_split(const Arg *arg) {
 	return 0;
 }
 
+#ifndef ACWM_ZIG_BIND_FOCUS
 int32_t focus_by_id(const Arg *arg) {
 	if (!server.selected_monitor || !arg->tc)
 		return 0;
@@ -2739,8 +2765,11 @@ int32_t focus_by_id(const Arg *arg) {
 	return 0;
 }
 
+#endif /* ACWM_ZIG_BIND_FOCUS */
+
 int32_t load_config_file(const Arg *arg) {
 	snprintf(server.cli_config_path, sizeof(server.cli_config_path), "%s",
 			 arg->v);
 	return reload_config(arg);
 }
+#endif /* ACWM_ZIG_BIND_TAIL */

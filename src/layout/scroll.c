@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYOUT_SCROLL
 #include "acwm/layout/scroll.h"
 #include "acwm/common/server.h"
 #include "acwm/common/util.h"
@@ -1158,3 +1159,4 @@ void vertical_scroller(Monitor *m) { vertical_scroller_core(m, NULL); }
 bool vertical_scroller_predict(Monitor *m, Client *c, struct wlr_box *out) {
 	return layout_predict_box(vertical_scroller_core, m, c, out);
 }
+#endif /* ACWM_ZIG_LAYOUT_SCROLL */

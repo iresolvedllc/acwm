@@ -24,13 +24,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn trim_whitespace(str: ?[*:0]u8) callconv(.c) void;
 /// variable_expand twin in the compositor link; stubbed in tests.
 extern fn is_valid_var_name(name: ?[*:0]const u8) callconv(.c) bool;

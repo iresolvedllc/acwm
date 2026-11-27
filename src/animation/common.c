@@ -8,6 +8,7 @@
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_subcompositor.h>
 
+#ifndef ACWM_ZIG_ANIMATION_COMMON
 struct dvec2 calculate_animation_curve_at(double t, int32_t type) {
 	struct dvec2 point;
 	double *animation_curve;
@@ -121,6 +122,8 @@ double find_animation_curve_at(double t, int32_t type) {
 	}
 	return baked_points[up].y;
 }
+#endif /* ACWM_ZIG_ANIMATION_COMMON */
+
 bool scene_node_snapshot(struct wlr_scene_node *node, int32_t lx, int32_t ly,
 						 struct wlr_scene_tree *snapshot_tree) {
 	if (!node->enabled && node->type != WLR_SCENE_NODE_TREE) {
@@ -294,6 +297,7 @@ struct wlr_scene_tree *wlr_scene_tree_snapshot(struct wlr_scene_node *node,
 	return snapshot;
 }
 
+#ifndef ACWM_ZIG_ANIMATION_COMMON
 void request_fresh_all_monitors(void) {
 	Monitor *m = NULL;
 	wl_list_for_each(m, &server.monitors, link) {
@@ -303,3 +307,4 @@ void request_fresh_all_monitors(void) {
 		wlr_output_schedule_frame(m->wlr_output);
 	}
 }
+#endif /* ACWM_ZIG_ANIMATION_COMMON */

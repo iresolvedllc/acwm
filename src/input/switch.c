@@ -7,6 +7,7 @@
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_switch.h>
 
+#ifndef ACWM_ZIG_INPUT_DEVICE
 void handle_switch_toggle(struct wl_listener *listener, void *data) {
 	// Gets the struct that contains the listener.
 	Switch *sw = wl_container_of(listener, sw, toggle);
@@ -61,3 +62,4 @@ void switch_create(struct wlr_switch *switch_device) {
 		wl_list_insert(&server.input_devices, &input_dev->link);
 	}
 }
+#endif /* ACWM_ZIG_INPUT_DEVICE */

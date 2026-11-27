@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_MISC
 #include "acwm/manage/misc.h"
 #include "acwm/bar/bar.h"
 #include "acwm/common/log.h"
@@ -800,6 +801,7 @@ void handle_request_set_selection(struct wl_listener *listener, void *data) {
 	wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
+#ifndef ACWM_ZIG_IDLE
 static bool client_keep_idle_inhibit(Client *c) {
 	if (!c || !c->mon)
 		return false;
@@ -922,6 +924,8 @@ int32_t idle_check(void *data) {
 	return 1;
 }
 
+#endif /* ACWM_ZIG_IDLE */
+
 /* Accessor for the Zig config-parsing port (value_parse.zig): the C global
  * server struct is not imported into Zig, so expose just the tagmask. */
 uint32_t acwm_current_tagmask(void) {
@@ -932,3 +936,4 @@ void handle_session_lock_unlock(struct wl_listener *listener, void *data) {
 	SessionLock *lock = wl_container_of(listener, lock, unlock);
 	session_lock_cleanup(lock, 1);
 }
+#endif /* ACWM_ZIG_MISC */

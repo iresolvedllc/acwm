@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYOUT_HORIZONTAL
 #include "acwm/layout/horizontal.h"
 #include "acwm/common/server.h"
 #include "acwm/common/util.h"
@@ -1084,3 +1085,4 @@ void fair(Monitor *m) { fair_core(m, NULL); }
 bool fair_predict(Monitor *m, Client *c, struct wlr_box *out) {
 	return layout_predict_box(fair_core, m, c, out);
 }
+#endif /* ACWM_ZIG_LAYOUT_HORIZONTAL */

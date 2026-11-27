@@ -27,13 +27,7 @@ const MOD_SHIFT: u32 = @intCast(c.WLR_MODIFIER_SHIFT);
 const MOD_MOD3: u32 = @intCast(c.WLR_MODIFIER_MOD3);
 const ALLDIR_C: u32 = @intCast(c.ALLDIR);
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 /// Defined in load.c; NULL for out-of-range indices (passed to printf %s,
 /// which renders "(null)" — same as the C twin).
 extern fn config_file_path_at(index: c_int) callconv(.c) [*c]const u8;

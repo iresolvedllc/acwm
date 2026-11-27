@@ -53,6 +53,10 @@ struct ipc_watch_client {
 	} target;
 };
 
+extern struct wl_list ipc_watch_clients;
+extern int ipc_device_watch_count;
+cJSON *build_all_clients_array(void);
+
 void ipc_init(struct wl_event_loop *event_loop);
 void ipc_remove_watch_client(struct ipc_watch_client *wc);
 void ipc_cleanup(void);
@@ -74,6 +78,7 @@ void ipc_notify_json_to_fd(int fd, cJSON *json);
 
 cJSON *tags_mask_to_array(uint32_t tag_mask);
 cJSON *build_tags_json(Monitor *m);
+cJSON *monitor_active_client(Monitor *m);
 cJSON *monitor_active_tags(Monitor *m);
 cJSON *build_client_json(Client *c);
 cJSON *build_monitor_json(Monitor *m);
@@ -87,6 +92,9 @@ void printstatus(enum ipc_watch_type type);
 void handle_print_status(struct wl_listener *listener, void *data);
 
 void send_static_json(int fd, const char *json_str);
+Monitor *monitor_by_name(const char *name);
+Client *client_by_id(uint32_t id);
+Client *client_by_id_all(uint32_t id);
 
 /* ---------- One-shot command handling ---------- */
 void handle_command(int client_fd, const char *cmd_raw);

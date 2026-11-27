@@ -18,13 +18,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn parse_color(hex_str: [*:0]const u8) callconv(.c) i64;
 extern fn convert_hex_to_rgba(color: [*]f32, hex: u32) callconv(.c) void;
 

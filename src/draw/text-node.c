@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_TEXT_NODE
 #include "acwm/draw/text-node.h"
 #include "acwm/common/scene_node.h"
 
@@ -995,3 +996,4 @@ void acwm_bar_decoration_apply_config(AcwmBarDecoration *node,
 		acwm_bar_decoration_update(node, node->last_text, scale);
 	}
 }
+#endif /* ACWM_ZIG_TEXT_NODE */

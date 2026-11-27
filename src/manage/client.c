@@ -54,6 +54,7 @@
 /* Placeholder appid/title used when no client surface type can be matched. */
 static const char broken[] = "broken";
 
+#ifndef ACWM_ZIG_CLIENT_BASIC
 int32_t client_is_x11(Client *c) {
 #ifdef XWAYLAND
 	return c->type == X11;
@@ -344,6 +345,9 @@ void client_set_scale(struct wlr_surface *s, float scale) {
 	wlr_surface_set_preferred_buffer_scale(s, (int32_t)ceilf(scale));
 }
 
+#endif /* ACWM_ZIG_CLIENT_BASIC */
+
+#ifndef ACWM_ZIG_CLIENT_STATE
 /*
  * Clips the XWayland root surface via source_box.
  *
@@ -856,6 +860,9 @@ bool check_hit_no_border(Client *c) {
 	return hit_no_border;
 }
 
+#endif /* ACWM_ZIG_CLIENT_STATE */
+
+#ifndef ACWM_ZIG_CLIENT_LOOKUP
 Client *client_find_terminal(Client *w) {
 	Client *c = NULL;
 
@@ -1423,6 +1430,9 @@ Client *get_focused_stack_client(Client *sc, Client *custom_focus_client) {
 	return sc;
 }
 
+#endif /* ACWM_ZIG_CLIENT_LOOKUP */
+
+#ifndef ACWM_ZIG_CLIENT_RULES
 void apply_rule_properties(Client *c, const ConfigWinRule *r) {
 	APPLY_INT_PROP(c, r, isterm);
 	APPLY_INT_PROP(c, r, allow_csd);
@@ -1847,10 +1857,13 @@ void apply_window_snap(Client *c) {
 	c->float_geom = c->geom;
 	resize(c, c->geom, (ResizeOpts){.interact = 0});
 }
+#endif /* ACWM_ZIG_CLIENT_RULES */
+
 /*
  * Client management: window lifecycle, rules, focus, tiled/floating/fullscreen
  * state switching, and XWayland client handling.
  */
+#ifndef ACWM_ZIG_CLIENT_INIT
 void client_update_geometry(Client *c) {
 	if (client_is_x11(c)) {
 #ifdef XWAYLAND
@@ -2129,6 +2142,9 @@ void init_client_properties(Client *c) {
 	wl_list_init(&c->flink);
 }
 
+#endif /* ACWM_ZIG_CLIENT_INIT */
+
+#ifndef ACWM_ZIG_CLIENT_INIT
 static void client_insert_tiling_order(Client *c) {
 	Client *at_client = NULL;
 
@@ -2222,6 +2238,9 @@ static void client_negotiate_initial_size(Client *c, Monitor *rule_mon,
 	c->tags = saved_tags;
 }
 
+#endif /* ACWM_ZIG_CLIENT_INIT */
+
+#ifndef ACWM_ZIG_CLIENT_LIFECYCLE
 void handle_client_map(struct wl_listener *listener, void *data) {
 	/* Called when the surface is mapped, or ready to display on-screen. */
 	Client *c = wl_container_of(listener, c, map);
@@ -2759,6 +2778,9 @@ void pending_kill_client(Client *c) {
 	client_send_close(c);
 }
 
+#endif /* ACWM_ZIG_CLIENT_LIFECYCLE */
+
+#ifndef ACWM_ZIG_CLIENT_VIEW
 bool client_blur_uses_wallpaper(Client *c) {
 	if (!c)
 		return false;
@@ -3244,6 +3266,9 @@ void view_insert_shift_tags(Monitor *m, uint32_t target) {
 	}
 }
 
+#endif /* ACWM_ZIG_CLIENT_VIEW */
+
+#ifndef ACWM_ZIG_CLIENT_TRANSITION
 void client_set_floating(Client *c, int32_t floating) {
 
 	Client *fc = NULL;
@@ -3909,6 +3934,9 @@ void client_replace(Client *c, Client *w, bool is_group_change_member,
 		client_park(w);
 }
 
+#endif /* ACWM_ZIG_CLIENT_TRANSITION */
+
+#ifndef ACWM_ZIG_CLIENT_GROUP
 static int32_t monitor_move_direction(const Monitor *from, const Monitor *to) {
 	if (!from || !to || from == to)
 		return UNDIR;
@@ -4567,6 +4595,9 @@ bool client_force_render(Client *c) {
 	client_send_frame_done(c, &now);
 	return true;
 }
+#endif /* ACWM_ZIG_CLIENT_GROUP */
+
+#ifndef ACWM_ZIG_CLIENT_XWAYLAND
 /*
  * Gets the monitor of the current XWayland client (falls back to the selected
  * monitor when not bound yet).
@@ -4930,3 +4961,4 @@ void handle_xwayland_surface_set_geometry(struct wl_listener *listener,
 }
 
 #endif
+#endif /* ACWM_ZIG_CLIENT_XWAYLAND */

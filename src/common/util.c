@@ -31,6 +31,7 @@ void die(const char *fmt, ...) {
 	exit(1);
 }
 
+#ifndef ACWM_ZIG_UTIL
 void *ecalloc(size_t nmemb, size_t size) {
 	void *p;
 
@@ -54,6 +55,9 @@ const char *wayland_string_set(struct wayland_string *dst, const char *src) {
 	return dst->data;
 }
 
+#endif /* ACWM_ZIG_UTIL */
+
+#ifndef ACWM_ZIG_UTIL
 int32_t fd_set_nonblock(int32_t fd) {
 	int32_t flags = fcntl(fd, F_GETFL);
 	if (flags < 0) {
@@ -97,6 +101,9 @@ int32_t regex_match(const char *pattern, const char *str) {
 	return ret >= 0;
 }
 
+#endif /* ACWM_ZIG_UTIL */
+
+#ifndef ACWM_ZIG_UTIL
 void wl_list_append(struct wl_list *list, struct wl_list *object) {
 	wl_list_insert(list->prev, object);
 }
@@ -112,6 +119,9 @@ uint32_t timespec_to_ms(struct timespec *ts) {
 	return (uint32_t)ts->tv_sec * 1000 + (uint32_t)ts->tv_nsec / 1000000;
 }
 
+#endif /* ACWM_ZIG_UTIL */
+
+#ifndef ACWM_ZIG_UTIL
 char *join_strings(char *arr[], const char *sep) {
 	if (!arr || !arr[0]) {
 		char *empty = malloc(1);
@@ -176,6 +186,8 @@ char *join_strings_with_suffix(char *arr[], const char *suffix,
 	return result;
 }
 
+#endif /* ACWM_ZIG_UTIL */
+
 char *string_printf(const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
@@ -194,6 +206,7 @@ char *string_printf(const char *fmt, ...) {
 	return str;
 }
 
+#ifndef ACWM_ZIG_UTIL
 void wl_list_swap(struct wl_list *l1, struct wl_list *l2) {
 	struct wl_list *tmp1_prev = l1->prev;
 	struct wl_list *tmp2_prev = l2->prev;
@@ -251,3 +264,4 @@ void wl_list_safe_reinsert_next(struct wl_list *l1, struct wl_list *l2) {
 	wl_list_init(l2);
 	wl_list_insert(l1, l2);
 }
+#endif /* ACWM_ZIG_UTIL */

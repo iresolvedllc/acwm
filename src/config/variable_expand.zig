@@ -118,7 +118,7 @@ const GrowBuf = struct {
         const base = self.buf.?[self.len..self.cap];
         @memcpy(base[0..s.len], s);
         self.len += s.len;
-        self.buf.? [self.len] = 0;
+        self.buf.?[self.len] = 0;
         return true;
     }
 };

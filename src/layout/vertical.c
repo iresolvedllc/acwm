@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYOUT_VERTICAL
 #include "acwm/layout/vertical.h"
 #include "acwm/common/server.h"
 #include "acwm/common/util.h"
@@ -599,3 +600,4 @@ void vertical_fair(Monitor *m) { vertical_fair_core(m, NULL); }
 bool vertical_fair_predict(Monitor *m, Client *c, struct wlr_box *out) {
 	return layout_predict_box(vertical_fair_core, m, c, out);
 }
+#endif /* ACWM_ZIG_LAYOUT_VERTICAL */
