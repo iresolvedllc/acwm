@@ -627,7 +627,15 @@ green.
       and the input subsystem is complete
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
-- [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture
+- [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
+      tag-button refresh with active/urgent/special palettes, monitor
+      layout (bar background, corner radii, tag/tray/battery/clock
+      placement), fullscreen/session-lock visibility, clock and battery
+      timers/formatting, per-monitor create/destroy, config reload,
+      lock updates, bar click routing (tag/special/tray/chrome),
+      print-status listener, tray sync-all and cleanup. C region guarded
+      with ACWM_ZIG_BAR; 7 tests. Bar/tray remaning: tray.c
+- [ ] SNI tray from `bar/tray.c` (sd-bus FFI)
 - [x] Small extension protocols from `ext-protocol/tearing.c`,
       `xdg-activation.c` and `foreign-toplevel.c` →
       `src/ext-protocol/protocol_small.zig`: tearing-controller hint

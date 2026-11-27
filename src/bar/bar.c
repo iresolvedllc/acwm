@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_BAR
 #include "acwm/bar/bar.h"
 
 #include <dirent.h>
@@ -604,3 +605,4 @@ void bar_cleanup(void) {
 	}
 	tray_cleanup();
 }
+#endif /* ACWM_ZIG_BAR */
