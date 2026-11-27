@@ -1863,6 +1863,7 @@ void apply_window_snap(Client *c) {
  * Client management: window lifecycle, rules, focus, tiled/floating/fullscreen
  * state switching, and XWayland client handling.
  */
+#ifndef ACWM_ZIG_CLIENT_INIT
 void client_update_geometry(Client *c) {
 	if (client_is_x11(c)) {
 #ifdef XWAYLAND
@@ -2140,6 +2141,8 @@ void init_client_properties(Client *c) {
 	wl_list_init(&c->link);
 	wl_list_init(&c->flink);
 }
+
+#endif /* ACWM_ZIG_CLIENT_INIT */
 
 static void client_insert_tiling_order(Client *c) {
 	Client *at_client = NULL;
