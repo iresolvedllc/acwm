@@ -828,7 +828,13 @@ green.
 
 ## Phase 6 — Packaging, CI, docs
 
-- [ ] Switch the nix derivation to `zig build`; delete meson
+- [x] Switch the nix derivation to `zig build`: derivation now runs
+      `zig build --prefix $out` with ReleaseFast (Debug for `debug`),
+      explicit XWayland on/off, redirected Zig caches, auto-patchelf for
+      the interpreter/rpath, and source filtering for `zig-out`/
+      `.zig-cache`. The built compositor and all companion clients run
+      from the store
+- [ ] Delete meson and the remaining ported C twins
 - [ ] CI: zig build + zig build test + nix build on the three usual systems
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed
