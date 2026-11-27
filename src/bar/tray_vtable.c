@@ -3,7 +3,7 @@
  * The vtable macros expand to bitfield/union initializers that translate-c
  * cannot express; the table itself stays here while all callbacks live in
  * src/bar/tray.zig. tray.c keeps its own copy when the Zig twin is disabled. */
-#ifdef HAVE_TRAY
+#if defined(HAVE_TRAY) && defined(ACWM_ZIG_TRAY)
 #include <systemd/sd-bus.h>
 #include <stddef.h>
 
@@ -34,4 +34,6 @@ const sd_bus_vtable aw_tray_vtable[] = {
 };
 #endif
 
+#if defined(HAVE_TRAY) && defined(ACWM_ZIG_TRAY)
 const sd_bus_vtable *aw_tray_vtable_get(void) { return aw_tray_vtable; }
+#endif

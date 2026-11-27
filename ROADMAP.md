@@ -626,7 +626,15 @@ green.
       ACWM_ZIG_POINTER_INPUT; 8 tests. input/pointer.c is now fully ported
       and the input subsystem is complete
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
-- [ ] `draw/` remainder + `overview/` + `switcher/`
+- [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
+      fullscreen-restore heuristics, per-surface card nodes with commit/
+      destroy tracking, card layout with root clipping/sub-surface scaling
+      and monitor-visibility intersection, jump-label placement/visibility,
+      card destruction and corner radii, surface backup with card tree /
+      frame feed, mode/geometry backup and full restore (floating/tiled/
+      fullscreen/maximize paths). C region guarded with ACWM_ZIG_OVERVIEW;
+      7 tests
+- [ ] `draw/` remainder + `switcher/`
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock

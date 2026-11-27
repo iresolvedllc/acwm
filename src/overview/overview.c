@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_OVERVIEW
 #include "acwm/overview/overview.h"
 #include "acwm/animation/client.h"
 #include "acwm/common/server.h"
@@ -410,3 +411,4 @@ void overview_restore(Client *c, const Arg *arg) {
 
 	client_sync_layer(c);
 }
+#endif /* ACWM_ZIG_OVERVIEW */
