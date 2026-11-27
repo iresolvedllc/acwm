@@ -319,6 +319,7 @@ void buffer_set_effect(Client *c, BufferData data) {
 
 #endif /* ACWM_ZIG_ANIM_CLIENT_A */
 
+#ifndef ACWM_ZIG_ANIM_CLIENT_B
 void client_draw_shadow(Client *c, struct ivec2 offsets) {
 	if (c->iskilling || !client_surface(c)->mapped || c->no_shadow)
 		return;
@@ -799,6 +800,8 @@ struct ivec2 clip_to_hide(Client *c, struct wlr_box *clip_box,
 
 	return offset;
 }
+#endif /* ACWM_ZIG_ANIM_CLIENT_B */
+
 void client_set_drop_area(Client *c) {
 	bool first_draw = false;
 	int32_t drop_direction = UNDIR;

@@ -635,7 +635,17 @@ green.
       subsurface guards, and buffer effect routing (tag/grab scale
       suppression, fullscreen corner reset, blur corner radii, overview
       cards). C region guarded with ACWM_ZIG_ANIM_CLIENT_A; 14 tests
-- [ ] `animation/client.c` slice 2 (draw helpers)
+- [x] `animation/client.c` slice 2 → `src/animation/client.zig` draw
+      helpers: shadow enable/disable with border-aware boxes, intersection
+      clipping and monitor-edge trimming; group-bar visibility, tab-hide
+      strip suppression, group counting and width/remainder distribution;
+      capture shield raise/lower/size/position; dim box/radius/enable;
+      blur box/radius/enable; global group-bar placement; dwindle split
+      indicator selection and edge-gap geometry; border/surface/clipped-
+      region layout including fullscreen reset; and clip-to-hide offsets
+      with scroll/tag guards and visibility toggling. C region guarded
+      with ACWM_ZIG_ANIM_CLIENT_B; 7 new tests (21 in the module)
+- [ ] `animation/client.c` slice 3 (drop area/clip/fade)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/
