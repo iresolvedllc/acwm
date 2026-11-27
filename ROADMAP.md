@@ -644,7 +644,16 @@ green.
       sizing across candidate scopes, cycling and the `switcher` action.
       C region guarded with ACWM_ZIG_SWITCHER; 6 tests
 - [ ] `draw/` remainder
-- [ ] `main.c` setup/event loop
+- [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
+      nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM
+      handling, child signal restore, full listener teardown, subsystem
+      cleanup order, dbus/systemd execution-environment set/unset,
+      display socket + backend start, startup child piping, readiness
+      notification, initial monitor/cursor setup, exec directives and the
+      Wayland event loop, plus CLI parsing (version/debug/config/startup/
+      readiness/config-check) and usage. C region guarded with
+      ACWM_ZIG_MAIN; 6 tests. `setup()` remains C for the next slice
+- [ ] `main.c` setup()
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock

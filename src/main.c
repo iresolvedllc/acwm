@@ -127,6 +127,7 @@
 #include <xcb/xcb_icccm.h>
 #endif
 
+#ifndef ACWM_ZIG_MAIN
 void handle_quit_signal(int32_t signo);
 void unset_activation_env(void);
 
@@ -466,6 +467,11 @@ void run(char *startup_cmd, int readiness_fd) {
 
 	wl_display_run(server.display);
 }
+
+#endif /* ACWM_ZIG_MAIN */
+
+void handle_signal(int32_t signo);
+void restore_child_signals(void);
 
 void setup(void) {
 	setenv("XDG_CURRENT_DESKTOP", "acwm", 1);
@@ -951,6 +957,7 @@ void setup(void) {
 	config_error_nag_init();
 }
 
+#ifndef ACWM_ZIG_MAIN
 int32_t main(int32_t argc, char *argv[]) {
 	char *startup_cmd = NULL;
 	int32_t c;
@@ -1009,3 +1016,8 @@ usage:
 		   "  -p             Check configuration file error\n");
 	return EXIT_SUCCESS;
 }
+#endif /* ACWM_ZIG_MAIN */
+#ifdef ACWM_ZIG_MAIN
+int32_t acwm_main(int32_t argc, char *argv[]);
+int32_t main(int32_t argc, char *argv[]) { return acwm_main(argc, argv); }
+#endif
