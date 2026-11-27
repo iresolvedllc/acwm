@@ -5,6 +5,7 @@ const std = @import("std");
 const c = @import("cc");
 
 const Monitor = c.Monitor;
+const Allocator = @TypeOf(c.server.allocator);
 const OutputState = c.struct_wlr_output_state;
 const Box = c.struct_wlr_box;
 
@@ -27,7 +28,7 @@ extern fn monitor_skip_frame_timeout_callback(data: ?*anyopaque) callconv(.c) c_
 extern fn handle_output_frame(listener: [*c]c.struct_wl_listener, data: ?*anyopaque) callconv(.c) void;
 extern fn handle_output_destroy(listener: [*c]c.struct_wl_listener, data: ?*anyopaque) callconv(.c) void;
 extern fn handle_output_request_state(listener: [*c]c.struct_wl_listener, data: ?*anyopaque) callconv(.c) void;
-extern fn wlr_output_init_render(output: [*c]c.struct_wlr_output, allocator: ?*c.struct_wlr_allocator_30, renderer: [*c]c.struct_wlr_renderer) callconv(.c) bool;
+extern fn wlr_output_init_render(output: [*c]c.struct_wlr_output, allocator: Allocator, renderer: [*c]c.struct_wlr_renderer) callconv(.c) bool;
 
 const ENABLED_BIT: u32 = @intCast(c.WLR_OUTPUT_STATE_ENABLED);
 const MODE_BIT: u32 = @intCast(c.WLR_OUTPUT_STATE_MODE);

@@ -50,6 +50,11 @@
 #include <wlr/types/wlr_xdg_activation_v1.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_pointer_gestures_v1.h>
+#include <wlr/types/wlr_relative_pointer_v1.h>
+#include <wlr/types/wlr_virtual_pointer_v1.h>
+#include <wlr/util/edges.h>
+#include <wlr/util/region.h>
+#include <wlr/xcursor.h>
 #include <wlr/types/wlr_cursor_shape_v1.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/xwayland.h>
@@ -75,6 +80,7 @@
 #include "acwm/common/log.h"
 #include "acwm/common/util.h"
 #include "acwm/common/scene_node.h"
+#include "acwm/bar/bar.h"
 #include "acwm/common/server.h"
 #include "acwm/input/device.h"
 #include "acwm/input/keyboard.h"

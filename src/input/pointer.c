@@ -828,6 +828,7 @@ Client *pointer_confine_client(
 	struct wlr_pointer_constraint_v1 **constraint_out);
 #endif
 
+#ifndef ACWM_ZIG_POINTER_INPUT
 static int32_t client_resize_grab(Client *c) {
 	if (config.border_resize_size > 0)
 		return config.border_resize_size;
@@ -1902,3 +1903,4 @@ bool pointer_process_button_press(struct wlr_pointer_button_event *event) {
 	/* If the event wasn't handled by the compositor, return false */
 	return false;
 }
+#endif /* ACWM_ZIG_POINTER_INPUT */

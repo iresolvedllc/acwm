@@ -608,7 +608,23 @@ green.
       scroll/click/send-events configuration with device-rule overrides,
       pointer device creation, frame handling and absolute motion. C region
       guarded with ACWM_ZIG_POINTER_CONSTRAINTS; 9 tests
-- [ ] Input: pointer (1,888) — motion/resize/drag/focus/drag-and-drop
+- [x] Pointer motion/resize/drag/focus from `input/pointer.c` (part 2) →
+      `src/input/pointer_input.zig`: resize-grab edges with tiled-neighbour
+      filtering and cursor names, floating resize clamps, drag-float
+      conversion, move/resize grab setup (corner selection, cursor warp,
+      offsets), grab release with monitor transfer/tag retargeting/snap/
+      drop-area cleanup, group-bar drag targets, relative/absolute pointer
+      motion with constraint confinement and sloppy focus, resize-strip
+      cursor ownership, drag-icon positioning, scroll-edge focus locking,
+      pointer focus enter/motion/X11 scaling, pointer-grab drag start and
+      cursor-surface requests, drag-icon creation, cursor activity/hide and
+      remembered surface/shape restoration, client/monitor warps, virtual
+      pointers, closest-tiled lookup, drag-to-tile placement across scroller/
+      dwindle/right-tile/tiled layouts, and full button routing (switcher,
+      bars, decorate clicks, overview clicks, mouse bindings, border
+      resize, group drop and grab release). C region guarded with
+      ACWM_ZIG_POINTER_INPUT; 8 tests. input/pointer.c is now fully ported
+      and the input subsystem is complete
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture

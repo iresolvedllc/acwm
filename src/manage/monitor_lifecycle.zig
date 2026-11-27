@@ -5,6 +5,7 @@ const std = @import("std");
 const c = @import("cc");
 
 const Monitor = c.Monitor;
+const Allocator = @TypeOf(c.server.allocator);
 const Client = c.Client;
 const LayerSurface = c.LayerSurface;
 
@@ -29,8 +30,8 @@ extern fn wlr_backend_is_headless(backend: [*c]c.struct_wlr_backend) callconv(.c
 extern fn wlr_wl_output_create(backend: [*c]c.struct_wlr_backend) callconv(.c) [*c]c.struct_wlr_output;
 extern fn wlr_headless_add_output(backend: [*c]c.struct_wlr_backend, width: u32, height: u32) callconv(.c) [*c]c.struct_wlr_output;
 extern fn fx_renderer_create(backend: [*c]c.struct_wlr_backend) callconv(.c) [*c]c.struct_wlr_renderer;
-extern fn wlr_allocator_autocreate(backend: [*c]c.struct_wlr_backend, renderer: [*c]c.struct_wlr_renderer) callconv(.c) ?*c.struct_wlr_allocator_30;
-extern fn wlr_allocator_destroy(allocator: ?*c.struct_wlr_allocator_30) callconv(.c) void;
+extern fn wlr_allocator_autocreate(backend: [*c]c.struct_wlr_backend, renderer: [*c]c.struct_wlr_renderer) callconv(.c) Allocator;
+extern fn wlr_allocator_destroy(allocator: Allocator) callconv(.c) void;
 
 fn containerOf(comptime T: type, comptime field: []const u8, link: anytype) *T {
     return @ptrFromInt(@intFromPtr(link) - @offsetOf(T, field));
@@ -352,7 +353,7 @@ extern var stub_toggle_overview_calls: c_int;
 extern var stub_acwm_commit_calls: c_int;
 extern var stub_acwm_commit_result: bool;
 extern var stub_new_renderer: [*c]c.struct_wlr_renderer;
-extern var stub_new_allocator: ?*c.struct_wlr_allocator_30;
+extern var stub_new_allocator: Allocator;
 extern var stub_fx_create_calls: c_int;
 extern var stub_alloc_create_calls: c_int;
 extern var stub_alloc_destroy_calls: c_int;
@@ -685,8 +686,8 @@ test "renderer loss schedules one recreation and rebuilds outputs" {
     resetLifecycleWorld();
     var old_renderer: c.struct_wlr_renderer = std.mem.zeroes(c.struct_wlr_renderer);
     var new_renderer: c.struct_wlr_renderer = std.mem.zeroes(c.struct_wlr_renderer);
-    const old_alloc: *c.struct_wlr_allocator_30 = @ptrFromInt(0x4000);
-    const new_alloc: *c.struct_wlr_allocator_30 = @ptrFromInt(0x5000);
+    const old_alloc: Allocator = @ptrFromInt(0x4000);
+    const new_alloc: Allocator = @ptrFromInt(0x5000);
     c.server.renderer = &old_renderer;
     c.server.allocator = old_alloc;
     c.server.backend = @ptrFromInt(0x1000);
