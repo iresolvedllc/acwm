@@ -3268,6 +3268,7 @@ void view_insert_shift_tags(Monitor *m, uint32_t target) {
 
 #endif /* ACWM_ZIG_CLIENT_VIEW */
 
+#ifndef ACWM_ZIG_CLIENT_TRANSITION
 void client_set_floating(Client *c, int32_t floating) {
 
 	Client *fc = NULL;
@@ -3932,6 +3933,8 @@ void client_replace(Client *c, Client *w, bool is_group_change_member,
 	else
 		client_park(w);
 }
+
+#endif /* ACWM_ZIG_CLIENT_TRANSITION */
 
 static int32_t monitor_move_direction(const Monitor *from, const Monitor *to) {
 	if (!from || !to || from == to)
