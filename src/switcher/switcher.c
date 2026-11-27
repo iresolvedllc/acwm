@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_SWITCHER
 #include "acwm/switcher/switcher.h"
 #include "acwm/common/server.h"
 #include "acwm/common/util.h"
@@ -498,3 +499,4 @@ void switcher_content_size(Client *c, float *w, float *h) {
 }
 
 const float switcher_panel_color[4] = {0.09f, 0.09f, 0.11f, 0.92f};
+#endif /* ACWM_ZIG_SWITCHER */

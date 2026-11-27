@@ -634,7 +634,17 @@ green.
       frame feed, mode/geometry backup and full restore (floating/tiled/
       fullscreen/maximize paths). C region guarded with ACWM_ZIG_OVERVIEW;
       7 tests
-- [ ] `draw/` remainder + `switcher/`
+- [x] Alt-tab switcher from `switcher/switcher.c` →
+      `src/switcher/switcher.zig`: surface-tree tile layout with root
+      clipping and sub-surface scaling, buffer state sync (source box,
+      transform, opacity, color transfer/primaries/encoding/range, damage
+      and syncobj wait points), surface commit/destroy/output-sample/
+      frame-done handlers, tile creation and panel row layout, highlight
+      colors, close/remove-client, commit-to-client, hit testing, open
+      sizing across candidate scopes, cycling and the `switcher` action.
+      C region guarded with ACWM_ZIG_SWITCHER; 6 tests
+- [ ] `draw/` remainder
+- [ ] `main.c` setup/event loop
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock
