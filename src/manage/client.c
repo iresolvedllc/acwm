@@ -2780,6 +2780,7 @@ void pending_kill_client(Client *c) {
 
 #endif /* ACWM_ZIG_CLIENT_LIFECYCLE */
 
+#ifndef ACWM_ZIG_CLIENT_VIEW
 bool client_blur_uses_wallpaper(Client *c) {
 	if (!c)
 		return false;
@@ -3264,6 +3265,8 @@ void view_insert_shift_tags(Monitor *m, uint32_t target) {
 		tag_gather_move_pertag(m, i + 1, i);
 	}
 }
+
+#endif /* ACWM_ZIG_CLIENT_VIEW */
 
 void client_set_floating(Client *c, int32_t floating) {
 
