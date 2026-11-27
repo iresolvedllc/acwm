@@ -412,6 +412,16 @@ green.
       targeting, wallpaper-layer classification, selected-monitor setter
       and gap updates with special-view variants. C region guarded with
       ACWM_ZIG_MONITOR_QUERY; 9 tests
+- [x] Monitor output commit/mode/ICC/rule cluster from `manage/monitor.c`
+      → `src/manage/monitor_output.zig`: scene-output state commit with
+      damage/state short-circuit, ICC attachment (suppressed by image
+      descriptions), tearing negotiation with fallback and one retry,
+      pending-state reset, direct pending commit, nearest-mode selection by
+      size+refresh, adaptive-sync testing/flag handling, monitor rule
+      matching (name/make/model/serial), ICC file validation/loading and
+      path caching, and rule application (VRR/HDR/disable/luminance/force/
+      scale/transform, internal/custom/headless modes). C region guarded
+      with ACWM_ZIG_MONITOR_OUTPUT; 10 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

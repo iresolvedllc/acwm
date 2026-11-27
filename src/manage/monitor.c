@@ -358,6 +358,7 @@ bool blur_layer_on_wallpaper(uint32_t layer) {
 
 #endif /* ACWM_ZIG_MONITOR_QUERY */
 
+#ifndef ACWM_ZIG_MONITOR_OUTPUT
 bool acwm_scene_output_commit(struct wlr_scene_output *scene_output,
 							   struct wlr_output_state *state) {
 	struct wlr_output *wlr_output = scene_output->output;
@@ -603,6 +604,8 @@ bool apply_rule_to_state(Monitor *m, const ConfigMonitorRule *rule,
 	wlr_output_state_set_transform(state, rule->rr);
 	return mode_set;
 }
+
+#endif /* ACWM_ZIG_MONITOR_OUTPUT */
 
 void handle_new_output(struct wl_listener *listener, void *data) {
 	struct wlr_output *wlr_output = data;
