@@ -37,6 +37,7 @@
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_drm_lease_v1.h>
 #include <wlr/types/wlr_ext_foreign_toplevel_list_v1.h>
+#include <wlr/types/wlr_ext_workspace_v1.h>
 #include <wlr/types/wlr_ext_image_capture_source_v1.h>
 #include <wlr/types/wlr_ext_image_copy_capture_v1.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
@@ -89,6 +90,8 @@
 #include "acwm/ext-protocol/tearing.h"
 #include "acwm/ext-protocol/xdg-activation.h"
 #include "acwm/ext-protocol/foreign-toplevel.h"
+#include "acwm/ext-protocol/ext-workspace.h"
+#include "acwm/ext-protocol/hdr.h"
 #include "acwm/input/pointer.h"
 #include "acwm/input/switch.h"
 #include "acwm/input/touch.h"

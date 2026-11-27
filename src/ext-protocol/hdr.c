@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_EXT_WORKSPACE_HDR
 #include "acwm/ext-protocol/hdr.h"
 
 static uint32_t output_formats_8bit[10];
@@ -271,3 +272,4 @@ static uint32_t output_formats_10bit[] = {
 	DRM_FORMAT_BGRX1010102, DRM_FORMAT_ARGB2101010, DRM_FORMAT_ABGR2101010,
 	DRM_FORMAT_RGBA1010102, DRM_FORMAT_BGRA1010102,
 };
+#endif /* ACWM_ZIG_EXT_WORKSPACE_HDR */

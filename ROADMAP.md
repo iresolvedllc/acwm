@@ -638,7 +638,18 @@ green.
       activate/maximize/minimize/fullscreen/close request routing,
       listener teardown and monitor output moves. C regions guarded with
       ACWM_ZIG_EXT_SMALL; 7 tests
-- [ ] Extension protocols: ext-workspace, HDR, text-input, xdg-output
+- [x] ext-workspace and HDR from `ext-protocol/ext-workspace.c` and
+      `hdr.c` → `src/ext-protocol/workspace_hdr.zig`: workspace names and
+      tag switching, add/remove/destroy/cleanup by monitor, overview vs
+      normal refresh, commit request activate/deactivate routing,
+      hidden/urgent/active status with no-hide and tagmask awareness, tag
+      count synchronisation; 8/10-bit format candidate selection, bit-depth
+      detection, EDID/renderer HDR capability checks with force override,
+      image-description enabling with mastering metadata, depth
+      setup/fallback, per-output toggle with damage/commit/revert and
+      resolution refresh, and all/named/selected monitor toggling. C
+      regions guarded with ACWM_ZIG_EXT_WORKSPACE_HDR; 9 tests
+- [ ] Extension protocols: text-input, xdg-output
 - [ ] `acwm-portal` screencast (pipewire negotiation, ext-image-copy-capture)
 - [ ] `acwm-lock` — built-in session lock UI (ext-session-lock-v1 already
       implemented server-side; add the unlock prompt + keyring state)

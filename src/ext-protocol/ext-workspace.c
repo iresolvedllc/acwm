@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_EXT_WORKSPACE_HDR
 #include "acwm/ext-protocol/ext-workspace.h"
 #include "acwm/common/log.h"
 #include "acwm/common/server.h"
@@ -246,3 +247,4 @@ void sync_workspaces_to_tag_num(Monitor *m) {
 
 	acwm_ext_workspace_printstatus(m);
 }
+#endif /* ACWM_ZIG_EXT_WORKSPACE_HDR */
