@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_TRAY
 #include "acwm/bar/bar.h"
 
 #include <cairo.h>
@@ -858,3 +859,4 @@ void tray_click(struct AcwmTrayItem *item, uint32_t button) {
 }
 
 #endif
+#endif /* ACWM_ZIG_TRAY */

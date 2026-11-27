@@ -27,6 +27,9 @@
 #include <sys/stat.h>
 #include <libinput.h>
 #include <sys/socket.h>
+#ifdef HAVE_TRAY
+#include <systemd/sd-bus.h>
+#endif
 #include <unistd.h>
 #include <wayland-server-core.h>
 #include <wlr/backend/libinput.h>

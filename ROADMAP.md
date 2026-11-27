@@ -635,7 +635,17 @@ green.
       lock updates, bar click routing (tag/special/tray/chrome),
       print-status listener, tray sync-all and cleanup. C region guarded
       with ACWM_ZIG_BAR; 7 tests. Bar/tray remaning: tray.c
-- [ ] SNI tray from `bar/tray.c` (sd-bus FFI)
+- [x] SNI tray from `bar/tray.c` → `src/bar/tray.zig`: sd-bus session/
+      system connection with event-loop fd dispatch, watcher object at both
+      status-notifier paths, item registration/ownership tracking,
+      async property refresh with IconName/IconThemePath/Status/IconPixmap
+      parsing, pixmap and themed-icon rendering into scene buffers at
+      monitor scale, per-bar icon sync/detach, left/right click activation,
+      signal-based refresh, name-owner removal and cleanup. C region
+      guarded with ACWM_ZIG_TRAY; 5 tests. The sd-bus vtable table itself
+      stays in a tiny `tray_vtable.c` glue file because its macros expand
+      to bitfield/union initializers; all callbacks are Zig. Bar/tray is
+      now fully ported
 - [x] Small extension protocols from `ext-protocol/tearing.c`,
       `xdg-activation.c` and `foreign-toplevel.c` →
       `src/ext-protocol/protocol_small.zig`: tearing-controller hint
