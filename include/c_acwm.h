@@ -56,6 +56,10 @@
 #include <wlr/types/wlr_output_management_v1.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_keyboard_group.h>
+#include <wlr/types/wlr_touch.h>
+#include <wlr/types/wlr_switch.h>
+#include <wlr/types/wlr_tablet_pad.h>
+#include <wlr/types/wlr_tablet_tool.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/util/log.h>
 
@@ -69,6 +73,9 @@
 #include "acwm/input/device.h"
 #include "acwm/input/keyboard.h"
 #include "acwm/input/pointer.h"
+#include "acwm/input/switch.h"
+#include "acwm/input/touch.h"
+#include "acwm/input/tablet.h"
 #include "acwm/layout/layout.h"
 #include "acwm/ipc/ipc.h"
 #include "acwm/animation/client.h"

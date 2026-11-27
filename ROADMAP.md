@@ -550,8 +550,17 @@ green.
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
       `manage/misc.c` (incl. the idle/shim helpers)
-- [ ] Input: pointer (1,888), keyboard, touch, tablet, switch, device,
-      trackpad
+- [x] Input device dispatch and switches from `input/device.c` +
+      `input/switch.c` → `src/input/device.zig`: input-device teardown with
+      switch payload and keyboard-watch cleanup, seat-device tracking and
+      capability recomputation (pointer/tablet, touch + mouse emulation,
+      keyboard), new-device dispatch to keyboard/pointer/touch/tablet/pad/
+      switch creators, libinput switch creation with destruction/toggle
+      listeners, and switch-binding matching (common/default/mode, fold and
+      callback dispatch). C regions guarded with ACWM_ZIG_INPUT_DEVICE;
+      6 tests
+- [ ] Input: pointer (1,888), keyboard (972), touch (363), tablet (436),
+      trackpad (959)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture
