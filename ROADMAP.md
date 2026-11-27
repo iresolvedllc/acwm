@@ -466,6 +466,15 @@ green.
       Also fixed the translate-c unit to define XWAYLAND (and test C
       sources to compile with it), so Zig `Client` layouts now match the
       real C build's conditional fields
+- [x] Client size/state and XWayland clipping from `manage/client.c` →
+      `src/manage/client_state.zig`: device-aligned source-box clipping
+      (rounding, overhang/nearest filtering, zoom-like and negative clips),
+      dest-size restore/active-clip path, xdg/XWayland size configuration
+      with hint clamping and duplicate-config suppression, minimize/
+      maximize/tiled state, tiled-hint sync, focus/popup/global/overtop/
+      unmanaged predicates, fullscreen/minimize/maximize requests, size
+      bounds (logical/scaled) and border hit-testing. C region guarded with
+      ACWM_ZIG_CLIENT_STATE; 9 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,

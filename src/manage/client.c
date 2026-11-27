@@ -347,6 +347,7 @@ void client_set_scale(struct wlr_surface *s, float scale) {
 
 #endif /* ACWM_ZIG_CLIENT_BASIC */
 
+#ifndef ACWM_ZIG_CLIENT_STATE
 /*
  * Clips the XWayland root surface via source_box.
  *
@@ -858,6 +859,8 @@ bool check_hit_no_border(Client *c) {
 	}
 	return hit_no_border;
 }
+
+#endif /* ACWM_ZIG_CLIENT_STATE */
 
 Client *client_find_terminal(Client *w) {
 	Client *c = NULL;
