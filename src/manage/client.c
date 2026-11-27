@@ -54,6 +54,7 @@
 /* Placeholder appid/title used when no client surface type can be matched. */
 static const char broken[] = "broken";
 
+#ifndef ACWM_ZIG_CLIENT_BASIC
 int32_t client_is_x11(Client *c) {
 #ifdef XWAYLAND
 	return c->type == X11;
@@ -343,6 +344,8 @@ void client_set_scale(struct wlr_surface *s, float scale) {
 	wlr_fractional_scale_v1_notify_scale(s, scale);
 	wlr_surface_set_preferred_buffer_scale(s, (int32_t)ceilf(scale));
 }
+
+#endif /* ACWM_ZIG_CLIENT_BASIC */
 
 /*
  * Clips the XWayland root surface via source_box.

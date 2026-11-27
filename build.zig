@@ -203,15 +203,20 @@ pub fn build(b: *std.Build) void {
     // Shared translate-c module ("cc"): Zig 0.17 removed @cImport, so the
     // config ports get C types (Config/ConfigVar, the `config` global) from
     // the translated headers instead.
+    const c_header_files = b.addWriteFiles();
+    const c_header = c_header_files.add("c_acwm_build.h", if (xwayland)
+        "#define XWAYLAND 1\n#include \"c_acwm.h\"\n"
+    else
+        "#include \"c_acwm.h\"\n");
     const c_unit = b.addTranslateC(.{
-        .root_source_file = b.path("include/c_acwm.h"),
+        .root_source_file = c_header,
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
     c_unit.addIncludePath(b.path("."));
     c_unit.addIncludePath(b.path("include"));
-    for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "libinput", "libcjson", "libdrm" })) |dir| {
+    for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "libinput", "libcjson", "libdrm", "xcb", "xcb-icccm" })) |dir| {
         c_unit.addIncludePath(.{ .cwd_relative = dir });
     }
     const c_mod = c_unit.createModule();
@@ -296,7 +301,7 @@ pub fn build(b: *std.Build) void {
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW", "-DACWM_ZIG_CLIENT_BASIC" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -987,6 +992,20 @@ pub fn build(b: *std.Build) void {
     const mn_obj = b.addObject(.{ .name = "acwm-monitor-new", .root_module = mn_mod });
     compositor.root_module.addObject(mn_obj);
 
+    // Zig twin of the basic client helpers (slice 58).
+    const cb_opts = b.addOptions();
+    cb_opts.addOption(bool, "xwayland", xwayland);
+    const cb_mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/manage/client_basic.zig"),
+    });
+    cb_mod.addImport("cc", c_mod);
+    cb_mod.addImport("build_options", cb_opts.createModule());
+    const cb_obj = b.addObject(.{ .name = "acwm-client-basic", .root_module = cb_mod });
+    compositor.root_module.addObject(cb_obj);
+
     // Zig twin of the env/var/exec/exec_once/source directives (slice 17).
     const odi_mod = b.createModule(.{
         .target = target,
@@ -1174,7 +1193,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/value_parse_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1195,7 +1214,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/variable_expand_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1211,7 +1230,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1233,8 +1252,34 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bind_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+    {
+        // client basic helpers: surface/role/state stubs.
+        const cb_test_opts = b.addOptions();
+        cb_test_opts.addOption(bool, "xwayland", xwayland);
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/manage/client_basic.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addImport("build_options", cb_test_opts.createModule());
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput", "libcjson", "xcb", "xcb-icccm" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/client_basic_stub.c"),
+            .flags = if (xwayland) &.{ "-DXWAYLAND", "-I." } else &.{"-I."},
+        });
+        applyPkgConfig(b, unit_tests, &.{ "wayland-server", "xcb" });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1255,7 +1300,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/monitor_new_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1281,7 +1326,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/monitor_ops_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1304,7 +1349,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/monitor_lifecycle_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1327,7 +1372,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/monitor_output_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1350,7 +1395,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/monitor_query_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1373,7 +1418,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/manage_layer_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1396,7 +1441,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/animation_layer_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1419,7 +1464,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/misc_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1442,7 +1487,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/idle_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1464,7 +1509,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/tab_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1486,7 +1531,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/animation_common_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1509,7 +1554,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/animation_tag_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1531,7 +1576,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/dim_node_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{ "cairo", "pangocairo" });
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1554,7 +1599,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/scene_node_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1577,7 +1622,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/util_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{ "libpcre2-8", "wayland-server" });
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1600,7 +1645,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_overview_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1622,7 +1667,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_tail_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1645,7 +1690,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_view_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1668,7 +1713,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_move_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1690,7 +1735,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_layout_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1712,7 +1757,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_focus_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1735,7 +1780,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/bind_tagview_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1757,7 +1802,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/text_node_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{ "cairo", "pangocairo" });
         const run_tests = b.addRunArtifact(unit_tests);
@@ -1780,7 +1825,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/toml_parse_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1802,7 +1847,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_resize_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1824,7 +1869,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_arrange_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1846,7 +1891,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_scroll_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1868,7 +1913,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_vertical_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1890,7 +1935,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_dwindle_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1912,7 +1957,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/layout_vertical_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -1935,11 +1980,11 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/ipc_watch_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/ipc_server_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         unit_tests.root_module.addObject(ib_obj);
         unit_tests.root_module.addObject(iw_obj);
@@ -1964,7 +2009,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/ipc_watch_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         unit_tests.root_module.addObject(ib_obj); // builder implementations
         applyPkgConfig(b, unit_tests, &.{"libcjson"});
@@ -1988,7 +2033,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/ipc_builders_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         applyPkgConfig(b, unit_tests, &.{"libcjson"});
         const run_tests = b.addRunArtifact(unit_tests);
@@ -2011,7 +2056,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/watcher_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2033,7 +2078,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/reapply_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2055,7 +2100,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/cleanup_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2077,7 +2122,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/load_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2099,7 +2144,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/binding_parse_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2121,7 +2166,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/error_nag_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2143,7 +2188,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_defaults_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2160,7 +2205,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_directives_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2177,7 +2222,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_monitor_rule_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2194,7 +2239,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_window_rule_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2211,7 +2256,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_rules_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2228,7 +2273,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_monitor_rule_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2245,7 +2290,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_array_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2262,7 +2307,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2319,7 +2364,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_animation_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2349,7 +2394,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/option_bar_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
@@ -2404,7 +2449,7 @@ pub fn build(b: *std.Build) void {
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/conflict_check_stub.c"),
-            .flags = &.{},
+            .flags = if (xwayland) &.{"-DXWAYLAND"} else &.{},
         });
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);

@@ -455,6 +455,17 @@ green.
       layout/bar creation and frame/destroy/request-state listeners. C
       region guarded with ACWM_ZIG_MONITOR_NEW; 5 tests. monitor.c is now
       fully ported
+- [x] Basic client helpers from `manage/client.c` →
+      `src/manage/client_basic.zig`: role detection (X11/xdg), surface
+      selection, toplevel/popup/layer surface resolution, activation,
+      appid/pid/title with broken fallbacks, tag index, clip and geometry
+      (including XWayland conversion), parent/children queries, float-type
+      inference, rendered-on-monitor and unmanaged checks, keyboard enter,
+      close/fullscreen requests, border/state colors and fractional scale
+      notification. C region guarded with ACWM_ZIG_CLIENT_BASIC; 9 tests.
+      Also fixed the translate-c unit to define XWAYLAND (and test C
+      sources to compile with it), so Zig `Client` layouts now match the
+      real C build's conditional fields
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
