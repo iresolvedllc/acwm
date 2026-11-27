@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_compositor.h>
 
+#ifndef ACWM_ZIG_EXT_SMALL
+
 static struct wlr_xdg_activation_v1 *activation;
 static struct wl_listener activation_request_activate_listener;
 static struct wl_listener activation_new_token_listener;
@@ -128,3 +130,4 @@ static struct wlr_xdg_activation_v1 *activation;
 static struct wl_listener activation_request_activate_listener;
 static struct wl_listener activation_new_token_listener;
 static struct wl_listener activation_destroy_listener;
+#endif /* ACWM_ZIG_EXT_SMALL */

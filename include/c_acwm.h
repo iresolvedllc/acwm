@@ -48,6 +48,7 @@
 #include <wlr/types/wlr_fractional_scale_v1.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 #include <wlr/types/wlr_xdg_activation_v1.h>
+#include <wlr/types/wlr_tearing_control_v1.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_pointer_gestures_v1.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
@@ -85,6 +86,9 @@
 #include "acwm/input/device.h"
 #include "acwm/input/keyboard.h"
 #include "acwm/ext-protocol/text-input.h"
+#include "acwm/ext-protocol/tearing.h"
+#include "acwm/ext-protocol/xdg-activation.h"
+#include "acwm/ext-protocol/foreign-toplevel.h"
 #include "acwm/input/pointer.h"
 #include "acwm/input/switch.h"
 #include "acwm/input/touch.h"

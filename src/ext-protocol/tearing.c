@@ -5,6 +5,8 @@
 #include "acwm/manage/client.h"
 #include "acwm/manage/monitor.h"
 
+#ifndef ACWM_ZIG_EXT_SMALL
+
 void handle_controller_set_hint(struct wl_listener *listener, void *data) {
 	struct tearing_controller *controller =
 		wl_container_of(listener, controller, set_hint);
@@ -89,3 +91,4 @@ bool check_tearing_frame_allow(Monitor *m) {
 	/* honor tearing as requested by action */
 	return c->force_tearing == STATE_ENABLED;
 }
+#endif /* ACWM_ZIG_EXT_SMALL */

@@ -8,6 +8,8 @@
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_xdg_shell.h>
 
+#ifndef ACWM_ZIG_EXT_SMALL
+
 void handle_foreign_activate_request(struct wl_listener *listener, void *data) {
 	Client *c = wl_container_of(listener, c, foreign_activate_request);
 
@@ -141,3 +143,4 @@ void reset_foreign_tolevel(Client *c, Monitor *oldmon, Monitor *newmon) {
 		wlr_foreign_toplevel_handle_v1_output_enter(c->foreign_toplevel,
 													newmon->wlr_output);
 }
+#endif /* ACWM_ZIG_EXT_SMALL */

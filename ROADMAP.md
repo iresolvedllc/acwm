@@ -628,6 +628,17 @@ green.
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture
+- [x] Small extension protocols from `ext-protocol/tearing.c`,
+      `xdg-activation.c` and `foreign-toplevel.c` →
+      `src/ext-protocol/protocol_small.zig`: tearing-controller hint
+      tracking/lifecycle and the tearing frame policy matrix; trusted/
+      focused xdg-activation tokens, token export for spawn, activation
+      requests with bypass/authorised/urgent paths and full init/destroy
+      wiring; foreign-toplevel handle creation with app-id/title/output,
+      activate/maximize/minimize/fullscreen/close request routing,
+      listener teardown and monitor output moves. C regions guarded with
+      ACWM_ZIG_EXT_SMALL; 7 tests
+- [ ] Extension protocols: ext-workspace, HDR, text-input, xdg-output
 - [ ] `acwm-portal` screencast (pipewire negotiation, ext-image-copy-capture)
 - [ ] `acwm-lock` — built-in session lock UI (ext-session-lock-v1 already
       implemented server-side; add the unlock prompt + keyring state)
