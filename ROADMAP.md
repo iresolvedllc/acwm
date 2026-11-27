@@ -643,6 +643,17 @@ green.
       colors, close/remove-client, commit-to-client, hit testing, open
       sizing across candidate scopes, cycling and the `switcher` action.
       C region guarded with ACWM_ZIG_SWITCHER; 6 tests
+- [x] Overview layout/packing from `layout/overview.c` →
+      `src/layout/overview.zig`: area-descending item ordering, candidate
+      placement with gap-aware dedup/overlap rejection and top-left choice,
+      row detection and gap-preserving horizontal centering, binary-search
+      uniform scaling with final placement and centered monitor offset,
+      batched tile resizes, column layout with proportional heights,
+      height-pressure scaling and vertical centering, tab layout with
+      focused center column and circulating side columns, jump-mode begin/
+      finish, jump-hint labelling with keycode lookup and label-node
+      updates, and overview dispatch. C region guarded with
+      ACWM_ZIG_LAYOUT_OVERVIEW; 12 tests
 - [x] X11 primary-output manager from `manage/xwayland_primary.c` →
       `src/manage/xwayland_primary.zig`: XWayland server readiness checks,
       XCB connection/watch lifecycle with an event-loop fd source,

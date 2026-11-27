@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_LAYOUT_OVERVIEW
 #include "acwm/layout/overview.h"
 #include "acwm/common/server.h"
 #include "acwm/config/parse.h"
@@ -593,3 +594,4 @@ void overview(Monitor *m) {
 		create_jump_hints(m);
 	}
 }
+#endif /* ACWM_ZIG_LAYOUT_OVERVIEW */
