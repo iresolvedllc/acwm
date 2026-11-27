@@ -862,6 +862,7 @@ bool check_hit_no_border(Client *c) {
 
 #endif /* ACWM_ZIG_CLIENT_STATE */
 
+#ifndef ACWM_ZIG_CLIENT_LOOKUP
 Client *client_find_terminal(Client *w) {
 	Client *c = NULL;
 
@@ -1428,6 +1429,8 @@ Client *get_focused_stack_client(Client *sc, Client *custom_focus_client) {
 	}
 	return sc;
 }
+
+#endif /* ACWM_ZIG_CLIENT_LOOKUP */
 
 void apply_rule_properties(Client *c, const ConfigWinRule *r) {
 	APPLY_INT_PROP(c, r, isterm);

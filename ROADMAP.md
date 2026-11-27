@@ -475,6 +475,18 @@ green.
       unmanaged predicates, fullscreen/minimize/maximize requests, size
       bounds (logical/scaled) and border hit-testing. C region guarded with
       ACWM_ZIG_CLIENT_STATE; 9 tests
+- [x] Client lookup/direction/stack helpers from `manage/client.c` →
+      `src/manage/client_lookup.zig`: terminal lookup in the focus stack,
+      id/title/swallow-target client search, centered geometry with
+      offsets/clamps/borders, window-rule matching, nearest center-tiled
+      selection, directional neighbor search (step fallback, overlap and
+      cross-monitor rules, distance/center tie-breaks, stack filtering),
+      direction selection guards, top-of-focus-stack lookup, cyclic
+      next/previous client in the client list, border/dim color selection,
+      single-bit/one-tag tests, same-stack layout logic (monocle, tiles,
+      decks, scrollers, center-tile) and focus-memory stack selection with
+      dwindle branch restrictions. C region guarded with
+      ACWM_ZIG_CLIENT_LOOKUP; 11 tests
 - [ ] Server/event loop + output management in Zig
 - [ ] `manage/client.c` (4,932 lines — the biggest single unit)
 - [ ] `manage/monitor.c`, `manage/layer.c`, `manage/tab.c`,
