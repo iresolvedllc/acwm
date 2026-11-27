@@ -46,6 +46,8 @@
 #include <wlr/types/wlr_session_lock_v1.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_fractional_scale_v1.h>
+#include <wlr/types/wlr_foreign_toplevel_management_v1.h>
+#include <wlr/types/wlr_xdg_activation_v1.h>
 #include <wlr/xwayland.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_output_power_management_v1.h>

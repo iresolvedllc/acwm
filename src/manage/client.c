@@ -2144,6 +2144,7 @@ void init_client_properties(Client *c) {
 
 #endif /* ACWM_ZIG_CLIENT_INIT */
 
+#ifndef ACWM_ZIG_CLIENT_INIT
 static void client_insert_tiling_order(Client *c) {
 	Client *at_client = NULL;
 
@@ -2237,6 +2238,9 @@ static void client_negotiate_initial_size(Client *c, Monitor *rule_mon,
 	c->tags = saved_tags;
 }
 
+#endif /* ACWM_ZIG_CLIENT_INIT */
+
+#ifndef ACWM_ZIG_CLIENT_LIFECYCLE
 void handle_client_map(struct wl_listener *listener, void *data) {
 	/* Called when the surface is mapped, or ready to display on-screen. */
 	Client *c = wl_container_of(listener, c, map);
@@ -2773,6 +2777,8 @@ void pending_kill_client(Client *c) {
 		return;
 	client_send_close(c);
 }
+
+#endif /* ACWM_ZIG_CLIENT_LIFECYCLE */
 
 bool client_blur_uses_wallpaper(Client *c) {
 	if (!c)

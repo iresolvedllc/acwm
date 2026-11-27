@@ -309,7 +309,7 @@ export fn init_client_properties(cl: *Client) callconv(.c) void {
     c.wl_list_init(&cl.flink);
 }
 
-fn client_insert_tiling_order(cl: *Client) void {
+export fn client_insert_tiling_order(cl: *Client) callconv(.c) void {
     var at_client: [*c]Client = null;
     const selected = if (c.server.selected_monitor != null) @as(*Monitor, @ptrCast(c.server.selected_monitor)) else null;
 
@@ -332,13 +332,13 @@ fn client_insert_tiling_order(cl: *Client) void {
     }
 }
 
-fn client_configure_size(cl: *Client, geo: Box, bw: i32) void {
+export fn client_configure_size(cl: *Client, geo: Box, bw: i32) callconv(.c) void {
     if (geo.width <= 2 * bw or geo.height <= 2 * bw)
         return;
     _ = client_set_size(cl, @intCast(geo.width - 2 * bw), @intCast(geo.height - 2 * bw), false);
 }
 
-fn client_negotiate_initial_size(cl: *Client, rule_mon: ?*Monitor, rule_tags: u32) void {
+export fn client_negotiate_initial_size(cl: *Client, rule_mon: ?*Monitor, rule_tags: u32) callconv(.c) void {
     const m = rule_mon orelse (if (cl.mon != null) @as(*Monitor, @ptrCast(cl.mon)) else if (c.server.selected_monitor != null) @as(*Monitor, @ptrCast(c.server.selected_monitor)) else null);
     if (m == null or m.?.isoverview != 0)
         return;
