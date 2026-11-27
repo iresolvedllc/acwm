@@ -1118,4 +1118,3 @@ test "frame callbacks, force render and pending kill" {
     client_pending_force_kill(&cl);
     try testing.expectEqual(@as(c_int, 1), stub_kill_calls);
 }
-

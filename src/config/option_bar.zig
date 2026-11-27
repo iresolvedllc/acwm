@@ -25,13 +25,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn acwm_error_untagged(verbosity: c_uint, fmt: [*:0]const u8, ...) callconv(.c) void;
 
 // From the value_parse twin (src/config/value_parse.zig) in the compositor

@@ -26,13 +26,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn trim_whitespace(str: ?[*:0]u8) callconv(.c) void;
 extern fn animation_type_from_string(value: [*:0]const u8) callconv(.c) i32;
 

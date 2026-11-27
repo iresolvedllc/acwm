@@ -24,13 +24,7 @@ const c = @import("cc");
 const WLR_ERROR: c_uint = @intCast(c.WLR_ERROR);
 const DEBOUNCE_MS: c_int = 150;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn config_get_file_paths(count: ?*c_int) callconv(.c) [*c][*c]u8;
 extern fn reload_config(arg: ?*const c.Arg) callconv(.c) i32;
 

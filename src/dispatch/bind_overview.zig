@@ -33,13 +33,7 @@ extern fn arrange(m: *Monitor, want_animation: bool, from_view: bool) callconv(.
 extern fn begin_jump_mode(m: *Monitor) callconv(.c) void;
 extern fn finish_jump_mode(m: *Monitor) callconv(.c) void;
 extern fn printstatus(kind: c.enum_ipc_watch_type) callconv(.c) void;
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 
 const WLR_ERROR: c_uint = @intCast(c.WLR_ERROR);
 const WLR_INFO: c_uint = @intCast(c.WLR_INFO);

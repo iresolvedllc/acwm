@@ -25,13 +25,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = @intCast(c.WLR_ERROR);
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn build_client_json(cl: *c.Client) callconv(.c) ?*c.struct_cJSON;
 extern fn build_monitor_json(m: *c.Monitor) callconv(.c) ?*c.struct_cJSON;
 extern fn build_monitor_tags_response(m: *c.Monitor) callconv(.c) ?*c.struct_cJSON;

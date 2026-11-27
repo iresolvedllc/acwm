@@ -842,7 +842,7 @@ test "tag_rule_apply_to_slot sets layout and clamped fields" {
     pertag.config_ltidxs[3] = &layouts[0];
 
     var tr: c.ConfigTagRule = std.mem.zeroes(c.ConfigTagRule);
-    tr.layout_name = @constCast(@ptrCast(layouts[1].name));
+    tr.layout_name = @ptrCast(@constCast(layouts[1].name));
     tr.no_hide = 1;
     tr.nmaster = 4;
     tr.mfact = 0.7;

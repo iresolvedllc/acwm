@@ -19,13 +19,7 @@ extern fn apply_option_expanded(config: *Config, key: [*:0]u8, value: [*:0]u8, l
 extern fn parse_option(config: *Config, key: [*:0]u8, value: [*:0]u8, line_number: c_int) callconv(.c) bool;
 extern fn expand_config_variables(value: [*:0]const u8) callconv(.c) [*c]u8;
 extern fn report_config_line_error(full_path: [*:0]const u8, line_number: c_int, line: [*:0]const u8) callconv(.c) void;
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 
 extern "c" fn fgets(buf: [*]u8, size: c_int, stream: *c.FILE) ?[*:0]u8;
 extern "c" fn free(ptr: ?*anyopaque) void;

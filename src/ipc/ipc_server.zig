@@ -18,13 +18,7 @@ const build_options = @import("build_options");
 
 const WLR_ERROR: c_uint = @intCast(c.WLR_ERROR);
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn send_static_json(fd: c_int, json_str: [*:0]const u8) callconv(.c) void;
 extern fn monitor_by_name(name: [*:0]const u8) callconv(.c) ?*c.Monitor;
 extern fn client_by_id(id: u32) callconv(.c) ?*c.Client;

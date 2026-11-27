@@ -168,7 +168,7 @@ export fn handle_xwayland_surface_request_activate(listener: [*c]c.struct_wl_lis
         cl.is_in_scratchpad = 0;
         cl.isnamedscratchpad = 0;
         client_update_border_color(cl);
-        if (VISIBLEON(cl, cl.mon)) 
+        if (VISIBLEON(cl, cl.mon))
             need_arrange = true;
     }
 

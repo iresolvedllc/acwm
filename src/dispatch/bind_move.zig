@@ -27,13 +27,7 @@ extern fn clear_fullscreen_and_maximized_state(m: *Monitor) callconv(.c) void;
 extern fn printstatus(kind: c.enum_ipc_watch_type) callconv(.c) void;
 extern fn client_switch_view(arg: *const Arg, animate: bool) callconv(.c) void;
 extern fn xdg_activation_v1_export_token() callconv(.c) [*c]const u8;
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 
 extern "c" fn fork() c.pid_t;
 extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;

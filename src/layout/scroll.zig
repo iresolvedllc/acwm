@@ -567,7 +567,7 @@ fn scrollerCore(m: *Monitor, ctx: ?*const LayoutContext) void {
                 (ISSCROLLTILED(clientOpt(m.prevsel)) and
                     (clientOpt(m.prevsel).?.scroller_proportion * @as(f32, @floatFromInt(max_client_width)) +
                         heads[@intCast(focus_index)].scroller_proportion * @as(f32, @floatFromInt(max_client_width))) >
-                    @as(f32, @floatFromInt(m.w.width - 2 * c.config.scroller_structs - cur_gappih)))));
+                        @as(f32, @floatFromInt(m.w.width - 2 * c.config.scroller_structs - cur_gappih)))));
 
     if (n_heads == 1 and ignore_single != 0)
         need_scroller = true;
@@ -815,7 +815,7 @@ fn verticalScrollerCore(m: *Monitor, ctx: ?*const LayoutContext) void {
                 (ISSCROLLTILED(clientOpt(m.prevsel)) and
                     (clientOpt(m.prevsel).?.scroller_proportion * @as(f32, @floatFromInt(max_client_height)) +
                         heads[@intCast(focus_index)].scroller_proportion * @as(f32, @floatFromInt(max_client_height))) >
-                    @as(f32, @floatFromInt(m.w.height - 2 * c.config.scroller_structs - cur_gappiv)))));
+                        @as(f32, @floatFromInt(m.w.height - 2 * c.config.scroller_structs - cur_gappiv)))));
 
     if (n_heads == 1 and ignore_single != 0)
         need_scroller = true;

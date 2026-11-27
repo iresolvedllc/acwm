@@ -573,22 +573,22 @@ test "clip and geometry use xdg state and x11 conversion" {
     try testing.expectEqual(@as(i32, 90), geom.width);
 
     if (build_options.xwayland) {
-    cl.type = @intCast(c.X11);
-    var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
-    xs.x = 10;
-    xs.y = 20;
-    xs.width = 200;
-    xs.height = 100;
-    cl.surface.xwayland = &xs;
-    cl.xwayland_scale = 2.0;
-    stub_logical_box = .{ .x = 10, .y = 20, .width = 100, .height = 50 };
-    client_get_geometry(&cl, &geom);
-    try testing.expectEqual(@as(c_int, 1), stub_x11_to_logical_calls);
-    try testing.expectEqual(@as(f32, 2.0), stub_x11_scale_arg);
-    try testing.expectEqual(@as(i32, 100), geom.width);
-    client_get_clip(&cl, &clip);
-    try testing.expectEqual(@as(i32, 0), clip.x);
-    try testing.expectEqual(@as(i32, 96), clip.width);
+        cl.type = @intCast(c.X11);
+        var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
+        xs.x = 10;
+        xs.y = 20;
+        xs.width = 200;
+        xs.height = 100;
+        cl.surface.xwayland = &xs;
+        cl.xwayland_scale = 2.0;
+        stub_logical_box = .{ .x = 10, .y = 20, .width = 100, .height = 50 };
+        client_get_geometry(&cl, &geom);
+        try testing.expectEqual(@as(c_int, 1), stub_x11_to_logical_calls);
+        try testing.expectEqual(@as(f32, 2.0), stub_x11_scale_arg);
+        try testing.expectEqual(@as(i32, 100), geom.width);
+        client_get_clip(&cl, &clip);
+        try testing.expectEqual(@as(i32, 0), clip.x);
+        try testing.expectEqual(@as(i32, 96), clip.width);
     }
 }
 

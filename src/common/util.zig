@@ -37,13 +37,7 @@ const PCRE2_ZERO_TERMINATED: usize = std.math.maxInt(usize);
 const PCRE2_UTF: u32 = 0x00080000;
 const WLR_ERROR: c_uint = @intCast(c.WLR_ERROR);
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 
 fn span(p: [*:0]const u8) []const u8 {
     return std.mem.span(p);

@@ -83,16 +83,15 @@ fn applyFloat(cl: *Client, value: f32, comptime field: []const u8) void {
 
 export fn apply_rule_properties(cl: *Client, r: *const c.ConfigWinRule) callconv(.c) void {
     inline for (.{
-        "isterm", "allow_csd", "force_fakemaximize", "force_tiled_state",
-        "force_tearing", "no_swallow", "confine_pointer", "no_focus",
-        "no_fade_in", "no_fade_out", "no_force_center", "isfloating",
-        "isfullscreen", "isfakefullscreen", "no_border", "no_shadow",
-        "no_radius", "no_animation", "isopensilent", "istagsilent",
-        "isnamedscratchpad", "isglobal", "isoverlay", "shield_when_capture",
-        "ignore_maximize", "ignore_minimize", "no_size_hint",
-        "idleinhibit_when_focus", "vrr_only_fullscreen", "force_render",
-        "activation_bypass", "isunglobal", "no_blur", "allow_shortcuts_inhibit",
-        "animation_type_open", "animation_type_close",
+        "isterm",              "allow_csd",               "force_fakemaximize",  "force_tiled_state",
+        "force_tearing",       "no_swallow",              "confine_pointer",     "no_focus",
+        "no_fade_in",          "no_fade_out",             "no_force_center",     "isfloating",
+        "isfullscreen",        "isfakefullscreen",        "no_border",           "no_shadow",
+        "no_radius",           "no_animation",            "isopensilent",        "istagsilent",
+        "isnamedscratchpad",   "isglobal",                "isoverlay",           "shield_when_capture",
+        "ignore_maximize",     "ignore_minimize",         "no_size_hint",        "idleinhibit_when_focus",
+        "vrr_only_fullscreen", "force_render",            "activation_bypass",   "isunglobal",
+        "no_blur",             "allow_shortcuts_inhibit", "animation_type_open", "animation_type_close",
     }) |field| {
         applyInt(cl, @field(r, field), field);
     }

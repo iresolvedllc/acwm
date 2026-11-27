@@ -528,28 +528,28 @@ test "init xwayland finds the root buffer and listens for commits" {
     if (!build_options.xwayland)
         return error.SkipZigTest;
     if (build_options.xwayland) {
-    resetInitWorld();
-    var cl: Client = std.mem.zeroes(Client);
-    var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
-    baseX11(&cl, &xs);
-    var scene_surface: c.struct_wlr_scene_tree = std.mem.zeroes(c.struct_wlr_scene_tree);
-    listInit(&scene_surface.children);
-    cl.scene_surface = &scene_surface;
-    var node: c.struct_wlr_scene_node = std.mem.zeroes(c.struct_wlr_scene_node);
-    node.type = @intCast(c.WLR_SCENE_NODE_BUFFER);
-    listInsert(&scene_surface.children, &node.link);
-    var buffer: c.struct_wlr_scene_buffer = std.mem.zeroes(c.struct_wlr_scene_buffer);
-    var ss: c.struct_wlr_scene_surface = std.mem.zeroes(c.struct_wlr_scene_surface);
-    stub_buffer = &buffer;
-    stub_scene_surface = &ss;
-    var surface: c.struct_wlr_surface = std.mem.zeroes(c.struct_wlr_surface);
-    stub_surface = &surface;
+        resetInitWorld();
+        var cl: Client = std.mem.zeroes(Client);
+        var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
+        baseX11(&cl, &xs);
+        var scene_surface: c.struct_wlr_scene_tree = std.mem.zeroes(c.struct_wlr_scene_tree);
+        listInit(&scene_surface.children);
+        cl.scene_surface = &scene_surface;
+        var node: c.struct_wlr_scene_node = std.mem.zeroes(c.struct_wlr_scene_node);
+        node.type = @intCast(c.WLR_SCENE_NODE_BUFFER);
+        listInsert(&scene_surface.children, &node.link);
+        var buffer: c.struct_wlr_scene_buffer = std.mem.zeroes(c.struct_wlr_scene_buffer);
+        var ss: c.struct_wlr_scene_surface = std.mem.zeroes(c.struct_wlr_scene_surface);
+        stub_buffer = &buffer;
+        stub_scene_surface = &ss;
+        var surface: c.struct_wlr_surface = std.mem.zeroes(c.struct_wlr_surface);
+        stub_surface = &surface;
 
-    client_init_xwayland(&cl);
-    try testing.expect(cl.xwl_root_buffer == &buffer);
-    try testing.expect(buffer.point_accepts_input != null);
-    try testing.expectEqual(@as(c_int, 1), stub_list_insert_calls);
-    try testing.expect(cl.commmitx11.notify != null);
+        client_init_xwayland(&cl);
+        try testing.expect(cl.xwl_root_buffer == &buffer);
+        try testing.expect(buffer.point_accepts_input != null);
+        try testing.expectEqual(@as(c_int, 1), stub_list_insert_calls);
+        try testing.expect(cl.commmitx11.notify != null);
     }
 }
 
@@ -557,25 +557,25 @@ test "init unmanaged configures the overlay and optional focus" {
     if (!build_options.xwayland)
         return error.SkipZigTest;
     if (build_options.xwayland) {
-    resetInitWorld();
-    var cl: Client = std.mem.zeroes(Client);
-    var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
-    baseX11(&cl, &xs);
-    var scene: c.struct_wlr_scene_tree = std.mem.zeroes(c.struct_wlr_scene_tree);
-    cl.scene = &scene;
-    stub_geom = mkBox(5, 6, 100, 50);
-    stub_logical_x11 = mkBox(10, 12, 200, 100);
-    stub_wants_focus = 1;
-    try testing.expect(!client_init_unmanaged(&cl));
-    stub_unmanaged = true;
-    try testing.expect(client_init_unmanaged(&cl));
-    try testing.expectEqual(@as(c_int, 1), stub_x11_configure_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_scene_pos_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_dest_size_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_reparent_calls);
-    try testing.expectEqual(@as(c_int, 1), stub_focus_calls);
-    try testing.expect(c.server.exclusive_focus != null);
-    try testing.expect(cl.set_geometry.notify != null);
+        resetInitWorld();
+        var cl: Client = std.mem.zeroes(Client);
+        var xs: c.struct_wlr_xwayland_surface = std.mem.zeroes(c.struct_wlr_xwayland_surface);
+        baseX11(&cl, &xs);
+        var scene: c.struct_wlr_scene_tree = std.mem.zeroes(c.struct_wlr_scene_tree);
+        cl.scene = &scene;
+        stub_geom = mkBox(5, 6, 100, 50);
+        stub_logical_x11 = mkBox(10, 12, 200, 100);
+        stub_wants_focus = 1;
+        try testing.expect(!client_init_unmanaged(&cl));
+        stub_unmanaged = true;
+        try testing.expect(client_init_unmanaged(&cl));
+        try testing.expectEqual(@as(c_int, 1), stub_x11_configure_calls);
+        try testing.expectEqual(@as(c_int, 1), stub_scene_pos_calls);
+        try testing.expectEqual(@as(c_int, 1), stub_dest_size_calls);
+        try testing.expectEqual(@as(c_int, 1), stub_reparent_calls);
+        try testing.expectEqual(@as(c_int, 1), stub_focus_calls);
+        try testing.expect(c.server.exclusive_focus != null);
+        try testing.expect(cl.set_geometry.notify != null);
     }
 }
 
@@ -583,24 +583,24 @@ test "xwayland point input scales coordinates for X11 owners" {
     if (!build_options.xwayland)
         return error.SkipZigTest;
     if (build_options.xwayland) {
-    resetInitWorld();
-    var buffer: c.struct_wlr_scene_buffer = std.mem.zeroes(c.struct_wlr_scene_buffer);
-    var sx: f64 = 10;
-    var sy: f64 = 20;
-    try testing.expect(!xwayland_scene_buffer_point_accepts_input(&buffer, &sx, &sy));
+        resetInitWorld();
+        var buffer: c.struct_wlr_scene_buffer = std.mem.zeroes(c.struct_wlr_scene_buffer);
+        var sx: f64 = 10;
+        var sy: f64 = 20;
+        try testing.expect(!xwayland_scene_buffer_point_accepts_input(&buffer, &sx, &sy));
 
-    var ss: c.struct_wlr_scene_surface = std.mem.zeroes(c.struct_wlr_scene_surface);
-    stub_scene_surface = &ss;
-    var data: c.AcwmSceneNode = std.mem.zeroes(c.AcwmSceneNode);
-    data.type = @intCast(c.X11);
-    var cl: Client = std.mem.zeroes(Client);
-    cl.xwayland_scale = 1.5;
-    data.owner = @ptrCast(&cl);
-    stub_scene_data = &data;
-    c.config.xwayland_ignore_scale = 1;
-    try testing.expect(xwayland_scene_buffer_point_accepts_input(&buffer, &sx, &sy));
-    try testing.expectApproxEqAbs(@as(f64, 15), stub_point_tx, 1e-6);
-    try testing.expectApproxEqAbs(@as(f64, 30), stub_point_ty, 1e-6);
+        var ss: c.struct_wlr_scene_surface = std.mem.zeroes(c.struct_wlr_scene_surface);
+        stub_scene_surface = &ss;
+        var data: c.AcwmSceneNode = std.mem.zeroes(c.AcwmSceneNode);
+        data.type = @intCast(c.X11);
+        var cl: Client = std.mem.zeroes(Client);
+        cl.xwayland_scale = 1.5;
+        data.owner = @ptrCast(&cl);
+        stub_scene_data = &data;
+        c.config.xwayland_ignore_scale = 1;
+        try testing.expect(xwayland_scene_buffer_point_accepts_input(&buffer, &sx, &sy));
+        try testing.expectApproxEqAbs(@as(f64, 15), stub_point_tx, 1e-6);
+        try testing.expectApproxEqAbs(@as(f64, 30), stub_point_ty, 1e-6);
     }
 }
 

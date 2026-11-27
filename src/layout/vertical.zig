@@ -30,8 +30,6 @@ extern fn client_is_x11_popup(cl: *Client) callconv(.c) c_int;
 extern "c" fn calloc(nmemb: usize, size: usize) ?*anyopaque;
 extern "c" fn free(ptr: ?*anyopaque) void;
 
-
-
 fn containerOf(comptime T: type, comptime link_field: []const u8, link: [*c]WlList) *T {
     return @ptrFromInt(@intFromPtr(link) - @offsetOf(T, link_field));
 }

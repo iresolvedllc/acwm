@@ -28,13 +28,7 @@ const c = @import("cc");
 
 const WLR_ERROR: c_uint = 1;
 
-extern fn acwm_error_impl(
-    log: bool,
-    verbosity: c_uint,
-    file: [*:0]const u8,
-    line: c_int,
-    fmt: [*:0]const u8,
-    ...) callconv(.c) void;
+extern fn acwm_error_impl(log: bool, verbosity: c_uint, file: [*:0]const u8, line: c_int, fmt: [*:0]const u8, ...) callconv(.c) void;
 extern fn trim_whitespace(str: ?[*:0]u8) callconv(.c) void;
 extern fn parse_bind_flags(str: [*:0]const u8, kb: *c.KeyBinding) callconv(.c) void;
 extern fn set_binding_keymode(config: *c.Config, mode: [*]u8, iscommonmode: *bool, isdefaultmode: *bool) callconv(.c) void;

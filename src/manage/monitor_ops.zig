@@ -152,7 +152,7 @@ export fn handle_output_layout_change(listener: [*c]c.struct_wl_listener, data: 
                     resizeInteract(cl, cl.geom, 0);
             }
 
-                    if (cl.isfloating != 0 and cl.mon == @as([*c]Monitor, @ptrCast(m))) {
+            if (cl.isfloating != 0 and cl.mon == @as([*c]Monitor, @ptrCast(m))) {
                 cl.geom.x += offset_x;
                 cl.geom.y += offset_y;
                 cl.float_geom = cl.geom;
