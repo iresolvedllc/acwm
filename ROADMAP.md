@@ -625,6 +625,17 @@ green.
       resize, group drop and grab release). C region guarded with
       ACWM_ZIG_POINTER_INPUT; 8 tests. input/pointer.c is now fully ported
       and the input subsystem is complete
+- [x] `animation/client.c` slice 1 → `src/animation/client.zig`: animation
+      enablement (config/gesture/per-client opt-out), output-clip
+      exclusion, monitor edge offsets, client actual size, clamped rect
+      sizing, inset-aware corner locations, horizontal/right-stack layout
+      detection, special slide-direction rules, overview-enter initial
+      geometry, open-animation setup (none/fade/zoom/nearest-edge and
+      special slide), scene-buffer dest-size scaling with popup/
+      subsurface guards, and buffer effect routing (tag/grab scale
+      suppression, fullscreen corner reset, blur corner radii, overview
+      cards). C region guarded with ACWM_ZIG_ANIM_CLIENT_A; 14 tests
+- [ ] `animation/client.c` slice 2 (draw helpers)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/

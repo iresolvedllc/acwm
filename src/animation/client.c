@@ -34,6 +34,7 @@ static int32_t client_close_animation_type(const Client *c) {
 			   : config.animation_type_close;
 }
 
+#ifndef ACWM_ZIG_ANIM_CLIENT_A
 bool client_animations_enabled(const Client *c) {
 	if (c && c->no_animation)
 		return false;
@@ -315,6 +316,8 @@ void buffer_set_effect(Client *c, BufferData data) {
 	wlr_scene_node_for_each_buffer(&c->scene_surface->node,
 								   scene_buffer_apply_effect, &data);
 }
+
+#endif /* ACWM_ZIG_ANIM_CLIENT_A */
 
 void client_draw_shadow(Client *c, struct ivec2 offsets) {
 	if (c->iskilling || !client_surface(c)->mapped || c->no_shadow)
