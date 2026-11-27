@@ -575,7 +575,16 @@ green.
       scaling, axis notifications (pressure/distance/tilt/rotation/slider/
       wheel), buttons, tips with implicit grabs and seat fallback. C region
       guarded with ACWM_ZIG_INPUT_TABLET; 10 tests
-- [ ] Input: pointer (1,888), keyboard (972), trackpad (959)
+- [x] Trackpad gestures from `input/trackpad.c` → `src/input/trackpad.zig`:
+      trackpad detection via libinput tap fingers, global disable, swipe/
+      pinch/hold forwarding to clients, gesture-binding matching with mode/
+      modifier/finger/motion filters, live swipe drive state machine
+      (lock threshold, dominant axis, speed averaging, transition progress,
+      commit/revert/flick, opposite-action replay), scroller pan strip with
+      rubber-banding, pan commit/flick targeting, drag-to-move-resize with
+      window grab, and release-based swipe binding fallback. C region
+      guarded with ACWM_ZIG_INPUT_TRACKPAD; 8 tests
+- [ ] Input: pointer (1,888), keyboard (972)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture
