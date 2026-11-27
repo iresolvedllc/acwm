@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_SERVER
 #include "acwm/common/server.h"
 
 #include "acwm/ext-protocol/ext-workspace.h"
@@ -86,3 +87,4 @@ struct AcwmServer server = {
 	.xwayland_ready_listener = {.notify = handle_xwayland_ready},
 #endif
 };
+#endif /* ACWM_ZIG_SERVER */

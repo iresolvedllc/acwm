@@ -1,3 +1,4 @@
+#ifndef ACWM_ZIG_CONFIG_PRESET
 #include "acwm/config/preset.h"
 
 /* Preset tag names (matching the tag_num_MAX configurable tags). */
@@ -14,3 +15,4 @@ const struct xkb_rule_names xkb_fallback_rules = {
 	.rules = NULL,
 	.options = NULL,
 };
+#endif /* ACWM_ZIG_CONFIG_PRESET */

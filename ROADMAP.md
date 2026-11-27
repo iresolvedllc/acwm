@@ -723,6 +723,13 @@ green.
       change detection, and init/update entry points. The C body is
       compiled only when `XWAYLAND` is set and `ACWM_ZIG_XWAYLAND_PRIMARY`
       is not; 6 tests
+- [x] `common/server.c` listener table and `config/preset.c` constants →
+      `src/common/server.zig` / `src/config/preset.zig`: exported `server`
+      global with child pid, gaps/frame/border defaults, 9-tag mask, key
+      mode and all 43 wlroots listener notify pointers (plus XWayland
+      ready/new-surface when enabled), and the default tag names plus
+      `xkb_fallback_rules`. C files guarded with ACWM_ZIG_SERVER and
+      ACWM_ZIG_CONFIG_PRESET
 - [ ] `draw/` remainder
 - [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
       nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM
