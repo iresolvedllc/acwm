@@ -227,8 +227,6 @@ void client_set_border_color(Client *c, const float color[4]) {
     (void)c; stub_border_color_calls++;
     memcpy(stub_border_color, color, sizeof(stub_border_color));
 }
-int stub_finish_geometry_calls = 0;
-void client_apply_finish_geometry(Client *c) { (void)c; stub_finish_geometry_calls++; }
 int stub_overview_layout_calls = 0;
 void overview_layout_card(Client *c) { (void)c; stub_overview_layout_calls++; }
 int stub_overview_destroy_calls = 0;
@@ -297,4 +295,27 @@ int stub_pointer_enter_calls = 0;
 void wlr_seat_pointer_notify_enter(struct wlr_seat *seat, struct wlr_surface *surface, double sx, double sy) {
     (void)seat; (void)surface; (void)sx; (void)sy;
     stub_pointer_enter_calls++;
+}
+
+/* ---- commit / resize (slice 90) ---- */
+int stub_bounds_calls = 0;
+struct wlr_box stub_bounds;
+void client_apply_bounds(Client *c, struct wlr_box *bbox) {
+    (void)c; stub_bounds_calls++; stub_bounds = *bbox;
+}
+int stub_size_bound_calls = 0;
+void client_set_size_bound(Client *c) { (void)c; stub_size_bound_calls++; }
+int stub_set_size_calls = 0;
+uint32_t stub_set_size_w = 0, stub_set_size_h = 0;
+int stub_set_size_force = 0;
+uint32_t stub_configure_serial = 0;
+uint32_t client_set_size(Client *c, uint32_t width, uint32_t height, bool force_configure) {
+    (void)c; stub_set_size_calls++; stub_set_size_w = width; stub_set_size_h = height;
+    stub_set_size_force = force_configure ? 1 : 0;
+    return stub_configure_serial;
+}
+int stub_border_color_update_calls = 0;
+void client_update_border_color(Client *c) { (void)c; stub_border_color_update_calls++; }
+bool wlr_box_equal(const struct wlr_box *a, const struct wlr_box *b) {
+    return a->x == b->x && a->y == b->y && a->width == b->width && a->height == b->height;
 }

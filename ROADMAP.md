@@ -659,7 +659,20 @@ green.
       snapshot, overview-card handling, fade/slide/zoom end states,
       timing and monitor refresh). C region guarded with
       ACWM_ZIG_ANIM_CLIENT_C; 12 new tests (33 in the module)
-- [ ] `animation/client.c` slice 4 (commit/resize)
+- [x] `animation/client.c` slice 4 → `src/animation/client.zig` commit/
+      resize: finished-geometry snapping, clip reapplication and flush
+      reset; progress interpolation with clamping/llround and re-clipping;
+      animation resume with restart and short-remaining snap paths
+      (including tag-out finalisation); commit start/snap behaviour;
+      pending-state animation decisions (tag-in, overview enter, grabs,
+      unchanged boxes, drag, per-client opt-out, open duration); and the
+      full resize pipeline (bounds/scroller minimum, size bounds and drag
+      edges, action/duration selection, initial geometry, border and
+      fake-no-border handling, configured size/serial accounting,
+      overview-enter backup, grab-path immediate redraw/clipping, and
+      pending commit/border-color update). C region guarded with
+      ACWM_ZIG_ANIM_CLIENT_D; 9 new tests (42 in the module)
+- [ ] `animation/client.c` slice 5 (focus/draw frame)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/

@@ -1385,6 +1385,7 @@ void init_fadeout_client(Client *c) {
 }
 #endif /* ACWM_ZIG_ANIM_CLIENT_C */
 
+#ifndef ACWM_ZIG_ANIM_CLIENT_D
 void client_apply_finish_geometry(Client *c) {
 	if (!c || !c->scene)
 		return;
@@ -1661,6 +1662,8 @@ void resize(Client *c, struct wlr_box geo, ResizeOpts opts) {
 	client_set_pending_state(c);
 	client_update_border_color(c);
 }
+
+#endif /* ACWM_ZIG_ANIM_CLIENT_D */
 
 bool client_draw_fadeout_frame(Client *c) {
 	if (!c)
