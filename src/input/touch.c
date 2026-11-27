@@ -17,6 +17,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_touch.h>
 
+#ifndef ACWM_ZIG_INPUT_TOUCH
 void handle_cursor_touch_up(struct wl_listener *listener, void *data);
 void handle_cursor_touch_cancel(struct wl_listener *listener, void *data);
 void handle_cursor_touch_frame(struct wl_listener *listener, void *data);
@@ -361,3 +362,4 @@ void touch_finish_all(void) {
 		free(point);
 	}
 }
+#endif /* ACWM_ZIG_INPUT_TOUCH */

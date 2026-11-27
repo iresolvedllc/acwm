@@ -559,8 +559,14 @@ green.
       listeners, and switch-binding matching (common/default/mode, fold and
       callback dispatch). C regions guarded with ACWM_ZIG_INPUT_DEVICE;
       6 tests
-- [ ] Input: pointer (1,888), keyboard (972), touch (363), tablet (436),
-      trackpad (959)
+- [x] Touch input from `input/touch.c` → `src/input/touch.zig`: monitor
+      mapping, libinput send-events modes, cursor attachment, layout→surface
+      coordinate conversion with per-point offsets, X11 touch scaling, touch
+      protocol down/motion/up/cancel with surface-destroy tracking, pointer
+      emulation (absolute motion, button press/release, emulated frames),
+      global touch disable/finish-all and per-device IPC notifications. C
+      region guarded with ACWM_ZIG_INPUT_TOUCH; 9 tests
+- [ ] Input: pointer (1,888), keyboard (972), tablet (436), trackpad (959)
 - [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
 - [ ] `draw/` remainder + `overview/` + `switcher/`
 - [ ] Bar + SNI tray (sd-bus FFI) with the bar/tray scene-node architecture

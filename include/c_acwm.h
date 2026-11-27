@@ -67,6 +67,7 @@
 #include "acwm/config/internal.h"
 #include "acwm/config/preset.h"
 #include "acwm/common/input-event-codes.h"
+#include "acwm/common/log.h"
 #include "acwm/common/util.h"
 #include "acwm/common/scene_node.h"
 #include "acwm/common/server.h"
@@ -82,6 +83,7 @@
 #include "acwm/manage/client.h"
 #include "acwm/manage/layer.h"
 #include "acwm/manage/monitor.h"
+#include "acwm/manage/misc.h"
 #include "acwm/switcher/switcher.h"
 
 #endif
