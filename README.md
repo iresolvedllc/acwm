@@ -98,6 +98,9 @@ Dependencies: `wayland`, `wayland-protocols`, `wlroots 0.20`, `scenefx 0.5`,
 `libdisplay-info`, `hwdata`, `seatd`, and `libsystemd` (bar tray + portal
 backend). Zig 0.17 is the only build system now.
 
+Distribution packages (RPM v4/v6, Void XBPS, Gentoo, Guix, Nix) are described
+in [PACKAGING.md](PACKAGING.md).
+
 Then copy the default config:
 
 ```bash

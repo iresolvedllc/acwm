@@ -25,10 +25,11 @@
   libGL,
   enableXWayland ? true,
   debug ? false,
+  version ? "0.1.0",
 }:
 stdenv.mkDerivation {
   pname = "acwm";
-  version = "nightly";
+  inherit version;
 
   src = lib.cleanSourceWith {
     src = ../.;
@@ -58,6 +59,7 @@ stdenv.mkDerivation {
     export ZIG_LOCAL_CACHE_DIR=$TMPDIR/zig-local-cache
     zig build --prefix $out \
       -Doptimize=${if debug then "Debug" else "ReleaseFast"} \
+      -Dversion=${version} \
       -Dxwayland=${if enableXWayland then "true" else "false"}
     runHook postBuild
   '';

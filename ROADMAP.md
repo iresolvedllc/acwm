@@ -863,6 +863,12 @@ green.
       `zig fmt --check build.zig src` job; all Zig sources are formatted
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed
+- [x] Distribution packaging and release automation: RPM v4/v6 spec and
+      build script (Fedora 45), Void xbps template and package builder,
+      Gentoo overlay ebuild/metadata/Manifest generator, Guix package
+      (`acwm.scm`), source tarball recipe, and a draft-first release
+      workflow for x86_64/aarch64. Artifacts and install instructions are
+      documented in `PACKAGING.md`
 - [ ] Publish docs (website build from `docs/`), tagged releases with
       changelogs
 - [ ] AUR/homebrew-style packaging offers for other distros

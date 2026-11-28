@@ -1,8 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
 
-const version = "0.1.0";
-
 const common_cflags = [_][]const u8{
     "-U_FORTIFY_SOURCE",
     "-Wno-unused-function",
@@ -187,6 +185,7 @@ fn serverProtoXml(b: *std.Build, wl_protocol_dir: []const u8, name: []const u8) 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const version = b.option([]const u8, "version", "package version") orelse "0.1.0";
 
     // version string: "0.1.0(<git hash>)" or "0.1.0(release)"
     const commit = capture(b, &.{ "git", "rev-parse", "--short", "HEAD" }) orelse "release";
@@ -1282,6 +1281,7 @@ pub fn build(b: *std.Build) void {
     {
         const mrt_opts = b.addOptions();
         mrt_opts.addOption(bool, "xwayland", xwayland);
+        mrt_opts.addOption([]const u8, "version", version);
         const mrt_mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
@@ -1340,6 +1340,16 @@ pub fn build(b: *std.Build) void {
         tray_mod.addImport("build_options", tray_opts.createModule());
         const tray_obj = b.addObject(.{ .name = "acwm-tray", .root_module = tray_mod });
         compositor.root_module.addObject(tray_obj);
+    } else {
+        const tray_stub_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/bar/tray_stub.zig"),
+        });
+        tray_stub_mod.addImport("cc", c_mod);
+        const tray_stub_obj = b.addObject(.{ .name = "acwm-tray-stub", .root_module = tray_stub_mod });
+        compositor.root_module.addObject(tray_stub_obj);
     }
 
     // Zig twin of the built-in bar (slice 79).
@@ -1858,6 +1868,7 @@ pub fn build(b: *std.Build) void {
         }
         const mr_test_opts = b.addOptions();
         mr_test_opts.addOption(bool, "xwayland", xwayland);
+        mr_test_opts.addOption([]const u8, "version", version);
         test_mod.addImport("build_options", mr_test_opts.createModule());
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{

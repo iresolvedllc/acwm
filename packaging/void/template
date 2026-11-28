@@ -1,0 +1,40 @@
+# Template file for 'acwm'
+pkgname=acwm
+version=0.1.0
+revision=1
+hostmakedepends="pkg-config wayland-devel"
+makedepends="cJSON-devel wlroots0.20-devel scenefx-devel pcre2-devel pango-devel cairo-devel libxkbcommon-devel libinput-devel pixman-devel libdrm-devel gdk-pixbuf-devel libxcb-devel xcb-util-wm-devel"
+depends="wlroots0.20>=0.20.0_1 scenefx>=0.5_1 wayland>=1.10.0_1 libinput>=1.2.0_1 libxkbcommon>=0.2.0_1 pixman>=0.14.0_1 libpcre2>=10.22_1 pango>=1.24.0_1 cairo>=1.18.0_1 cJSON>=1.7.19_1 libdrm>=2.4.0_1 gdk-pixbuf>=2.42.0_1 libxcb>=1.2_1 xcb-util-wm>=0.3.9_1 xorg-server-xwayland>=24.1.15_1"
+short_desc="Practical and powerful Wayland compositor"
+maintainer="acwm maintainers <maintainers@acw.rest>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/iresolvedllc/acwm"
+
+case "$XBPS_TARGET_MACHINE" in
+    x86_64) _zig_arch=x86_64; _zig_sha=3581863e3cbcfd0fce0efc682ce7e9e93da96668a977791d356a26d2a7e9b17a ;;
+    aarch64) _zig_arch=aarch64; _zig_sha=a1546d5646eb184437918d6635ca6b762a0e889eac09cef720ee7a1ed3fe7795 ;;
+    *) _zig_arch="$XBPS_TARGET_MACHINE"; _zig_sha=SKIP ;;
+esac
+
+distfiles="${homepage}/releases/download/v${version}/acwm-${version}.tar.gz
+ https://ziglang.org/download/0.17.1/zig-${_zig_arch}-linux-0.17.1.tar.xz"
+checksum="SKIP ${_zig_sha}"
+
+do_build() {
+    local zig="${wrksrc}/zig-${_zig_arch}-linux-0.17.1/zig"
+    [ -x "$zig" ] || zig="$(command -v zig)"
+    "$zig" build \
+        -Doptimize=ReleaseFast \
+        -Dversion="${version}" \
+        -Dxwayland=true \
+        -Dtray=false \
+        --prefix "${wrksrc}/stage"
+}
+
+do_install() {
+    vmkdir usr/bin usr/share usr/lib etc
+    cp -a "${wrksrc}/stage/bin/." "${DESTDIR}/usr/bin/"
+    cp -a "${wrksrc}/stage/share/." "${DESTDIR}/usr/share/"
+    cp -a "${wrksrc}/stage/lib/." "${DESTDIR}/usr/lib/"
+    cp -a "${wrksrc}/stage/etc/." "${DESTDIR}/etc/"
+}

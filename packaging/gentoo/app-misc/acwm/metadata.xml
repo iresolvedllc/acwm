@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>maintainers@acw.rest</email>
+	</maintainer>
+	<longdescription>
+		acwm is a dwm-like, tag-based Wayland compositor built on wlroots and
+		scenefx. It includes a built-in bar and SNI tray, animations, overview,
+		scrolling and dwindle layouts, IPC, a screenshot portal and a greetd
+		greeter.
+	</longdescription>
+	<use>
+		<flag name="X">Enable XWayland support</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">iresolvedllc/acwm</remote-id>
+	</upstream>
+</pkgmetadata>

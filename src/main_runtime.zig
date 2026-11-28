@@ -90,7 +90,7 @@ fn increaseNofileLimit() void {
 
 export fn handle_signal(signo: i32) callconv(.c) void {
     if (signo == c.SIGCHLD) {
-        while (c.waitpid(-1, null, c.WNOHANG) > 0) {}
+        while (waitpid(-1, null, c.WNOHANG) > 0) {}
     } else if (signo == c.SIGINT or signo == c.SIGTERM) {
         _ = quit(null);
     }
@@ -153,7 +153,7 @@ export fn cleanup() callconv(.c) void {
     c.wl_display_destroy_clients(c.server.display);
     if (c.server.child_pid > 0) {
         _ = c.kill(-c.server.child_pid, c.SIGTERM);
-        _ = c.waitpid(c.server.child_pid, null, 0);
+        _ = waitpid(c.server.child_pid, null, 0);
     }
     c.wlr_xcursor_manager_destroy(c.server.cursor_manager);
     keyboard_group_destroy(&c.server.keyboard_group.*.destroy, null);
@@ -296,7 +296,7 @@ export fn acwm_main(argc: i32, argv: [*c][*c]u8) callconv(.c) i32 {
             's' => startup_cmd = c.optarg,
             'd' => c.server.cli_debug_log = true,
             'v' => {
-                _ = c.printf("acwm 0.1.0\n");
+                _ = c.printf("acwm " ++ build_options.version ++ "\n");
                 return c.EXIT_SUCCESS;
             },
             'c' => _ = c.snprintf(&c.server.cli_config_path, c.server.cli_config_path.len, "%s", c.optarg),
