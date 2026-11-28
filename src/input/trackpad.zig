@@ -293,10 +293,7 @@ fn swipeDriveLogState(m: [*c]Monitor, why: [*:0]const u8, sel_changed: bool, sel
         }
     }
 
-    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 253,
-        "swipe drive: %s (vis=%d tiled=%d run=%d geom=%d sel_changed=%d sel_before=%p sel_now=%p)\n",
-        why, visible, tiled, running, geometry, @as(c_int, @intFromBool(sel_changed)),
-        @as(?*anyopaque, @ptrCast(sel_before)), @as(?*anyopaque, @ptrCast(m.*.sel)));
+    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 253, "swipe drive: %s (vis=%d tiled=%d run=%d geom=%d sel_changed=%d sel_before=%p sel_now=%p)\n", why, visible, tiled, running, geometry, @as(c_int, @intFromBool(sel_changed)), @as(?*anyopaque, @ptrCast(sel_before)), @as(?*anyopaque, @ptrCast(m.*.sel)));
 }
 
 fn swipeDriveFreeze(m: [*c]Monitor) void {
@@ -565,17 +562,14 @@ fn swipeDriveBegin(fingers: u32) bool {
     if (!swipeHasRunningTransition(m)) {
         swipeDriveUnfreeze();
         swipeDriveLogState(m, "fired but no transition", m.*.sel != sel_before, sel_before);
-        c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 532,
-            "swipe drive: %s fired but produced no transition\n", funcName(binding.?.func));
+        c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 532, "swipe drive: %s fired but produced no transition\n", funcName(binding.?.func));
         return true;
     }
 
     swipe_drive.active = true;
     swipeDriveApply(m, 0.0);
     swipeDriveLogState(m, "driving transition", m.*.sel != sel_before, sel_before);
-    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 541,
-        "swipe drive: driving transition, motion=%u fingers=%u\n",
-        swipe_drive.motion, swipe_drive.fingers);
+    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 541, "swipe drive: driving transition, motion=%u fingers=%u\n", swipe_drive.motion, swipe_drive.fingers);
     return true;
 }
 
@@ -748,9 +742,7 @@ fn swipeDriveEnd() void {
             }
 
             if (target != null and target != swipe_drive.start_sel) {
-                c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 640,
-                    "swipe drive: pan commit, offset=%.0f target=%p\n",
-                    offset, @as(?*anyopaque, @ptrCast(target)));
+                c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 640, "swipe drive: pan commit, offset=%.0f target=%p\n", offset, @as(?*anyopaque, @ptrCast(target)));
 
                 const shift: i32 = @intFromFloat(@round(offset));
                 if (shift != 0) {
@@ -770,8 +762,7 @@ fn swipeDriveEnd() void {
                 client_focus(target, 1);
                 arrange(m, false, false);
             } else {
-                c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 664,
-                    "swipe drive: pan revert, offset=%.0f\n", offset);
+                c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 664, "swipe drive: pan revert, offset=%.0f\n", offset);
                 arrange(m, false, false);
             }
 
@@ -800,8 +791,7 @@ fn swipeDriveEnd() void {
         swipeDriveUnfreeze();
 
         if (commit) {
-            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 692,
-                "swipe drive: commit, p=%.2f speed=%.1f\n", p, swipe_drive.avg_speed);
+            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 692, "swipe drive: commit, p=%.2f speed=%.1f\n", p, swipe_drive.avg_speed);
             const head: [*c]c.struct_wl_list = @ptrCast(&c.server.clients);
             var pos = c.server.clients.next;
             while (pos != head) : (pos = pos.*.next) {
@@ -818,8 +808,7 @@ fn swipeDriveEnd() void {
             if (c.config.animations == 0)
                 pointer_process_motion(0, null, 0, 0, 0, 0);
         } else {
-            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 712,
-                "swipe drive: revert, p=%.2f speed=%.1f\n", p, swipe_drive.avg_speed);
+            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/trackpad.c", 712, "swipe drive: revert, p=%.2f speed=%.1f\n", p, swipe_drive.avg_speed);
             _ = swipeDriveFireOpposite();
         }
 

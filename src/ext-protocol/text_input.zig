@@ -219,13 +219,11 @@ export fn handle_input_method_commit(listener: [*c]c.struct_wl_listener, data: ?
         return;
     const input_method = relay.*.input_method;
     if (input_method.*.current.preedit.text != null)
-        c.wlr_text_input_v3_send_preedit_string(ti.*.input, input_method.*.current.preedit.text,
-            input_method.*.current.preedit.cursor_begin, input_method.*.current.preedit.cursor_end);
+        c.wlr_text_input_v3_send_preedit_string(ti.*.input, input_method.*.current.preedit.text, input_method.*.current.preedit.cursor_begin, input_method.*.current.preedit.cursor_end);
     if (input_method.*.current.commit_text != null)
         c.wlr_text_input_v3_send_commit_string(ti.*.input, input_method.*.current.commit_text);
     if (input_method.*.current.delete.before_length != 0 or input_method.*.current.delete.after_length != 0)
-        c.wlr_text_input_v3_send_delete_surrounding_text(ti.*.input,
-            input_method.*.current.delete.before_length, input_method.*.current.delete.after_length);
+        c.wlr_text_input_v3_send_delete_surrounding_text(ti.*.input, input_method.*.current.delete.before_length, input_method.*.current.delete.after_length);
     c.wlr_text_input_v3_send_done(ti.*.input);
 }
 
@@ -320,12 +318,10 @@ export fn send_state_to_input_method(relay: [*c]Relay) callconv(.c) void {
     std.debug.assert(relay.*.active_text_input != null and input_method != null);
     const input = relay.*.active_text_input.*.input;
     if ((input.*.active_features & c.WLR_TEXT_INPUT_V3_FEATURE_SURROUNDING_TEXT) != 0)
-        c.wlr_input_method_v2_send_surrounding_text(input_method, input.*.current.surrounding.text,
-            input.*.current.surrounding.cursor, input.*.current.surrounding.anchor);
+        c.wlr_input_method_v2_send_surrounding_text(input_method, input.*.current.surrounding.text, input.*.current.surrounding.cursor, input.*.current.surrounding.anchor);
     c.wlr_input_method_v2_send_text_change_cause(input_method, input.*.current.text_change_cause);
     if ((input.*.active_features & c.WLR_TEXT_INPUT_V3_FEATURE_CONTENT_TYPE) != 0)
-        c.wlr_input_method_v2_send_content_type(input_method, input.*.current.content_type.hint,
-            input.*.current.content_type.purpose);
+        c.wlr_input_method_v2_send_content_type(input_method, input.*.current.content_type.hint, input.*.current.content_type.purpose);
     c.wlr_input_method_v2_send_done(input_method);
 }
 
@@ -702,7 +698,10 @@ test "text input enable, commit, disable and destroy" {
     input.current_enabled = true;
     const ti = @as(*TextInput, @ptrCast(@alignCast(c.calloc(1, @sizeOf(TextInput)) orelse unreachable)));
     mkTi(ti, &relay, &input);
-    listInitL(&ti.enable.link); listInitL(&ti.disable.link); listInitL(&ti.commit.link); listInitL(&ti.destroy.link);
+    listInitL(&ti.enable.link);
+    listInitL(&ti.disable.link);
+    listInitL(&ti.commit.link);
+    listInitL(&ti.destroy.link);
     handle_text_input_enable(&ti.enable, null);
     try testing.expectEqual(@as(c_int, 1), stub_activate_calls);
     try testing.expectEqual(@as(c_int, 1), stub_ti_done_calls);

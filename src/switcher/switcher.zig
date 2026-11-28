@@ -107,10 +107,12 @@ export fn switcher_tile_layout(tile: [*c]Tile) callconv(.c) void {
         if (entry.is_root) {
             const ratio_x: f32 = if (s.*.current.width > 0)
                 @as(f32, @floatFromInt(s.*.current.buffer_width)) / @as(f32, @floatFromInt(s.*.current.width))
-            else 1.0;
+            else
+                1.0;
             const ratio_y: f32 = if (s.*.current.height > 0)
                 @as(f32, @floatFromInt(s.*.current.buffer_height)) / @as(f32, @floatFromInt(s.*.current.height))
-            else 1.0;
+            else
+                1.0;
             var src = FBox{
                 .x = @as(f32, @floatFromInt(clip.x)) * ratio_x,
                 .y = @as(f32, @floatFromInt(clip.y)) * ratio_y,
@@ -121,12 +123,8 @@ export fn switcher_tile_layout(tile: [*c]Tile) callconv(.c) void {
             c.wlr_scene_node_set_position(&entry.buffer.*.node, 0, 0);
             c.wlr_scene_buffer_set_dest_size(entry.buffer, tile.*.cw, switcher_state.tile_h);
         } else {
-            c.wlr_scene_node_set_position(&entry.buffer.*.node,
-                @intFromFloat((@as(f32, @floatFromInt(entry.sx)) - @as(f32, @floatFromInt(clip.x))) * scale_x),
-                @intFromFloat((@as(f32, @floatFromInt(entry.sy)) - @as(f32, @floatFromInt(clip.y))) * scale_y));
-            c.wlr_scene_buffer_set_dest_size(entry.buffer,
-                @intFromFloat(@as(f32, @floatFromInt(s.*.current.width)) * scale_x),
-                @intFromFloat(@as(f32, @floatFromInt(s.*.current.height)) * scale_y));
+            c.wlr_scene_node_set_position(&entry.buffer.*.node, @intFromFloat((@as(f32, @floatFromInt(entry.sx)) - @as(f32, @floatFromInt(clip.x))) * scale_x), @intFromFloat((@as(f32, @floatFromInt(entry.sy)) - @as(f32, @floatFromInt(clip.y))) * scale_y));
+            c.wlr_scene_buffer_set_dest_size(entry.buffer, @intFromFloat(@as(f32, @floatFromInt(s.*.current.width)) * scale_x), @intFromFloat(@as(f32, @floatFromInt(s.*.current.height)) * scale_y));
         }
     }
 }
@@ -290,9 +288,7 @@ export fn switcher_layout() callconv(.c) void {
     }
     const panel_w = content_w + 2 * SW_MARGIN;
     const panel_h = 2 * SW_MARGIN + nrows * frame_h + (nrows - 1) * SW_GAP;
-    c.wlr_scene_node_set_position(&switcher_state.tree.*.node,
-        switcher_state.mon.*.m.x + @divTrunc(switcher_state.mon.*.m.width - panel_w, 2),
-        switcher_state.mon.*.m.y + @divTrunc(switcher_state.mon.*.m.height - panel_h, 2));
+    c.wlr_scene_node_set_position(&switcher_state.tree.*.node, switcher_state.mon.*.m.x + @divTrunc(switcher_state.mon.*.m.width - panel_w, 2), switcher_state.mon.*.m.y + @divTrunc(switcher_state.mon.*.m.height - panel_h, 2));
     c.wlr_scene_rect_set_size(switcher_state.bg, panel_w, panel_h);
     var row: i32 = -1;
     var x: i32 = 0;
@@ -313,8 +309,7 @@ export fn switcher_layout() callconv(.c) void {
 export fn switcher_apply_highlight() callconv(.c) void {
     var i: i32 = 0;
     while (i < switcher_state.count) : (i += 1)
-        c.wlr_scene_rect_set_color(switcher_state.tiles[@intCast(i)].*.frame,
-            if (i == switcher_state.index) &c.config.focuscolor else &c.config.bordercolor);
+        c.wlr_scene_rect_set_color(switcher_state.tiles[@intCast(i)].*.frame, if (i == switcher_state.index) &c.config.focuscolor else &c.config.bordercolor);
 }
 
 export fn switcher_close() callconv(.c) void {
@@ -357,7 +352,10 @@ export fn switcher_remove_client(cl: [*c]Client) callconv(.c) void {
     while (j < switcher_state.count - 1) : (j += 1)
         switcher_state.tiles[@intCast(j)] = switcher_state.tiles[@intCast(j + 1)];
     switcher_state.count -= 1;
-    if (switcher_state.count == 0) { switcher_close(); return; }
+    if (switcher_state.count == 0) {
+        switcher_close();
+        return;
+    }
     if (switcher_state.index >= switcher_state.count) switcher_state.index = switcher_state.count - 1;
     switcher_layout();
     switcher_apply_highlight();

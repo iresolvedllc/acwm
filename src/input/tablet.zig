@@ -250,9 +250,7 @@ export fn tablet_tool_motion(tool: [*c]TabletTool, change_x: bool, change_y: boo
             c.wlr_cursor_move(c.server.cursor, tablet.*.device, dx, dy);
         },
         else => {
-            c.wlr_cursor_warp_absolute(c.server.cursor, tablet.*.device,
-                if (change_x) x else std.math.nan(f64),
-                if (change_y) y else std.math.nan(f64));
+            c.wlr_cursor_warp_absolute(c.server.cursor, tablet.*.device, if (change_x) x else std.math.nan(f64), if (change_y) y else std.math.nan(f64));
         },
     }
 
@@ -359,8 +357,7 @@ export fn handle_tablet_tool_proximity(listener: [*c]c.struct_wl_listener, data:
         const target = c.device_target_monitor(&event.*.tablet.*.base);
         if (target != null) {
             c.wlr_cursor_map_input_to_output(c.server.cursor, &event.*.tablet.*.base, target.*.wlr_output);
-            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/tablet.c", 302,
-                "Mapping tablet %s to output %s", event.*.tablet.*.base.name, target.*.wlr_output.*.name);
+            c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/tablet.c", 302, "Mapping tablet %s to output %s", event.*.tablet.*.base.name, target.*.wlr_output.*.name);
         }
     }
 
@@ -385,10 +382,7 @@ export fn handle_tablet_tool_axis(listener: [*c]c.struct_wl_listener, data: ?*an
     if (tool == null)
         return;
 
-    tablet_tool_motion(tool.?,
-        (event.*.updated_axes & c.WLR_TABLET_TOOL_AXIS_X) != 0,
-        (event.*.updated_axes & c.WLR_TABLET_TOOL_AXIS_Y) != 0,
-        event.*.x, event.*.y, event.*.dx, event.*.dy);
+    tablet_tool_motion(tool.?, (event.*.updated_axes & c.WLR_TABLET_TOOL_AXIS_X) != 0, (event.*.updated_axes & c.WLR_TABLET_TOOL_AXIS_Y) != 0, event.*.x, event.*.y, event.*.dx, event.*.dy);
 
     if ((event.*.updated_axes & c.WLR_TABLET_TOOL_AXIS_PRESSURE) != 0)
         wlr_tablet_v2_tablet_tool_notify_pressure(tool.?.tool_v2, event.*.pressure);

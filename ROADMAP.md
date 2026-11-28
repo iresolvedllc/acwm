@@ -625,7 +625,66 @@ green.
       resize, group drop and grab release). C region guarded with
       ACWM_ZIG_POINTER_INPUT; 8 tests. input/pointer.c is now fully ported
       and the input subsystem is complete
-- [ ] `animation/` — scenefx 0.5 via C FFI (blur/shadow/animations)
+- [x] `animation/client.c` slice 1 → `src/animation/client.zig`: animation
+      enablement (config/gesture/per-client opt-out), output-clip
+      exclusion, monitor edge offsets, client actual size, clamped rect
+      sizing, inset-aware corner locations, horizontal/right-stack layout
+      detection, special slide-direction rules, overview-enter initial
+      geometry, open-animation setup (none/fade/zoom/nearest-edge and
+      special slide), scene-buffer dest-size scaling with popup/
+      subsurface guards, and buffer effect routing (tag/grab scale
+      suppression, fullscreen corner reset, blur corner radii, overview
+      cards). C region guarded with ACWM_ZIG_ANIM_CLIENT_A; 14 tests
+- [x] `animation/client.c` slice 2 → `src/animation/client.zig` draw
+      helpers: shadow enable/disable with border-aware boxes, intersection
+      clipping and monitor-edge trimming; group-bar visibility, tab-hide
+      strip suppression, group counting and width/remainder distribution;
+      capture shield raise/lower/size/position; dim box/radius/enable;
+      blur box/radius/enable; global group-bar placement; dwindle split
+      indicator selection and edge-gap geometry; border/surface/clipped-
+      region layout including fullscreen reset; and clip-to-hide offsets
+      with scroll/tag guards and visibility toggling. C region guarded
+      with ACWM_ZIG_ANIM_CLIENT_B; 7 new tests (21 in the module)
+- [x] `animation/client.c` slice 3 → `src/animation/client.zig` drop/
+      clip/fade: drop-area enable/disable/raise/lower, group-drop full
+      overlay, dwindle split-ratio halves, tiled/deck/center/right-tile
+      master and stack halves, vertical variants and nearest-edge
+      fallback with change suppression; clip application for overview
+      cards and normal/animated paths (geometry sync when animations are
+      off, surface/XWayland clipping, hidden-surface visibility, buffer
+      scaling and decoration redraw); fadeout tick interpolation,
+      opacity curve, zoom snapshot scaling and final teardown; animation
+      tick interpolation, completion snapping, tag-out finalisation and
+      pointer re-entry; and fadeout-client construction (guards,
+      snapshot, overview-card handling, fade/slide/zoom end states,
+      timing and monitor refresh). C region guarded with
+      ACWM_ZIG_ANIM_CLIENT_C; 12 new tests (33 in the module)
+- [x] `animation/client.c` slice 4 → `src/animation/client.zig` commit/
+      resize: finished-geometry snapping, clip reapplication and flush
+      reset; progress interpolation with clamping/llround and re-clipping;
+      animation resume with restart and short-remaining snap paths
+      (including tag-out finalisation); commit start/snap behaviour;
+      pending-state animation decisions (tag-in, overview enter, grabs,
+      unchanged boxes, drag, per-client opt-out, open duration); and the
+      full resize pipeline (bounds/scroller minimum, size bounds and drag
+      edges, action/duration selection, initial geometry, border and
+      fake-no-border handling, configured size/serial accounting,
+      overview-enter backup, grab-path immediate redraw/clipping, and
+      pending commit/border-color update). C region guarded with
+      ACWM_ZIG_ANIM_CLIENT_D; 9 new tests (42 in the module)
+- [x] `animation/client.c` slice 5 → `src/animation/client.zig` focus/
+      frame: fadeout frame entry, focus-animation start with target
+      opacity/colors and current snapshots, eased interpolation, focus
+      step/apply with color and opacity updates, focused/unfocused
+      setters (border raise/lower and animation-off fallback), open
+      fade-in with target clamping, blur strength/alpha fading and
+      wallpaper guard, selected/unselected opacity settling, and the
+      draw-frame entry point (force render, gesture-driven focus,
+      no-flush focus, animation tick vs finished geometry). C region
+      guarded with ACWM_ZIG_ANIM_CLIENT_E; 9 new tests (51 in the
+      module). `animation/client.c` and the animation directory are fully
+      ported
+- [x] `animation/` (common, tag, layer, client) is fully ported; scenefx 0.5 stays linked via C FFI for blur/shadow/effects
 - [x] Overview from `overview/overview.c` → `src/overview/overview.zig`:
       fullscreen-restore heuristics, per-surface card nodes with commit/
       destroy tracking, card layout with root clipping/sub-surface scaling
@@ -643,7 +702,44 @@ green.
       colors, close/remove-client, commit-to-client, hit testing, open
       sizing across candidate scopes, cycling and the `switcher` action.
       C region guarded with ACWM_ZIG_SWITCHER; 6 tests
-- [ ] `draw/` remainder
+- [x] Overview layout/packing from `layout/overview.c` →
+      `src/layout/overview.zig`: area-descending item ordering, candidate
+      placement with gap-aware dedup/overlap rejection and top-left choice,
+      row detection and gap-preserving horizontal centering, binary-search
+      uniform scaling with final placement and centered monitor offset,
+      batched tile resizes, column layout with proportional heights,
+      height-pressure scaling and vertical centering, tab layout with
+      focused center column and circulating side columns, jump-mode begin/
+      finish, jump-hint labelling with keycode lookup and label-node
+      updates, and overview dispatch. C region guarded with
+      ACWM_ZIG_LAYOUT_OVERVIEW; 12 tests
+- [x] X11 primary-output manager from `manage/xwayland_primary.c` →
+      `src/manage/xwayland_primary.zig`: XWayland server readiness checks,
+      XCB connection/watch lifecycle with an event-loop fd source,
+      screen/root discovery, RandR screen-resource and output-info caching
+      (bounded name/output table with refresh retry), cached primary-output
+      application with a round-trip flush, primary-rule monitor selection
+      (primary flag, rule order, first enabled fallback), display/output
+      change detection, and init/update entry points. The C body is
+      compiled only when `XWAYLAND` is set and `ACWM_ZIG_XWAYLAND_PRIMARY`
+      is not; 6 tests
+- [x] `common/server.c` listener table and `config/preset.c` constants →
+      `src/common/server.zig` / `src/config/preset.zig`: exported `server`
+      global with child pid, gaps/frame/border defaults, 9-tag mask, key
+      mode and all 43 wlroots listener notify pointers (plus XWayland
+      ready/new-surface when enabled), and the default tag names plus
+      `xkb_fallback_rules`. C files guarded with ACWM_ZIG_SERVER and
+      ACWM_ZIG_CONFIG_PRESET
+- [x] Remaining helper bodies (slices 95–98): scene-node/`wlr_scene_tree`
+      snapshot recursion with buffer/shadow metadata, wrapper trees and
+      destruction cleanup; exported `last_cursor`/`pointer_locked_applied`;
+      IPC device-type/lookup/layout-string/static-json/all-clients helpers;
+      bind actions (view switching, VT change, virtual output create/
+      destroy, gaps reset, exchange/move/stack exchange); and the
+      `parse_option` dispatcher calling all 18 Zig option groups with the
+      unknown-key error path. C files deleted; only log/util/error-store
+      and sd-bus vtable glue stay C
+- [x] `draw/` remainder: text-node and dim-node are fully Zig; no first-party draw C remains
 - [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
       nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM
       handling, child signal restore, full listener teardown, subsystem
@@ -653,7 +749,20 @@ green.
       Wayland event loop, plus CLI parsing (version/debug/config/startup/
       readiness/config-check) and usage. C region guarded with
       ACWM_ZIG_MAIN; 6 tests. `setup()` remains C for the next slice
-- [ ] `main.c` setup()
+- [x] `main.c` setup() → `src/main_setup.zig`: signal setup, display and
+      event loop, tablet manager, backend/headless multi-backend, scene
+      graph/layer wrappers, fx renderer with HDR color manager and color
+      representation, shm/dmabuf/drm/syncobj, allocator, compositor and
+      protocol globals, print-status signal and bar, gamma/power/foreign
+      capture/tearing managers, output layout and xdg-output, monitor and
+      client lists, idle notifier/inhibit/timers, layer/xdg shells, session
+      lock, decorations, pointer constraints, relative pointer,
+      cursor/xcursor + input listeners, gestures, touch, seat and cursor
+      requests, keyboard group/inhibits, output manager, blur, text-input/
+      input-method relay, DRM leasing, foreign-toplevel/XDG foreign,
+      ext-workspace, XWayland startup and config error nag. Guarded with
+      ACWM_ZIG_MAIN_SETUP; `main.c` is now fully ported (only the tiny C
+      main→acwm_main wrapper remains)
 - [x] Built-in bar from `bar/bar.c` → `src/bar/bar.zig`: strip height,
       tag-button refresh with active/urgent/special palettes, monitor
       layout (bar background, corner radii, tag/tray/battery/clock
@@ -728,10 +837,38 @@ green.
 
 ## Phase 6 — Packaging, CI, docs
 
-- [ ] Switch the nix derivation to `zig build`; delete meson
-- [ ] CI: zig build + zig build test + nix build on the three usual systems
+- [x] Switch the nix derivation to `zig build`: derivation now runs
+      `zig build --prefix $out` with ReleaseFast (Debug for `debug`),
+      explicit XWayland on/off, redirected Zig caches, auto-patchelf for
+      the interpreter/rpath, and source filtering for `zig-out`/
+      `.zig-cache`. The built compositor and all companion clients run
+      from the store
+- [x] Delete meson and the fully-ported C sources: `meson.build`,
+      `meson_options.txt` and the old `build/` tree are gone; the Zig build
+      is the only build system. Removed 53 compositor C files whose symbols
+      now live in Zig (all guarded modules, config twins, layout/animation
+      ports, main.c). A Zig `src/main_entry.zig` now provides the native
+      entry point. Remaining C is limited to genuinely shared or unported
+      glue: `common/log.c` (variadic), `common/util.c` (variadic helpers
+      shared with clients), `config/error_store.c` (shared with acwm-msg),
+      `bar/tray_vtable.c` (sd-bus macros). The formerly-unported helpers
+      are now Zig too: scene snapshots (`src/animation/snapshot.zig`),
+      cursor globals (`src/input/pointer_input.zig` exports),
+      IPC helpers (`src/ipc/ipc_helpers.zig`), bind action callbacks
+      (`src/dispatch/bind_actions.zig`) and the option dispatcher
+      (`src/config/parse_option.zig`). Only four C files remain, all
+      shared glue for the C companion clients or variadic backends
+- [x] CI: `.github/workflows/ci.yml` builds `.#acwm` and runs
+      `zig build test` on Depot runners for x86_64-linux and aarch64-linux, plus a
+      `zig fmt --check build.zig src` job; all Zig sources are formatted
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed
+- [x] Distribution packaging and release automation: RPM v4/v6 spec and
+      build script (Fedora 45), Void xbps template and package builder,
+      Gentoo overlay ebuild/metadata/Manifest generator, Guix package
+      (`acwm.scm`), source tarball recipe, and a draft-first release
+      workflow for x86_64/aarch64. Artifacts and install instructions are
+      documented in `PACKAGING.md`
 - [ ] Publish docs (website build from `docs/`), tagged releases with
       changelogs
 - [ ] AUR/homebrew-style packaging offers for other distros
