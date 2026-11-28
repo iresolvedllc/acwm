@@ -58,7 +58,7 @@ jobs:
         arch: [x86_64, aarch64]
         format: [4, 6]
     runs-on: ${{ matrix.arch == 'aarch64' && 'depot-ubuntu-24.04-arm-4' || 'depot-ubuntu-24.04-4' }}
-    container: fedora:45
+    container: fedora:46
     steps:
       - name: Install git
         run: dnf install -y git
