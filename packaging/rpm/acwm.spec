@@ -8,7 +8,7 @@
 %global debug_package %{nil}
 
 Name:           acwm
-Version:        0.1.0
+Version:        0.1.1
 Release:        1%{?dist}
 Summary:        Practical and powerful Wayland compositor
 
@@ -94,5 +94,5 @@ cp -a "%{_builddir}/acwm-stage/etc/." "%{buildroot}%{_sysconfdir}/"
 %license LICENSE
 
 %changelog
-* Fri Nov 27 2026 acwm maintainers <maintainers@acw.rest> - 0.1.0-1
+* Fri Nov 27 2026 acwm maintainers <maintainers@acw.rest> - 0.1.1-1
 - Initial package

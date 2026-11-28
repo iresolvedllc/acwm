@@ -24,7 +24,7 @@
   #:use-module (guix build-system zig)
   #:use-module ((guix licenses) #:prefix license:))
 
-(define %acwm-version "0.1.0")
+(define %acwm-version "0.1.1")
 
 (define-public acwm
   (package
@@ -41,7 +41,7 @@
            #:zig-build-flags
            #~(list (string-append "-Dversion=" #$%acwm-version)
                    "-Dxwayland=true"
-                   "-Dtray=true")))
+                   "-Dtray=false")))
     (native-inputs
      (list pkg-config wayland-protocols))
     (inputs
@@ -59,7 +59,6 @@
            pixman
            scenefx
            seatd
-           systemd
            wayland
            wlroots-0.20
            xcb-util-wm))

@@ -1,6 +1,6 @@
 # Template file for 'acwm'
 pkgname=acwm
-version=0.1.0
+version=0.1.1
 revision=1
 hostmakedepends="pkg-config wayland-devel"
 makedepends="cJSON-devel wlroots0.20-devel scenefx-devel pcre2-devel pango-devel cairo-devel libxkbcommon-devel libinput-devel pixman-devel libdrm-devel gdk-pixbuf-devel libxcb-devel xcb-util-wm-devel"

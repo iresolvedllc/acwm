@@ -6,7 +6,7 @@
   <p><b>A</b> fast, practical Wayland compositor with a built-in status bar,
   native secrets and its own greeter — being ported to <b>Zig</b>.</p>
 
-  <p><code>v0.1.0</code> · GPL-3.0 · Linux / wlroots 0.20</p>
+  <p><code>v0.1.1</code> · GPL-3.0 · Linux / wlroots 0.20</p>
 </div>
 
 ---

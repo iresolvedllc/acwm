@@ -185,9 +185,9 @@ fn serverProtoXml(b: *std.Build, wl_protocol_dir: []const u8, name: []const u8) 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    const version = b.option([]const u8, "version", "package version") orelse "0.1.0";
+    const version = b.option([]const u8, "version", "package version") orelse "0.1.1";
 
-    // version string: "0.1.0(<git hash>)" or "0.1.0(release)"
+    // version string: "0.1.1(<git hash>)" or "0.1.1(release)"
     const commit = capture(b, &.{ "git", "rev-parse", "--short", "HEAD" }) orelse "release";
     const version_define = b.fmt("\"acwm-{s}({s})\"", .{ version, commit });
 

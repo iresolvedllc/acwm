@@ -25,7 +25,7 @@
   libGL,
   enableXWayland ? true,
   debug ? false,
-  version ? "0.1.0",
+  version ? "0.1.1",
 }:
 stdenv.mkDerivation {
   pname = "acwm";

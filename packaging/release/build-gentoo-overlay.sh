@@ -12,7 +12,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 mkdir -p "$tmp/app-misc/acwm"
 cp "$repo_root/packaging/gentoo/app-misc/acwm/metadata.xml" "$tmp/app-misc/acwm/"
-cp "$repo_root/packaging/gentoo/app-misc/acwm/acwm-0.1.0.ebuild" \
+cp "$repo_root/packaging/gentoo/app-misc/acwm/acwm-0.1.1.ebuild" \
     "$tmp/app-misc/acwm/acwm-${version}.ebuild"
 
 size="$(stat -c%s "$source_tarball")"

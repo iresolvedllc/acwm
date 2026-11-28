@@ -94,7 +94,8 @@ guix package -f acwm.scm -i
 ```
 
 The recipe uses Guix's `zig-build-system`, `wlroots-0.20` and `scenefx`.
-Zig 0.17 is required.
+Tray and screencast portal support are disabled because Guix does not provide
+libsystemd. Zig 0.17 is required.
 
 ### Nix
 
