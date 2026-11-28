@@ -6,7 +6,7 @@
   <p><b>A</b> fast, practical Wayland compositor with a built-in status bar,
   native secrets and its own greeter — being ported to <b>Zig</b>.</p>
 
-  <p><code>v0.1.0</code> · GPL-3.0 · Linux / wlroots 0.20</p>
+  <p><code>v0.1.1</code> · GPL-3.0 · Linux / wlroots 0.20</p>
 </div>
 
 ---
@@ -89,17 +89,17 @@ acwm is not packaged by distributions yet. Build from source:
 git clone https://github.com/iresolvedllc/acwm.git
 cd acwm
 
-# Zig build (Zig 0.17):
-zig build --prefix=/usr
-
-# or the meson build:
-meson setup build && ninja -C build && sudo ninja -C build install
+# Zig build (Zig 0.17), installed system-wide:
+sudo zig build --prefix=/usr -Doptimize=ReleaseFast
 ```
 
 Dependencies: `wayland`, `wayland-protocols`, `wlroots 0.20`, `scenefx 0.5`,
 `libinput`, `libxkbcommon`, `pixman`, `pcre2`, `pango`/`cairo`, `cjson`,
 `libdisplay-info`, `hwdata`, `seatd`, and `libsystemd` (bar tray + portal
-backend). Zig 0.17 for the Zig build; meson ≥ 1.x for the meson build.
+backend). Zig 0.17 is the only build system now.
+
+Distribution packages (RPM v4/v6, Void XBPS, Gentoo, Guix, Nix) are described
+in [PACKAGING.md](PACKAGING.md).
 
 Then copy the default config:
 
@@ -117,19 +117,22 @@ Full documentation lives in [`docs/`](docs/) — configuration reference
 
 ## Status: the Zig port
 
-acwm is mid-port from C to Zig ([ROADMAP.md](ROADMAP.md) tracks the plan).
-The compositor and all clients currently build as C under both `zig build`
-and meson; modules are ported to Zig one at a time behind stable C-ABI
-boundaries, each with unit tests:
+The compositor core is now Zig. Every first-party compositor module —
+config, IPC, layout, input, protocols, bar/tray, overview, switcher,
+animation, monitor/client management, main setup/runtime — lives in Zig
+behind the original C ABI, with 736 unit tests:
 
 ```bash
-zig build test   # runs the ported modules' test suites
+zig build test   # unit tests
+zig build        # compositor + all clients
 ```
 
-Ported so far: the config value parser, variable expander, error store,
-binding conflict checker, and five config option groups (bar, session,
-layout, input, visuals) — 51 unit tests and counting. The build system,
-protocol codegen and packaging are already Zig-native.
+The Zig build is the only build system; meson has been removed and the nix
+package builds with `zig build`. Four C files remain as shared glue:
+`common/log.c` and `common/util.c` (variadic helpers used by the C
+companion clients), `config/error_store.c` (also used by `acwm-msg`) and
+`bar/tray_vtable.c` (sd-bus vtable macros). Porting the companion clients
+to Zig is the next planned step.
 
 ## License
 

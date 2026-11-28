@@ -28,6 +28,7 @@ extern fn handle_cursor_hold_end(listener: [*c]c.struct_wl_listener, data: ?*any
 extern fn keyboard_sync_keymap(data: ?*anyopaque) callconv(.c) c_int;
 extern fn handle_signal(signo: i32) callconv(.c) void;
 extern fn restore_child_signals() callconv(.c) void;
+extern fn acwm_ignore_sigpipe() callconv(.c) void;
 
 var swipe_begin_listener: c.struct_wl_listener = std.mem.zeroes(c.struct_wl_listener);
 var swipe_update_listener: c.struct_wl_listener = std.mem.zeroes(c.struct_wl_listener);
@@ -62,11 +63,7 @@ export fn setup() callconv(.c) void {
     sa.__sigaction_handler.sa_handler = handle_signal;
     _ = c.sigemptyset(&sa.sa_mask);
     for (sig) |s| _ = c.sigaction(s, &sa, null);
-    var sa_pipe = std.mem.zeroes(c.struct_sigaction);
-    sa_pipe.sa_flags = 0;
-    sa_pipe.__sigaction_handler.sa_handler = c.SIG_IGN;
-    _ = c.sigemptyset(&sa_pipe.sa_mask);
-    _ = c.sigaction(c.SIGPIPE, &sa_pipe, null);
+    acwm_ignore_sigpipe();
     _ = c.pthread_atfork(null, null, restore_child_signals);
     c.wlr_log_init(@intCast(c.config.log_level), null);
 
@@ -127,8 +124,7 @@ export fn setup() callconv(.c) void {
     _ = c.wlr_renderer_init_wl_shm(c.server.renderer, c.server.display);
     if (c.wlr_renderer_get_texture_formats(c.server.renderer, c.WLR_BUFFER_CAP_DMABUF) != null) {
         _ = c.wlr_drm_create(c.server.display, c.server.renderer);
-        c.wlr_scene_set_linux_dmabuf_v1(c.server.scene,
-            c.wlr_linux_dmabuf_v1_create_with_renderer(c.server.display, 4, c.server.renderer));
+        c.wlr_scene_set_linux_dmabuf_v1(c.server.scene, c.wlr_linux_dmabuf_v1_create_with_renderer(c.server.display, 4, c.server.renderer));
     }
     const drm_fd = c.wlr_renderer_get_drm_fd(c.server.renderer);
     if (c.config.syncobj_enable != 0 and drm_fd >= 0 and
@@ -156,18 +152,15 @@ export fn setup() callconv(.c) void {
     add(&c.server.print_status_signal, &c.server.print_status_listener);
     bar_init(c.server.event_loop);
     c.server.ext_image_copy_capture_manager = c.wlr_ext_image_copy_capture_manager_v1_create(c.server.display, 1);
-    add(&c.server.ext_image_copy_capture_manager.*.events.new_session,
-        &c.server.ext_image_copy_capture_manager_new_session_listener);
+    add(&c.server.ext_image_copy_capture_manager.*.events.new_session, &c.server.ext_image_copy_capture_manager_new_session_listener);
     xdg_activation_init();
-    c.wlr_scene_set_gamma_control_manager_v1(c.server.scene,
-        c.wlr_gamma_control_manager_v1_create(c.server.display));
+    c.wlr_scene_set_gamma_control_manager_v1(c.server.scene, c.wlr_gamma_control_manager_v1_create(c.server.display));
     c.server.power_manager = c.wlr_output_power_manager_v1_create(c.server.display);
     add(&c.server.power_manager.*.events.set_mode, &c.server.output_power_manager_set_mode_listener);
     c.server.foreign_toplevel_list = c.wlr_ext_foreign_toplevel_list_v1_create(c.server.display, 1);
     c.server.ext_foreign_toplevel_image_capture_source_manager =
         c.wlr_ext_foreign_toplevel_image_capture_source_manager_v1_create(c.server.display, 1);
-    add(&c.server.ext_foreign_toplevel_image_capture_source_manager.*.events.new_request,
-        &c.server.new_foreign_toplevel_capture_listener);
+    add(&c.server.ext_foreign_toplevel_image_capture_source_manager.*.events.new_request, &c.server.new_foreign_toplevel_capture_listener);
     c.server.tearing_control = c.wlr_tearing_control_manager_v1_create(c.server.display, 1);
     add(&c.server.tearing_control.*.events.new_object, &c.server.tearing_new_object_listener);
 
@@ -195,12 +188,9 @@ export fn setup() callconv(.c) void {
     c.server.session_lock_manager = c.wlr_session_lock_manager_v1_create(c.server.display);
     add(&c.server.session_lock_manager.*.events.new_lock, &c.server.new_session_lock_listener);
     var locked_color = [4]f32{ 0.1, 0.1, 0.1, 1.0 };
-    c.server.locked_bg = c.wlr_scene_rect_create(c.server.layers[c.LyrBlock],
-        c.server.scene_geometry.width, c.server.scene_geometry.height, &locked_color);
+    c.server.locked_bg = c.wlr_scene_rect_create(c.server.layers[c.LyrBlock], c.server.scene_geometry.width, c.server.scene_geometry.height, &locked_color);
     c.wlr_scene_node_set_enabled(&c.server.locked_bg.*.node, false);
-    c.wlr_server_decoration_manager_set_default_mode(
-        c.wlr_server_decoration_manager_create(c.server.display),
-        c.WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
+    c.wlr_server_decoration_manager_set_default_mode(c.wlr_server_decoration_manager_create(c.server.display), c.WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
     c.server.decoration_manager = c.wlr_xdg_decoration_manager_v1_create(c.server.display);
     add(&c.server.decoration_manager.*.events.new_toplevel_decoration, &c.server.new_xdg_decoration_listener);
     c.server.pointer_constraints = c.wlr_pointer_constraints_v1_create(c.server.display);
@@ -265,8 +255,7 @@ export fn setup() callconv(.c) void {
     c.server.output_manager = c.wlr_output_manager_v1_create(c.server.display);
     add(&c.server.output_manager.*.events.apply, &c.server.output_manager_apply_listener);
     add(&c.server.output_manager.*.events.@"test", &c.server.output_manager_test_listener);
-    c.wlr_scene_set_blur_data(c.server.scene, c.config.blur_params.num_passes, @intFromFloat(c.config.blur_params.radius),
-        c.config.blur_params.noise, c.config.blur_params.brightness, c.config.blur_params.contrast, c.config.blur_params.saturation);
+    c.wlr_scene_set_blur_data(c.server.scene, c.config.blur_params.num_passes, @intFromFloat(c.config.blur_params.radius), c.config.blur_params.noise, c.config.blur_params.brightness, c.config.blur_params.contrast, c.config.blur_params.saturation);
     c.server.input_method_manager = c.wlr_input_method_manager_v2_create(c.server.display);
     c.server.text_input_manager = c.wlr_text_input_manager_v3_create(c.server.display);
     c.server.input_method_relay = acwm_im_relay_create();
@@ -289,8 +278,7 @@ export fn setup() callconv(.c) void {
             add(&c.server.xwayland.*.events.new_surface, &c.server.new_xwayland_surface_listener);
             _ = c.setenv("DISPLAY", c.server.xwayland.*.display_name, 1);
         } else {
-            c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 948,
-                "failed to setup XWayland X server, continuing without it\n");
+            c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 948, "failed to setup XWayland X server, continuing without it\n");
         }
         c.server.sync_keymap = c.wl_event_loop_add_timer(c.wl_display_get_event_loop(c.server.display), keyboard_sync_keymap, null);
     }

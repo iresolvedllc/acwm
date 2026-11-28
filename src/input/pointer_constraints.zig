@@ -216,9 +216,7 @@ export fn pointer_check_confine_client() callconv(.c) void {
     const cl = pointer_confine_rule_client();
     if (cl != null and cl != confine_pointer_last and pointerCursorOutsideClient(cl)) {
         const box = pointer_client_warp_box(cl);
-        _ = c.wlr_cursor_warp(c.server.cursor, null,
-            @as(f64, @floatFromInt(box.x)) + @as(f64, @floatFromInt(box.width)) / 2.0,
-            @as(f64, @floatFromInt(box.y)) + @as(f64, @floatFromInt(box.height)) / 2.0);
+        _ = c.wlr_cursor_warp(c.server.cursor, null, @as(f64, @floatFromInt(box.x)) + @as(f64, @floatFromInt(box.width)) / 2.0, @as(f64, @floatFromInt(box.y)) + @as(f64, @floatFromInt(box.height)) / 2.0);
     }
     confine_pointer_last = cl;
 }
@@ -263,9 +261,7 @@ fn pointerWarpIntoConstraint(constraint: [*c]Constraint, cl: [*c]Client) void {
     var cx: f64 = 0;
     var cy: f64 = 0;
     pointerRegionClosestPoint(region, sx, sy, &cx, &cy);
-    _ = c.wlr_cursor_warp(c.server.cursor, null,
-        @as(f64, @floatFromInt(box.x)) + @as(f64, @floatFromInt(cl.*.bw)) + cx / scale,
-        @as(f64, @floatFromInt(box.y)) + @as(f64, @floatFromInt(cl.*.bw)) + cy / scale);
+    _ = c.wlr_cursor_warp(c.server.cursor, null, @as(f64, @floatFromInt(box.x)) + @as(f64, @floatFromInt(cl.*.bw)) + cx / scale, @as(f64, @floatFromInt(box.y)) + @as(f64, @floatFromInt(cl.*.bw)) + cy / scale);
 }
 
 export fn pointer_confine_client(constraint_out: [*c][*c]Constraint) callconv(.c) [*c]Client {
@@ -407,9 +403,7 @@ export fn handle_cursor_axis(listener: [*c]c.struct_wl_listener, data: ?*anyopaq
     }
 
     const factor = if (pointer_is_trackpad(event.*.pointer)) c.config.trackpad_scroll_factor else c.config.axis_scroll_factor;
-    c.wlr_seat_pointer_notify_axis(c.server.seat, event.*.time_msec, event.*.orientation,
-        event.*.delta * factor, @intFromFloat(@round(@as(f64, @floatFromInt(event.*.delta_discrete)) * factor)),
-        event.*.source, event.*.relative_direction);
+    c.wlr_seat_pointer_notify_axis(c.server.seat, event.*.time_msec, event.*.orientation, event.*.delta * factor, @intFromFloat(@round(@as(f64, @floatFromInt(event.*.delta_discrete)) * factor)), event.*.source, event.*.relative_direction);
 }
 
 fn cleanMask(mask: u32) u32 {
@@ -479,8 +473,7 @@ export fn configure_pointer(wlr_device: [*c]c.struct_wlr_input_device, device: ?
     const tap_and_drag = ruleI32(rule, "tap_and_drag", c.config.tap_and_drag);
     const drag_lock = ruleI32(rule, "drag_lock", c.config.drag_lock);
     const button_map = ruleU32(rule, "button_map", c.config.button_map);
-    const natural_scrolling = ruleI32(rule, "natural_scrolling",
-        if (is_trackpad) c.config.trackpad_natural_scrolling else c.config.mouse_natural_scrolling);
+    const natural_scrolling = ruleI32(rule, "natural_scrolling", if (is_trackpad) c.config.trackpad_natural_scrolling else c.config.mouse_natural_scrolling);
     var accel_profile: u32 = undefined;
     if (rule != null and rule.*.accel_profile != -1)
         accel_profile = @intCast(rule.*.accel_profile)
@@ -492,18 +485,12 @@ export fn configure_pointer(wlr_device: [*c]c.struct_wlr_input_device, device: ?
     else
         accel_speed = if (is_trackpad) c.config.trackpad_accel_speed else c.config.mouse_accel_speed;
     const disable_while_typing = ruleI32(rule, "disable_while_typing", c.config.trackpad_disable_while_typing);
-    const left_handed = ruleI32(rule, "left_handed",
-        if (is_trackpad) c.config.trackpad_left_handed else c.config.mouse_left_handed);
-    const middle_button_emulation = ruleI32(rule, "middle_button_emulation",
-        if (is_trackpad) c.config.trackpad_middle_button_emulation else c.config.mouse_middle_button_emulation);
-    const scroll_method = ruleU32(rule, "scroll_method",
-        if (is_trackpad) c.config.trackpad_scroll_method else c.config.mouse_scroll_method);
-    const scroll_button = ruleU32(rule, "scroll_button",
-        if (is_trackpad) c.config.trackpad_scroll_button else c.config.mouse_scroll_button);
-    const click_method = ruleU32(rule, "click_method",
-        if (is_trackpad) c.config.trackpad_click_method else c.config.mouse_click_method);
-    const send_events_mode = ruleU32(rule, "send_events_mode",
-        if (is_trackpad) c.config.trackpad_send_events_mode else c.config.mouse_send_events_mode);
+    const left_handed = ruleI32(rule, "left_handed", if (is_trackpad) c.config.trackpad_left_handed else c.config.mouse_left_handed);
+    const middle_button_emulation = ruleI32(rule, "middle_button_emulation", if (is_trackpad) c.config.trackpad_middle_button_emulation else c.config.mouse_middle_button_emulation);
+    const scroll_method = ruleU32(rule, "scroll_method", if (is_trackpad) c.config.trackpad_scroll_method else c.config.mouse_scroll_method);
+    const scroll_button = ruleU32(rule, "scroll_button", if (is_trackpad) c.config.trackpad_scroll_button else c.config.mouse_scroll_button);
+    const click_method = ruleU32(rule, "click_method", if (is_trackpad) c.config.trackpad_click_method else c.config.mouse_click_method);
+    const send_events_mode = ruleU32(rule, "send_events_mode", if (is_trackpad) c.config.trackpad_send_events_mode else c.config.mouse_send_events_mode);
 
     if (c.libinput_device_config_tap_get_finger_count(device) != 0) {
         _ = c.libinput_device_config_tap_set_enabled(device, @intCast(@intFromBool(tap_to_click != 0)));
@@ -619,9 +606,7 @@ export fn pointer_warp_to_constraint_hint() callconv(.c) void {
     var ly: f64 = 0;
     if (pointerConstraintHintPosition(c.server.active_constraint, cl, &lx, &ly)) {
         _ = c.wlr_cursor_warp(c.server.cursor, null, lx, ly);
-        c.wlr_seat_pointer_warp(c.server.active_constraint.*.seat,
-            c.server.active_constraint.*.current.cursor_hint.x,
-            c.server.active_constraint.*.current.cursor_hint.y);
+        c.wlr_seat_pointer_warp(c.server.active_constraint.*.seat, c.server.active_constraint.*.current.cursor_hint.x, c.server.active_constraint.*.current.cursor_hint.y);
     }
 }
 

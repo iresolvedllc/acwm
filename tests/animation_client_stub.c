@@ -227,8 +227,6 @@ void client_set_border_color(Client *c, const float color[4]) {
     (void)c; stub_border_color_calls++;
     memcpy(stub_border_color, color, sizeof(stub_border_color));
 }
-int stub_finish_geometry_calls = 0;
-void client_apply_finish_geometry(Client *c) { (void)c; stub_finish_geometry_calls++; }
 int stub_overview_layout_calls = 0;
 void overview_layout_card(Client *c) { (void)c; stub_overview_layout_calls++; }
 int stub_overview_destroy_calls = 0;
@@ -298,3 +296,56 @@ void wlr_seat_pointer_notify_enter(struct wlr_seat *seat, struct wlr_surface *su
     (void)seat; (void)surface; (void)sx; (void)sy;
     stub_pointer_enter_calls++;
 }
+
+/* ---- commit / resize (slice 90) ---- */
+int stub_bounds_calls = 0;
+struct wlr_box stub_bounds;
+void client_apply_bounds(Client *c, struct wlr_box *bbox) {
+    (void)c; stub_bounds_calls++; stub_bounds = *bbox;
+}
+int stub_size_bound_calls = 0;
+void client_set_size_bound(Client *c) { (void)c; stub_size_bound_calls++; }
+int stub_set_size_calls = 0;
+uint32_t stub_set_size_w = 0, stub_set_size_h = 0;
+int stub_set_size_force = 0;
+uint32_t stub_configure_serial = 0;
+uint32_t client_set_size(Client *c, uint32_t width, uint32_t height, bool force_configure) {
+    (void)c; stub_set_size_calls++; stub_set_size_w = width; stub_set_size_h = height;
+    stub_set_size_force = force_configure ? 1 : 0;
+    return stub_configure_serial;
+}
+int stub_border_color_update_calls = 0;
+void client_update_border_color(Client *c) { (void)c; stub_border_color_update_calls++; }
+bool wlr_box_equal(const struct wlr_box *a, const struct wlr_box *b) {
+    return a->x == b->x && a->y == b->y && a->width == b->width && a->height == b->height;
+}
+
+/* ---- focus animation / draw frame (slice 91) ---- */
+float stub_get_border_color[4] = {0.1f, 0.2f, 0.3f, 1.0f};
+float stub_get_dim_color[4] = {0.4f, 0.5f, 0.6f, 1.0f};
+float *get_border_color(Client *c) { (void)c; return stub_get_border_color; }
+float *get_dim_color(Client *c) { (void)c; return stub_get_dim_color; }
+int stub_set_opacity_calls = 0;
+float stub_set_opacity_value = -1;
+void client_set_opacity(Client *c, double opacity) {
+    (void)c; stub_set_opacity_calls++; stub_set_opacity_value = opacity;
+}
+int stub_state_colors_calls = 0;
+float stub_state_border[4], stub_state_dim[4];
+void client_set_state_colors(Client *c, const float border_color[4], const float dim_color[4]) {
+    (void)c; stub_state_colors_calls++;
+    memcpy(stub_state_border, border_color, sizeof(stub_state_border));
+    memcpy(stub_state_dim, dim_color, sizeof(stub_state_dim));
+}
+int stub_blur_strength_calls = 0, stub_blur_alpha_calls = 0;
+float stub_blur_strength = -1, stub_blur_alpha = -1;
+void wlr_scene_blur_set_strength(struct wlr_scene_blur *blur, float strength) {
+    (void)blur; stub_blur_strength_calls++; stub_blur_strength = strength;
+}
+void wlr_scene_blur_set_alpha(struct wlr_scene_blur *blur, float alpha) {
+    (void)blur; stub_blur_alpha_calls++; stub_blur_alpha = alpha;
+}
+int stub_blur_wallpaper = 0;
+bool client_blur_uses_wallpaper(Client *c) { (void)c; return stub_blur_wallpaper != 0; }
+int stub_force_render_result = 0;
+bool client_force_render(Client *c) { (void)c; return stub_force_render_result != 0; }

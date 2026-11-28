@@ -170,10 +170,12 @@ export fn overview_layout_card(cl: [*c]Client) callconv(.c) void {
         if (entry.is_root) {
             const ratio_x: f32 = if (es.*.current.width > 0)
                 @as(f32, @floatFromInt(es.*.current.buffer_width)) / @as(f32, @floatFromInt(es.*.current.width))
-            else 1.0;
+            else
+                1.0;
             const ratio_y: f32 = if (es.*.current.height > 0)
                 @as(f32, @floatFromInt(es.*.current.buffer_height)) / @as(f32, @floatFromInt(es.*.current.height))
-            else 1.0;
+            else
+                1.0;
             if (vw <= 0 or vh <= 0) {
                 c.wlr_scene_node_set_position(&entry.buffer.*.node, 0, 0);
                 c.wlr_scene_buffer_set_dest_size(entry.buffer, 0, 0);
@@ -206,10 +208,12 @@ export fn overview_layout_card(cl: [*c]Client) callconv(.c) void {
             }
             const ratio_x: f32 = if (es.*.current.width > 0)
                 @as(f32, @floatFromInt(es.*.current.buffer_width)) / @as(f32, @floatFromInt(es.*.current.width))
-            else 1.0;
+            else
+                1.0;
             const ratio_y: f32 = if (es.*.current.height > 0)
                 @as(f32, @floatFromInt(es.*.current.buffer_height)) / @as(f32, @floatFromInt(es.*.current.height))
-            else 1.0;
+            else
+                1.0;
             const ox = @as(f32, @floatFromInt(cx0 - px)) / scale_x;
             const oy = @as(f32, @floatFromInt(cy0 - py)) / scale_y;
             c.wlr_scene_node_set_position(&entry.buffer.*.node, cx0, cy0);

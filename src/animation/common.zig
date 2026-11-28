@@ -1,6 +1,6 @@
 //! Port of the curve/baked-point helpers and per-monitor frame request from
 //! src/animation/common.c (Phase 5, animation slice 1, slice 47).
-//! Scene snapshot helpers stay C (they depend on scene-node internals).
+//! Scene snapshot helpers live in src/animation/snapshot.zig.
 
 const std = @import("std");
 const c = @import("cc");

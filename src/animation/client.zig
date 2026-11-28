@@ -1447,7 +1447,6 @@ extern fn client_update_xwayland_clip(cl: [*c]Client, clip: [*c]c.struct_wlr_box
 extern fn client_update_xwayland_dest_size(cl: [*c]Client) callconv(.c) void;
 extern fn client_is_unmanaged(cl: [*c]Client) callconv(.c) c_int;
 extern fn client_set_border_color(cl: [*c]Client, color: [*c]const f32) callconv(.c) void;
-extern fn client_apply_finish_geometry(cl: [*c]Client) callconv(.c) void;
 extern fn overview_layout_card(cl: [*c]Client) callconv(.c) void;
 extern fn overview_destroy_card(cl: [*c]Client) callconv(.c) void;
 extern fn node_at_point(x: f64, y: f64, psurface: [*c][*c]c.struct_wlr_surface, pc: [*c][*c]Client, pl: [*c][*c]c.LayerSurface, bar: [*c][*c]c.AcwmBarDecoration, nx: [*c]f64, ny: [*c]f64) callconv(.c) void;
@@ -2041,7 +2040,6 @@ extern var stub_xwayland_dest_calls: c_int;
 extern var stub_unmanaged: c_int;
 extern var stub_border_color_calls: c_int;
 extern var stub_border_color: [4]f32;
-extern var stub_finish_geometry_calls: c_int;
 extern var stub_overview_layout_calls: c_int;
 extern var stub_overview_destroy_calls: c_int;
 extern var stub_tabbar_calls: c_int;
@@ -2115,7 +2113,6 @@ fn resetDropWorld() void {
     stub_unmanaged = 0;
     stub_border_color_calls = 0;
     stub_border_color = std.mem.zeroes([4]f32);
-    stub_finish_geometry_calls = 0;
     stub_overview_layout_calls = 0;
     stub_overview_destroy_calls = 0;
     stub_tabbar_calls = 0;
@@ -2286,7 +2283,7 @@ test "animation tick snaps to pending geometry and re-enters the pointer" {
     test_selected_mon.isoverview = 0;
     stub_is_x11 = 0;
     client_animation_next_tick(&test_client);
-    try testing.expectEqual(@as(c_int, 1), stub_finish_geometry_calls);
+    try testing.expectEqual(test_client.geom.width, test_client.pending.width);
     try testing.expectEqual(@as(i32, c.MOVE), test_client.animation.action);
     try testing.expect(!test_client.animation.running);
     try testing.expectEqual(@as(c_int, 1), stub_pointer_enter_calls);
@@ -2307,7 +2304,6 @@ test "animation tick handles tag-out completion" {
     try testing.expect(test_client.animation.tagouted);
     try testing.expect(!test_client.animation.tagouting);
     try testing.expectEqual(@as(i32, 70), test_client.animation.current.width);
-    try testing.expectEqual(@as(c_int, 0), stub_finish_geometry_calls);
 }
 
 test "fadeout init guards and builds a zoom client" {
@@ -2367,4 +2363,1020 @@ test "fadeout init snapshots overview cards and clears the card surface" {
     try testing.expectEqual(@as(c_int, 1), stub_snapshot_calls);
     try testing.expectEqual(@as(i32, 32), stub_pos_x[0]);
     try testing.expectEqual(@as(i32, 42), stub_pos_y[0]);
+}
+
+// ---------------------------------------------------------------------------
+// commit / resize (slice 90)
+// ---------------------------------------------------------------------------
+
+extern fn client_apply_bounds(cl: [*c]Client, bbox: [*c]c.struct_wlr_box) callconv(.c) void;
+extern fn client_set_size_bound(cl: [*c]Client) callconv(.c) void;
+extern fn client_set_size(cl: [*c]Client, width: u32, height: u32, force_configure: bool) callconv(.c) u32;
+extern fn client_update_border_color(cl: [*c]Client) callconv(.c) void;
+extern fn llround(x: f64) callconv(.c) c_longlong;
+
+export fn client_apply_finish_geometry(cl: [*c]Client) callconv(.c) void {
+    if (cl == null or cl.*.scene == null)
+        return;
+
+    c.wlr_scene_node_set_position(&cl.*.scene.*.node, cl.*.pending.x, cl.*.pending.y);
+    cl.*.animation.current = cl.*.geom;
+    cl.*.animainit_geom = cl.*.geom;
+    cl.*.animation.initial = cl.*.geom;
+    cl.*.pending = cl.*.geom;
+    cl.*.current = cl.*.geom;
+    client_apply_clip(cl, 1.0);
+    cl.*.need_output_flush = false;
+}
+
+export fn client_animation_set_progress(cl: [*c]Client, progress: f64) callconv(.c) void {
+    if (cl == null or cl.*.scene == null)
+        return;
+
+    var p = progress;
+    if (p < 0.0) p = 0.0;
+    if (p > 1.0) p = 1.0;
+
+    const from = cl.*.animation.initial;
+    const to = cl.*.current;
+
+    const width: i32 = @intCast(llround(@as(f64, @floatFromInt(from.width)) +
+        @as(f64, @floatFromInt(to.width - from.width)) * p));
+    const height: i32 = @intCast(llround(@as(f64, @floatFromInt(from.height)) +
+        @as(f64, @floatFromInt(to.height - from.height)) * p));
+    const x: i32 = @intCast(llround(@as(f64, @floatFromInt(from.x)) +
+        @as(f64, @floatFromInt(to.x - from.x)) * p));
+    const y: i32 = @intCast(llround(@as(f64, @floatFromInt(from.y)) +
+        @as(f64, @floatFromInt(to.y - from.y)) * p));
+
+    c.wlr_scene_node_set_position(&cl.*.scene.*.node, x, y);
+    cl.*.animation.current = .{ .x = x, .y = y, .width = width, .height = height };
+
+    cl.*.is_pending_open_animation = false;
+    client_apply_clip(cl, 1.0);
+}
+
+export fn client_animation_resume(cl: [*c]Client, remaining: f64) callconv(.c) void {
+    if (cl == null or cl.*.scene == null)
+        return;
+
+    if (!cl.*.animation.running)
+        return;
+
+    if (c.config.animations == 0 or cl.*.animation.duration == 0 or remaining < 0.05) {
+        client_animation_set_progress(cl, 1.0);
+        cl.*.animation.action = c.MOVE;
+        cl.*.animation.tagining = false;
+        cl.*.animation.overining = false;
+        cl.*.animation.running = false;
+        if (cl.*.animation.tagouting) {
+            cl.*.animation.tagouting = false;
+            client_update_visibility(cl);
+            cl.*.animation.tagouted = true;
+            cl.*.animation.current = cl.*.geom;
+        }
+        cl.*.need_output_flush = false;
+        return;
+    }
+
+    cl.*.animation.initial = cl.*.animation.current;
+    cl.*.animation.time_started = get_now_in_ms();
+    cl.*.animation.running = true;
+    cl.*.need_output_flush = true;
+    request_fresh_all_monitors();
+}
+
+export fn client_commit(cl: [*c]Client) callconv(.c) void {
+    cl.*.current = cl.*.pending;
+
+    if (cl.*.animation.should_animate) {
+        if (!cl.*.animation.running)
+            cl.*.animation.current = cl.*.animainit_geom;
+
+        cl.*.animation.initial = cl.*.animainit_geom;
+        cl.*.animation.time_started = get_now_in_ms();
+        cl.*.animation.running = true;
+        cl.*.animation.should_animate = false;
+    } else {
+        if (!cl.*.animation.running)
+            cl.*.animation.current = cl.*.geom;
+    }
+
+    // When animation is disabled, set the surface position and size early
+    // so pointer_process_motion focus does not hit the surface from the
+    // previous frame.
+    if (!client_animations_enabled(cl))
+        client_apply_finish_geometry(cl);
+
+    request_fresh_all_monitors();
+}
+
+export fn client_set_pending_state(cl: [*c]Client) callconv(.c) void {
+    if (cl == null or cl.*.iskilling != 0)
+        return;
+
+    if (!client_animations_enabled(cl)) {
+        cl.*.animation.should_animate = false;
+    } else if (cl.*.animation.tagining) {
+        cl.*.animation.should_animate = true;
+    } else if (cl.*.animation.action == c.OVERVIEW and
+        cl.*.animation.overview_enter_anim_set)
+    {
+        // Overview enter animation: force start after setting the zoom; not
+        // forced during pre-arrangement to avoid jitter.
+        cl.*.animation.should_animate = true;
+    } else if (cl == c.server.grab_client or
+        (!cl.*.is_pending_open_animation and
+            c.wlr_box_equal(&cl.*.current, &cl.*.pending)))
+    {
+        cl.*.animation.should_animate = false;
+    } else {
+        cl.*.animation.should_animate = true;
+    }
+
+    if (openAnimationType(cl) == c.ANIM_TYPE_NONE and cl.*.animation.action == c.OPEN)
+        cl.*.animation.duration = 0;
+
+    if (c.server.start_drag_window) {
+        cl.*.animation.should_animate = false;
+        cl.*.animation.duration = 0;
+    }
+
+    if (cl.*.no_animation != 0) {
+        cl.*.animation.should_animate = false;
+        cl.*.animation.duration = 0;
+    }
+
+    client_commit(cl);
+    cl.*.dirty = true;
+}
+
+export fn resize(cl: [*c]Client, geo: c.struct_wlr_box, opts: c.ResizeOpts) callconv(.c) void {
+    if (cl == null or cl.*.mon == null or !client_surface(cl).*.mapped)
+        return;
+
+    cl.*.need_output_flush = true;
+    cl.*.dirty = true;
+
+    const bbox: [*c]c.struct_wlr_box = if (opts.interact or cl.*.isfloating != 0 or
+        cl.*.isfullscreen != 0)
+        &c.server.scene_geometry
+    else
+        &cl.*.mon.*.w;
+
+    var clip: c.struct_wlr_box = undefined;
+
+    const bw: i32 = @intCast(cl.*.bw);
+    if (is_scroller_layout(cl.*.mon) and
+        (cl.*.isfloating == 0 or cl == c.server.grab_client))
+    {
+        cl.*.geom = geo;
+        cl.*.geom.width = @max(1 + 2 * bw, cl.*.geom.width);
+        cl.*.geom.height = @max(1 + 2 * bw, cl.*.geom.height);
+    } else {
+        cl.*.geom = geo;
+        client_apply_bounds(cl, bbox);
+    }
+
+    if (cl.*.no_size_hint == 0 and cl.*.ismaximizescreen == 0 and
+        cl.*.isfullscreen == 0 and cl.*.isfloating != 0)
+    {
+        const anchor_right = cl.*.geom.x + cl.*.geom.width;
+        const anchor_bottom = cl.*.geom.y + cl.*.geom.height;
+        client_set_size_bound(cl);
+        if (opts.drag_edge & c.WLR_EDGE_LEFT != 0)
+            cl.*.geom.x = anchor_right - cl.*.geom.width;
+        if (opts.drag_edge & c.WLR_EDGE_TOP != 0)
+            cl.*.geom.y = anchor_bottom - cl.*.geom.height;
+    }
+
+    if (!cl.*.is_pending_open_animation)
+        cl.*.animation.begin_fade_in = false;
+
+    if (cl.*.animation.overining) {
+        cl.*.animation.action = c.OVERVIEW;
+        cl.*.animation.duration = c.config.animation_duration_tag;
+    } else if (cl.*.animation.action == c.OPEN and !cl.*.animation.tagining and
+        !cl.*.animation.tagouting and c.wlr_box_equal(&cl.*.geom, &cl.*.current))
+    {
+        // keep current action
+    } else if (cl.*.animation.tagouting) {
+        cl.*.animation.duration = c.config.animation_duration_tag;
+        cl.*.animation.action = c.TAG;
+    } else if (cl.*.animation.tagining) {
+        cl.*.animation.duration = c.config.animation_duration_tag;
+        cl.*.animation.action = c.TAG;
+    } else if (cl.*.is_pending_open_animation) {
+        cl.*.animation.duration = c.config.animation_duration_open;
+        cl.*.animation.action = c.OPEN;
+    } else {
+        cl.*.animation.duration = c.config.animation_duration_move;
+        cl.*.animation.action = c.MOVE;
+    }
+
+    if (cl.*.animation.tagouting) {
+        cl.*.animainit_geom = cl.*.animation.current;
+    } else if (cl.*.animation.tagining) {
+        cl.*.animainit_geom.height = cl.*.animation.current.height;
+        cl.*.animainit_geom.width = cl.*.animation.current.width;
+    } else if (cl.*.is_pending_open_animation) {
+        set_client_open_animation(cl, cl.*.geom);
+    } else {
+        cl.*.animainit_geom = cl.*.animation.current;
+    }
+
+    if (cl.*.no_border != 0 or cl.*.iskilling != 0)
+        cl.*.bw = 0
+    else if (cl.*.isfullscreen == 0)
+        cl.*.bw = c.config.borderpx;
+
+    const hit_no_border = check_hit_no_border(cl);
+    if (hit_no_border) {
+        cl.*.bw = 0;
+        cl.*.fake_no_border = true;
+    } else {
+        cl.*.fake_no_border = false;
+    }
+
+    if (cl.*.mon.*.isoverview == 0) {
+        const inner_width: u32 = @intCast(cl.*.geom.width - 2 * @as(i32, @intCast(cl.*.bw)));
+        const inner_height: u32 = @intCast(cl.*.geom.height - 2 * @as(i32, @intCast(cl.*.bw)));
+        cl.*.configure_serial = client_set_size(cl, inner_width, inner_height, opts.force_configure);
+    }
+
+    if (cl.*.configure_serial != 0)
+        cl.*.mon.*.resizing_count_pending += 1;
+
+    if (cl == c.server.grab_client) {
+        const offsets = compute_edge_offsets(cl);
+
+        cl.*.animation.running = false;
+        cl.*.animation.tagining = false;
+        cl.*.animation.tagouting = false;
+        cl.*.need_output_flush = false;
+        cl.*.animainit_geom = cl.*.geom;
+        cl.*.current = cl.*.geom;
+        cl.*.pending = cl.*.geom;
+        cl.*.animation.current = cl.*.geom;
+        c.wlr_scene_node_set_position(&cl.*.scene.*.node, cl.*.geom.x, cl.*.geom.y);
+
+        client_draw_border(cl, offsets);
+        client_get_clip(cl, &clip);
+        client_draw_group_bar(cl, offsets);
+        client_draw_tabbar(cl, offsets);
+        client_draw_shadow(cl, offsets);
+
+        const surface_clip_offset = clip_to_hide(cl, &clip, offsets);
+        client_draw_shield(cl, surface_clip_offset);
+        client_draw_dim(cl, surface_clip_offset);
+        client_draw_blur(cl, surface_clip_offset);
+
+        if (client_is_x11(cl) != 0)
+            client_update_xwayland_clip(cl, &clip)
+        else
+            c.wlr_scene_subsurface_tree_set_clip(&cl.*.scene_surface.*.node, &clip);
+        return;
+    }
+
+    if (!cl.*.animation.tagouting and cl.*.iskilling == 0)
+        cl.*.pending = cl.*.geom;
+
+    if (cl.*.swallowing != null and cl.*.animation.action == c.OPEN)
+        cl.*.animainit_geom = cl.*.swallowing.*.animation.current;
+
+    if (cl.*.swallowdby != null)
+        cl.*.animainit_geom = cl.*.geom;
+
+    if ((cl.*.isglobal != 0 or cl.*.isunglobal != 0) and cl.*.isfloating != 0 and
+        cl.*.animation.action == c.TAG)
+        cl.*.animainit_geom = cl.*.geom;
+
+    if (cl.*.scratchpad_switching_mon and cl.*.isfloating != 0)
+        cl.*.animainit_geom = cl.*.geom;
+
+    if (!opts.skip_ov_enter_anim and cl.*.mon.*.isoverview != 0 and
+        cl.*.animation.overining and !cl.*.animation.overview_enter_anim_set)
+    {
+        set_overview_enter_animation(cl);
+        cl.*.animation.overining = false;
+        cl.*.animation.overview_enter_anim_set = true;
+    }
+
+    client_set_pending_state(cl);
+    client_update_border_color(cl);
+}
+
+// ---------------------------------------------------------------------------
+// commit/resize tests (slice 90)
+// ---------------------------------------------------------------------------
+
+extern var stub_bounds_calls: c_int;
+extern var stub_bounds: c.struct_wlr_box;
+extern var stub_size_bound_calls: c_int;
+extern var stub_set_size_calls: c_int;
+extern var stub_set_size_w: u32;
+extern var stub_set_size_h: u32;
+extern var stub_set_size_force: c_int;
+extern var stub_configure_serial: u32;
+extern var stub_border_color_update_calls: c_int;
+
+fn resetResizeWorld() void {
+    resetDropWorld();
+    c.config.borderpx = 2;
+    c.config.animation_duration_move = 150;
+    c.config.animation_duration_open = 200;
+    c.config.animation_duration_tag = 250;
+    test_client.scene = &test_fadeout_tree;
+    test_client.current = .{ .x = 0, .y = 0, .width = 100, .height = 80 };
+    test_client.pending = test_client.current;
+    test_client.geom = test_client.current;
+    test_client.animainit_geom = test_client.current;
+    test_client.animation.current = test_client.current;
+    test_client.animation.initial = test_client.current;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.running = false;
+    test_client.animation.should_animate = false;
+    test_client.animation.action = c.MOVE;
+    test_client.animation.tagining = false;
+    test_client.animation.tagouting = false;
+    test_client.animation.tagouted = false;
+    test_client.animation.overining = false;
+    test_client.animation.overview_enter_anim_set = false;
+    test_client.is_pending_open_animation = false;
+    test_client.no_animation = 0;
+    test_client.no_border = 0;
+    test_client.no_size_hint = 0;
+    test_client.isfloating = 0;
+    test_client.isfullscreen = 0;
+    test_client.ismaximizescreen = 0;
+    test_client.iskilling = 0;
+    test_client.isglobal = 0;
+    test_client.isunglobal = 0;
+    test_client.dirty = false;
+    test_client.need_output_flush = false;
+    test_client.configure_serial = 0;
+    test_client.swallowing = null;
+    test_client.swallowdby = null;
+    test_client.scratchpad_switching_mon = false;
+    test_client.ov_card_tree = null;
+    test_client.overview_scene_surface = null;
+    test_client.overview_backup_geom = .{ .x = 3, .y = 4, .width = 50, .height = 40 };
+    test_mon.isoverview = 0;
+    test_mon.resizing_count_pending = 0;
+    c.server.grab_client = null;
+    c.server.start_drag_window = false;
+    stub_bounds_calls = 0;
+    stub_bounds = std.mem.zeroes(c.struct_wlr_box);
+    stub_size_bound_calls = 0;
+    stub_set_size_calls = 0;
+    stub_set_size_w = 0;
+    stub_set_size_h = 0;
+    stub_set_size_force = 0;
+    stub_configure_serial = 0;
+    stub_border_color_update_calls = 0;
+    stub_curve = -1;
+    stub_now_ms = 0;
+    stub_get_now_ms = 1000;
+    stub_surface_clip_calls = 0;
+    stub_xwayland_clip_calls = 0;
+    stub_is_x11 = 0;
+    stub_iterate = 0;
+    stub_gesture = 0;
+}
+
+fn lastPosFor(node: [*c]c.struct_wlr_scene_node) [2]i32 {
+    var i: c_int = stub_node_pos_calls - 1;
+    while (i >= 0) : (i -= 1) {
+        if (stub_pos_node[@intCast(i)] == node)
+            return .{ stub_pos_x[@intCast(i)], stub_pos_y[@intCast(i)] };
+    }
+    return .{ -9999, -9999 };
+}
+
+test "finish geometry snaps every box and clears the flush flag" {
+    resetResizeWorld();
+    c.config.animations = 0;
+    test_client.pending = .{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    test_client.geom = .{ .x = 5, .y = 6, .width = 70, .height = 60 };
+    test_client.need_output_flush = true;
+    client_apply_finish_geometry(&test_client);
+    const scene_pos = lastPosFor(&test_fadeout_tree.node);
+    try testing.expectEqual(@as(i32, 10), scene_pos[0]);
+    try testing.expectEqual(@as(i32, 20), scene_pos[1]);
+    try testing.expectEqual(@as(i32, 70), test_client.animation.current.width);
+    try testing.expectEqual(@as(i32, 70), test_client.pending.width);
+    try testing.expectEqual(@as(i32, 70), test_client.current.width);
+    try testing.expect(!test_client.need_output_flush);
+    try testing.expectEqual(@as(c_int, 1), stub_get_clip_calls);
+}
+
+test "set progress clamps and rounds interpolated boxes" {
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_client.animation.initial = .{ .x = 0, .y = 0, .width = 10, .height = 10 };
+    test_client.current = .{ .x = 5, .y = 5, .width = 20, .height = 20 };
+    client_animation_set_progress(&test_client, 0.5);
+    try testing.expectEqual(@as(i32, 3), test_client.animation.current.x);
+    try testing.expectEqual(@as(i32, 15), test_client.animation.current.width);
+    client_animation_set_progress(&test_client, -1.0);
+    try testing.expectEqual(@as(i32, 0), test_client.animation.current.x);
+    try testing.expectEqual(@as(i32, 10), test_client.animation.current.width);
+}
+
+test "resume either restarts timing or snaps to the current box" {
+    resetResizeWorld();
+    client_animation_resume(&test_client, 0.5);
+    try testing.expectEqual(@as(i32, 100), test_client.animation.initial.width);
+
+    c.config.animations = 1;
+    test_client.animation.running = true;
+    test_client.animation.current = .{ .x = 7, .y = 8, .width = 30, .height = 20 };
+    test_client.animation.initial = .{ .x = 0, .y = 0, .width = 1, .height = 1 };
+    stub_get_now_ms = 333;
+    client_animation_resume(&test_client, 0.5);
+    try testing.expectEqual(@as(i32, 30), test_client.animation.initial.width);
+    try testing.expectEqual(@as(u32, 333), test_client.animation.time_started);
+    try testing.expect(test_client.need_output_flush);
+    try testing.expectEqual(@as(c_int, 1), stub_fresh_monitors_calls);
+
+    test_client.geom = .{ .x = 1, .y = 2, .width = 60, .height = 40 };
+    test_client.animation.tagouting = true;
+    client_animation_resume(&test_client, 0.01);
+    try testing.expect(!test_client.animation.running);
+    try testing.expect(test_client.animation.tagouted);
+    try testing.expectEqual(@as(i32, 60), test_client.animation.current.width);
+}
+
+test "commit starts animations or snaps when disabled" {
+    resetResizeWorld();
+    test_client.animainit_geom = .{ .x = 1, .y = 2, .width = 30, .height = 40 };
+    test_client.geom = .{ .x = 5, .y = 6, .width = 70, .height = 80 };
+    test_client.pending = test_client.geom;
+    test_client.animation.should_animate = true;
+    c.config.animations = 1;
+    stub_get_now_ms = 444;
+    client_commit(&test_client);
+    try testing.expectEqual(@as(i32, 30), test_client.animation.current.width);
+    try testing.expectEqual(@as(i32, 30), test_client.animation.initial.width);
+    try testing.expect(test_client.animation.running);
+    try testing.expect(!test_client.animation.should_animate);
+    try testing.expectEqual(@as(u32, 444), test_client.animation.time_started);
+
+    resetResizeWorld();
+    c.config.animations = 0;
+    test_client.pending = .{ .x = 5, .y = 6, .width = 70, .height = 80 };
+    test_client.current = .{ .x = 0, .y = 0, .width = 1, .height = 1 };
+    test_client.geom = test_client.pending;
+    client_commit(&test_client);
+    try testing.expectEqual(@as(i32, 70), test_client.animation.current.width);
+    try testing.expectEqual(@as(c_int, 1), stub_get_clip_calls);
+}
+
+test "pending state respects grab, drag, overview and equality" {
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_client.animation.tagining = true;
+    client_set_pending_state(&test_client);
+    try testing.expect(test_client.animation.running);
+
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_client.current = .{ .x = 1, .y = 2, .width = 3, .height = 4 };
+    test_client.pending = test_client.current;
+    client_set_pending_state(&test_client);
+    try testing.expect(!test_client.animation.running);
+
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_client.animation.action = c.OVERVIEW;
+    test_client.animation.overview_enter_anim_set = true;
+    client_set_pending_state(&test_client);
+    try testing.expect(test_client.animation.running);
+
+    resetResizeWorld();
+    c.config.animations = 1;
+    c.server.start_drag_window = true;
+    test_client.pending = .{ .x = 9, .y = 9, .width = 9, .height = 9 };
+    client_set_pending_state(&test_client);
+    try testing.expect(!test_client.animation.should_animate);
+    try testing.expectEqual(@as(u32, 0), test_client.animation.duration);
+
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_client.no_animation = 1;
+    client_set_pending_state(&test_client);
+    try testing.expect(!test_client.animation.should_animate);
+    try testing.expectEqual(@as(u32, 0), test_client.animation.duration);
+}
+
+test "resize applies bounds, border and pending state" {
+    resetResizeWorld();
+    c.config.animations = 0;
+    test_client.isfloating = 1;
+    stub_configure_serial = 5;
+    const geo = c.struct_wlr_box{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    const opts = c.ResizeOpts{ .interact = true, .skip_ov_enter_anim = false, .force_configure = true, .drag_edge = 0 };
+    resize(&test_client, geo, opts);
+    try testing.expectEqual(@as(c_int, 1), stub_bounds_calls);
+    try testing.expectEqual(@as(i32, 100), test_client.geom.width);
+    try testing.expectEqual(@as(u32, 2), test_client.bw);
+    try testing.expectEqual(@as(u32, 96), stub_set_size_w);
+    try testing.expectEqual(@as(u32, 76), stub_set_size_h);
+    try testing.expectEqual(@as(c_int, 1), stub_set_size_force);
+    try testing.expectEqual(@as(u32, 5), test_client.configure_serial);
+    try testing.expectEqual(@as(u32, 1), test_mon.resizing_count_pending);
+    try testing.expectEqual(@as(i32, 100), test_client.pending.width);
+    try testing.expectEqual(@as(i32, c.MOVE), test_client.animation.action);
+    try testing.expectEqual(@as(u32, 150), test_client.animation.duration);
+    try testing.expectEqual(@as(c_int, 1), stub_border_color_update_calls);
+}
+
+test "resize clamps scroller windows to the minimum size" {
+    resetResizeWorld();
+    stub_scroller = 1;
+    test_client.isfloating = 0;
+    test_client.bw = 2;
+    const geo = c.struct_wlr_box{ .x = 0, .y = 0, .width = 1, .height = 2 };
+    const opts = std.mem.zeroes(c.ResizeOpts);
+    resize(&test_client, geo, opts);
+    try testing.expectEqual(@as(i32, 5), test_client.geom.width);
+    try testing.expectEqual(@as(i32, 5), test_client.geom.height);
+    try testing.expectEqual(@as(c_int, 0), stub_bounds_calls);
+}
+
+test "resize grab path redraws and clips without pending state" {
+    resetResizeWorld();
+    c.server.grab_client = &test_client;
+    test_client.isfloating = 1;
+    stub_is_x11 = 1;
+    test_client.pending = .{ .x = 1, .y = 1, .width = 1, .height = 1 };
+    const geo = c.struct_wlr_box{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    const opts = std.mem.zeroes(c.ResizeOpts);
+    resize(&test_client, geo, opts);
+    const scene_pos = lastPosFor(&test_fadeout_tree.node);
+    try testing.expectEqual(@as(i32, 10), scene_pos[0]);
+    try testing.expectEqual(@as(i32, 20), scene_pos[1]);
+    try testing.expectEqual(@as(c_int, 1), stub_get_clip_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_xwayland_clip_calls);
+    try testing.expectEqual(@as(i32, 100), test_client.pending.width);
+    try testing.expect(!test_client.animation.running);
+    try testing.expectEqual(@as(c_int, 1), stub_tabbar_calls);
+}
+
+test "resize overview entry uses backup geometry and flags the animation" {
+    resetResizeWorld();
+    c.config.animations = 1;
+    test_mon.isoverview = 1;
+    test_client.animation.overining = true;
+    test_client.overview_backup_geom = .{ .x = 3, .y = 4, .width = 50, .height = 40 };
+    const geo = c.struct_wlr_box{ .x = 10, .y = 20, .width = 100, .height = 80 };
+    const opts = std.mem.zeroes(c.ResizeOpts);
+    resize(&test_client, geo, opts);
+    try testing.expectEqual(@as(i32, 50), test_client.animainit_geom.width);
+    try testing.expect(!test_client.animation.overining);
+    try testing.expect(test_client.animation.overview_enter_anim_set);
+    try testing.expectEqual(@as(i32, c.OVERVIEW), test_client.animation.action);
+    try testing.expectEqual(@as(c_int, 0), stub_set_size_calls);
+}
+
+// ---------------------------------------------------------------------------
+// focus animation + frame entry points (slice 91)
+// ---------------------------------------------------------------------------
+
+extern fn get_border_color(cl: [*c]Client) callconv(.c) [*c]f32;
+extern fn get_dim_color(cl: [*c]Client) callconv(.c) [*c]f32;
+extern fn client_set_opacity(cl: [*c]Client, opacity: f64) callconv(.c) void;
+extern fn client_set_state_colors(cl: [*c]Client, border_color: [*c]const f32, dim_color: [*c]const f32) callconv(.c) void;
+extern fn client_blur_uses_wallpaper(cl: [*c]Client) callconv(.c) bool;
+extern fn client_force_render(cl: [*c]Client) callconv(.c) bool;
+
+export fn client_draw_fadeout_frame(cl: [*c]Client) callconv(.c) bool {
+    if (cl == null)
+        return false;
+
+    fadeout_client_animation_next_tick(cl);
+    return true;
+}
+
+export fn client_start_focus_animation(cl: [*c]Client, focused: bool) callconv(.c) void {
+    const border_color = get_border_color(cl);
+    const dim_color = get_dim_color(cl);
+
+    cl.*.opacity_animation.duration = c.config.animation_duration_focus;
+    cl.*.opacity_animation.target_opacity = if (focused) cl.*.focused_opacity else cl.*.unfocused_opacity;
+    @memcpy(cl.*.opacity_animation.target_border_color[0..4], border_color[0..4]);
+    @memcpy(cl.*.opacity_animation.target_dim_color[0..4], dim_color[0..4]);
+    cl.*.opacity_animation.initial_opacity = cl.*.opacity_animation.current_opacity;
+    @memcpy(cl.*.opacity_animation.initial_border_color[0..4], cl.*.opacity_animation.current_border_color[0..4]);
+    @memcpy(cl.*.opacity_animation.initial_dim_color[0..4], cl.*.opacity_animation.current_dim_color[0..4]);
+    cl.*.opacity_animation.time_started = get_now_in_ms();
+    cl.*.opacity_animation.running = true;
+}
+
+fn interpolateFocusAnimation(cl: [*c]Client, linear_progress: f64) void {
+    const eased_progress = find_animation_curve_at(linear_progress, c.FOCUS);
+
+    cl.*.opacity_animation.current_opacity = cl.*.opacity_animation.initial_opacity +
+        (cl.*.opacity_animation.target_opacity - cl.*.opacity_animation.initial_opacity) *
+            @as(f32, @floatCast(eased_progress));
+
+    var i: usize = 0;
+    while (i < 4) : (i += 1) {
+        cl.*.opacity_animation.current_border_color[i] =
+            cl.*.opacity_animation.initial_border_color[i] +
+            (cl.*.opacity_animation.target_border_color[i] -
+                cl.*.opacity_animation.initial_border_color[i]) * @as(f32, @floatCast(eased_progress));
+        cl.*.opacity_animation.current_dim_color[i] =
+            cl.*.opacity_animation.initial_dim_color[i] +
+            (cl.*.opacity_animation.target_dim_color[i] -
+                cl.*.opacity_animation.initial_dim_color[i]) * @as(f32, @floatCast(eased_progress));
+    }
+}
+
+export fn client_step_focus_animation(cl: [*c]Client, linear_progress: f64) callconv(.c) bool {
+    interpolateFocusAnimation(cl, linear_progress);
+
+    client_set_opacity(cl, cl.*.opacity_animation.current_opacity);
+    client_set_state_colors(cl, &cl.*.opacity_animation.current_border_color, &cl.*.opacity_animation.current_dim_color);
+
+    cl.*.opacity_animation.running = linear_progress < 1.0;
+    return cl.*.opacity_animation.running;
+}
+
+export fn client_set_unfocused_opacity_animation(cl: [*c]Client) callconv(.c) void {
+    c.wlr_scene_node_raise_to_top(&cl.*.border.*.node);
+    if (c.config.animations == 0) {
+        client_update_border_color(cl);
+        return;
+    }
+
+    client_start_focus_animation(cl, false);
+}
+
+export fn client_set_focused_opacity_animation(cl: [*c]Client) callconv(.c) void {
+    c.wlr_scene_node_lower_to_bottom(&cl.*.border.*.node);
+
+    if (c.config.animations == 0) {
+        client_update_border_color(cl);
+        return;
+    }
+
+    client_start_focus_animation(cl, true);
+}
+
+export fn client_apply_focus_opacity(cl: [*c]Client) callconv(.c) bool {
+    if (c.config.blur != 0 and cl.*.no_blur == 0 and cl.*.blur_opacity != 1.0 and
+        cl.*.animation.action != c.OPEN)
+    {
+        cl.*.blur_opacity = 1.0;
+        c.wlr_scene_blur_set_strength(cl.*.blur, 1.0);
+        c.wlr_scene_blur_set_alpha(cl.*.blur, 1.0);
+    }
+
+    const border_color = get_border_color(cl);
+    if (cl.*.isfullscreen != 0) {
+        cl.*.opacity_animation.running = false;
+        client_set_opacity(cl, 1);
+    } else if (cl.*.animation.running and cl.*.animation.action == c.OPEN) {
+        var now: c.struct_timespec = undefined;
+        _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+        const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.animation.time_started);
+        const linear_progress: f64 = if (cl.*.animation.duration != 0)
+            @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.animation.duration))
+        else
+            1.0;
+
+        const opacity_eased_progress = find_animation_curve_at(linear_progress, c.OPAFADEIN);
+        const percent: f32 = if (c.config.animation_fade_in != 0 and cl.*.no_fade_in == 0)
+            @floatCast(opacity_eased_progress)
+        else
+            1.0;
+        var opacity: f32 = if (c.server.selected_monitor != null and
+            cl == c.server.selected_monitor.*.sel)
+            cl.*.focused_opacity
+        else
+            cl.*.unfocused_opacity;
+        var target_opacity = percent * (1.0 - c.config.fadein_begin_opacity) +
+            c.config.fadein_begin_opacity;
+
+        if (c.config.animations != 0 and cl.*.opacity_animation.running) {
+            const focus_passed: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.opacity_animation.time_started);
+            const focus_progress: f64 = if (cl.*.opacity_animation.duration != 0)
+                @as(f64, @floatFromInt(focus_passed)) / @as(f64, @floatFromInt(cl.*.opacity_animation.duration))
+            else
+                1.0;
+
+            interpolateFocusAnimation(cl, focus_progress);
+            opacity = cl.*.opacity_animation.current_opacity;
+            if (focus_progress >= 1.0)
+                cl.*.opacity_animation.running = false;
+        } else {
+            @memcpy(cl.*.opacity_animation.current_border_color[0..4], cl.*.opacity_animation.target_border_color[0..4]);
+            @memcpy(cl.*.opacity_animation.current_dim_color[0..4], cl.*.opacity_animation.target_dim_color[0..4]);
+        }
+
+        if (target_opacity > opacity)
+            target_opacity = opacity;
+
+        cl.*.opacity_animation.current_opacity = target_opacity;
+        client_set_opacity(cl, target_opacity);
+        if (c.config.blur != 0 and cl.*.no_blur == 0 and !client_blur_uses_wallpaper(cl)) {
+            const blur_val = @min(percent * (1.0 - c.config.fadein_begin_opacity) +
+                c.config.fadein_begin_opacity, 1.0);
+            cl.*.blur_opacity = blur_val;
+            c.wlr_scene_blur_set_strength(cl.*.blur, blur_val);
+            c.wlr_scene_blur_set_alpha(cl.*.blur, blur_val);
+        }
+        client_set_state_colors(cl, &cl.*.opacity_animation.current_border_color, &cl.*.opacity_animation.current_dim_color);
+    } else if (c.config.animations != 0 and cl.*.opacity_animation.running) {
+        var now: c.struct_timespec = undefined;
+        _ = c.clock_gettime(c.CLOCK_MONOTONIC, &now);
+
+        const passed_time: i32 = @bitCast(timespec_to_ms(&now) -% cl.*.opacity_animation.time_started);
+        const linear_progress: f64 = if (cl.*.opacity_animation.duration != 0)
+            @as(f64, @floatFromInt(passed_time)) / @as(f64, @floatFromInt(cl.*.opacity_animation.duration))
+        else
+            1.0;
+
+        if (client_step_focus_animation(cl, linear_progress))
+            return true;
+    } else if (c.server.selected_monitor != null and cl == c.server.selected_monitor.*.sel) {
+        cl.*.opacity_animation.running = false;
+        cl.*.opacity_animation.current_opacity = cl.*.focused_opacity;
+        @memcpy(cl.*.opacity_animation.current_border_color[0..4], border_color[0..4]);
+        const dim_color = get_dim_color(cl);
+        @memcpy(cl.*.opacity_animation.current_dim_color[0..4], dim_color[0..4]);
+        client_set_opacity(cl, cl.*.focused_opacity);
+    } else {
+        cl.*.opacity_animation.running = false;
+        cl.*.opacity_animation.current_opacity = cl.*.unfocused_opacity;
+        @memcpy(cl.*.opacity_animation.current_border_color[0..4], border_color[0..4]);
+        const dim_color = get_dim_color(cl);
+        @memcpy(cl.*.opacity_animation.current_dim_color[0..4], dim_color[0..4]);
+        client_set_opacity(cl, cl.*.unfocused_opacity);
+    }
+
+    return false;
+}
+
+export fn client_draw_frame(cl: [*c]Client) callconv(.c) bool {
+    var need_next_tick = false;
+
+    if (cl == null or !client_surface(cl).*.mapped)
+        return false;
+
+    // always render when scene is disabled
+    if (cl.*.force_render != 0 and !cl.*.scene.*.node.enabled) {
+        const force_render = client_force_render(cl);
+        need_next_tick = force_render or need_next_tick;
+    }
+
+    if (c.server.gesture_drive_active and cl.*.mon == c.server.gesture_drive_mon and
+        cl.*.animation.running and cl.*.need_output_flush)
+        return client_apply_focus_opacity(cl);
+
+    if (!cl.*.need_output_flush)
+        return client_apply_focus_opacity(cl) or need_next_tick;
+
+    if (c.config.animations != 0 and cl.*.animation.running) {
+        need_next_tick = true;
+        client_animation_next_tick(cl);
+    } else {
+        client_apply_finish_geometry(cl);
+    }
+
+    const need_fade_focus = client_apply_focus_opacity(cl);
+
+    return need_next_tick or need_fade_focus;
+}
+
+// ---------------------------------------------------------------------------
+// focus/frame tests (slice 91)
+// ---------------------------------------------------------------------------
+
+extern var stub_get_border_color: [4]f32;
+extern var stub_get_dim_color: [4]f32;
+extern var stub_set_opacity_calls: c_int;
+extern var stub_set_opacity_value: f32;
+extern var stub_state_colors_calls: c_int;
+extern var stub_state_border: [4]f32;
+extern var stub_state_dim: [4]f32;
+extern var stub_blur_strength_calls: c_int;
+extern var stub_blur_alpha_calls: c_int;
+extern var stub_blur_strength: f32;
+extern var stub_blur_alpha: f32;
+extern var stub_blur_wallpaper: c_int;
+extern var stub_force_render_result: c_int;
+extern var stub_clock_calls: c_int;
+
+fn resetFocusWorld() void {
+    resetResizeWorld();
+    test_client.border = &test_border;
+    test_client.blur = &test_blur;
+    test_client.scene.*.node.enabled = true;
+    test_client.isfullscreen = 0;
+    test_client.force_render = 0;
+    test_client.need_output_flush = false;
+    test_client.blur_opacity = 1.0;
+    test_client.no_blur = 0;
+    test_client.no_fade_in = 0;
+    test_client.focused_opacity = 1.0;
+    test_client.unfocused_opacity = 0.8;
+    test_client.animation.action = c.MOVE;
+    test_client.animation.running = false;
+    test_client.opacity_animation = std.mem.zeroes(c.struct_acwm_opacity_animation);
+    test_client.opacity_animation.current_opacity = 0.5;
+    test_client.opacity_animation.current_border_color = .{ 0.01, 0.02, 0.03, 0.04 };
+    test_client.opacity_animation.current_dim_color = .{ 0.05, 0.06, 0.07, 0.08 };
+    c.config.animation_duration_focus = 120;
+    c.config.fadein_begin_opacity = 0.2;
+    c.config.animation_fade_in = 1;
+    c.server.selected_monitor = null;
+    c.server.gesture_drive_active = false;
+    c.server.gesture_drive_mon = null;
+    stub_get_border_color = .{ 0.1, 0.2, 0.3, 1.0 };
+    stub_get_dim_color = .{ 0.4, 0.5, 0.6, 1.0 };
+    stub_set_opacity_calls = 0;
+    stub_set_opacity_value = -1;
+    stub_state_colors_calls = 0;
+    stub_state_border = std.mem.zeroes([4]f32);
+    stub_state_dim = std.mem.zeroes([4]f32);
+    stub_blur_strength_calls = 0;
+    stub_blur_alpha_calls = 0;
+    stub_blur_strength = -1;
+    stub_blur_alpha = -1;
+    stub_blur_wallpaper = 0;
+    stub_force_render_result = 0;
+    stub_lower_calls = 0;
+    stub_raise_calls = 0;
+    stub_border_color_update_calls = 0;
+    stub_curve = -1;
+    stub_now_ms = 0;
+    stub_get_now_ms = 1000;
+    stub_clock_calls = 0;
+}
+
+test "start focus animation captures targets and current colors" {
+    resetFocusWorld();
+    client_start_focus_animation(&test_client, false);
+    try testing.expectEqual(@as(u32, 120), test_client.opacity_animation.duration);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.target_opacity);
+    try testing.expectEqual(@as(f32, 0.5), test_client.opacity_animation.initial_opacity);
+    try testing.expectEqual(@as(f32, 0.1), test_client.opacity_animation.target_border_color[0]);
+    try testing.expectEqual(@as(f32, 0.01), test_client.opacity_animation.initial_border_color[0]);
+    try testing.expectEqual(@as(u32, 1000), test_client.opacity_animation.time_started);
+    try testing.expect(test_client.opacity_animation.running);
+}
+
+test "step focus animation interpolates opacity and colors" {
+    resetFocusWorld();
+    test_client.opacity_animation.initial_opacity = 0.0;
+    test_client.opacity_animation.target_opacity = 1.0;
+    test_client.opacity_animation.initial_border_color = .{ 0, 0, 0, 0 };
+    test_client.opacity_animation.target_border_color = .{ 1, 1, 1, 1 };
+    test_client.opacity_animation.initial_dim_color = .{ 0, 0, 0, 0 };
+    test_client.opacity_animation.target_dim_color = .{ 1, 1, 1, 1 };
+    const running = client_step_focus_animation(&test_client, 0.5);
+    try testing.expect(running);
+    try testing.expectEqual(@as(f32, 0.5), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.5), stub_state_border[0]);
+    try testing.expectEqual(@as(f32, 0.5), stub_state_dim[0]);
+
+    const still_running = client_step_focus_animation(&test_client, 1.0);
+    try testing.expect(!still_running);
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expect(!test_client.opacity_animation.running);
+}
+
+test "focus setters raise/lower and honor disabled animations" {
+    resetFocusWorld();
+    c.config.animations = 0;
+    client_set_unfocused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_raise_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_border_color_update_calls);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    client_set_focused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_lower_calls);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    c.config.animations = 1;
+    client_set_focused_opacity_animation(&test_client);
+    try testing.expect(test_client.opacity_animation.running);
+    try testing.expectEqual(@as(f32, 1.0), test_client.opacity_animation.target_opacity);
+    client_set_unfocused_opacity_animation(&test_client);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.target_opacity);
+}
+
+test "focus opacity handles fullscreen and blur reset" {
+    resetFocusWorld();
+    test_client.isfullscreen = 1;
+    try testing.expect(!client_apply_focus_opacity(&test_client));
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expect(!test_client.opacity_animation.running);
+
+    resetFocusWorld();
+    c.config.blur = 1;
+    test_client.blur_opacity = 0.5;
+    test_client.animation.action = c.MOVE;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 1.0), test_client.blur_opacity);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_strength_calls);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_alpha_calls);
+    try testing.expectEqual(@as(f32, 1.0), stub_blur_strength);
+}
+
+test "focus opacity fades an opening window and blur" {
+    resetFocusWorld();
+    c.config.animations = 1;
+    c.config.blur = 1;
+    test_client.animation.action = c.OPEN;
+    test_client.animation.running = true;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.focused_opacity = 1.0;
+    stub_now_ms = 50;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 0.6), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.6), test_client.opacity_animation.current_opacity);
+    try testing.expectEqual(@as(c_int, 1), stub_blur_strength_calls);
+    try testing.expectEqual(@as(f32, 0.6), stub_blur_strength);
+    try testing.expectEqual(@as(f32, 0.6), test_client.blur_opacity);
+}
+
+test "focus opacity steps a running focus animation" {
+    resetFocusWorld();
+    c.config.animations = 1;
+    test_client.opacity_animation.running = true;
+    test_client.opacity_animation.duration = 100;
+    test_client.opacity_animation.time_started = 0;
+    test_client.opacity_animation.initial_opacity = 0;
+    test_client.opacity_animation.target_opacity = 1;
+    stub_now_ms = 50;
+    const need_more = client_apply_focus_opacity(&test_client);
+    try testing.expect(need_more);
+    try testing.expectEqual(@as(f32, 0.5), stub_set_opacity_value);
+    try testing.expect(test_client.opacity_animation.running);
+}
+
+test "focus opacity settles on selected and unselected clients" {
+    resetFocusWorld();
+    c.server.selected_monitor = &test_selected_mon;
+    test_selected_mon.sel = &test_client;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 1.0), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.1), test_client.opacity_animation.current_border_color[0]);
+
+    test_selected_mon.sel = null;
+    _ = client_apply_focus_opacity(&test_client);
+    try testing.expectEqual(@as(f32, 0.8), stub_set_opacity_value);
+    try testing.expectEqual(@as(f32, 0.8), test_client.opacity_animation.current_opacity);
+}
+
+test "draw frame covers force render, gesture and tick paths" {
+    resetFocusWorld();
+    try testing.expect(!client_draw_frame(null));
+    test_draw_surface.mapped = false;
+    try testing.expect(!client_draw_frame(&test_client));
+    test_draw_surface.mapped = true;
+
+    test_client.force_render = 1;
+    test_fadeout_tree.node.enabled = false;
+    test_client.need_output_flush = false;
+    stub_force_render_result = 1;
+    try testing.expect(client_draw_frame(&test_client));
+
+    resetFocusWorld();
+    c.server.gesture_drive_active = true;
+    c.server.gesture_drive_mon = &test_mon;
+    test_client.animation.running = true;
+    test_client.need_output_flush = true;
+    c.server.selected_monitor = null;
+    _ = client_draw_frame(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_set_opacity_calls);
+
+    resetFocusWorld();
+    c.config.animations = 1;
+    test_client.animation.running = true;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    test_client.animation.initial = test_client.animation.current;
+    test_client.current = test_client.animation.current;
+    test_client.geom = test_client.animation.current;
+    test_client.need_output_flush = true;
+    stub_now_ms = 50;
+    try testing.expect(client_draw_frame(&test_client));
+}
+
+test "draw fadeout frame ticks and reports success" {
+    resetFocusWorld();
+    try testing.expect(!client_draw_fadeout_frame(null));
+    test_client.scene = &test_fadeout_tree;
+    test_client.animation.duration = 100;
+    test_client.animation.time_started = 0;
+    stub_now_ms = 50;
+    _ = client_draw_fadeout_frame(&test_client);
+    try testing.expectEqual(@as(c_int, 1), stub_clock_calls);
 }

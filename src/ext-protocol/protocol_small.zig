@@ -73,9 +73,7 @@ export fn handle_tearing_new_object(listener: [*c]c.struct_wl_listener, data: ?*
     _ = listener;
     const new_control = @as([*c]c.struct_wlr_tearing_control_v1, @ptrCast(@alignCast(data.?)));
     const hint = c.wlr_tearing_control_manager_v1_surface_hint_from_surface(c.server.tearing_control, new_control.*.surface);
-    c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/tearing.c", 48,
-        "New presentation hint %d received for surface %p", @as(c_int, @intCast(hint)),
-        @as(?*anyopaque, @ptrCast(new_control.*.surface)));
+    c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/tearing.c", 48, "New presentation hint %d received for surface %p", @as(c_int, @intCast(hint)), @as(?*anyopaque, @ptrCast(new_control.*.surface)));
     const raw = c.ecalloc(1, @sizeOf(Controller)) orelse return;
     const controller = @as(*Controller, @ptrCast(@alignCast(raw)));
     controller.tearing_control = new_control;

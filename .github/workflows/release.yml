@@ -1,0 +1,198 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release (must already exist)
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source:
+    name: source tarball
+    runs-on: depot-ubuntu-24.04-4
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          fetch-depth: 0
+      - name: Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.tag }}" | sed 's/version=v/version=/' >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create source tarball
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          mkdir -p dist
+          git archive --format=tar.gz --prefix="acwm-${version}/" \
+            -o "dist/acwm-${version}.tar.gz" HEAD
+          cp acwm.scm "dist/acwm-${version}.scm"
+          ( cd dist && sha256sum "acwm-${version}.tar.gz" "acwm-${version}.scm" > SHA256SUMS.source )
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source
+          path: dist/*
+
+  rpm:
+    name: RPM v${{ matrix.format }} (${{ matrix.arch }})
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+        format: [4, 6]
+    runs-on: ${{ matrix.arch == 'aarch64' && 'depot-ubuntu-24.04-arm-4' || 'depot-ubuntu-24.04-4' }}
+    container: fedora:45
+    steps:
+      - name: Install git
+        run: dnf install -y git
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: source
+          path: source
+      - name: Install build dependencies
+        run: |
+          dnf install -y \
+            rpm-build gcc pkgconf-pkg-config findutils xz curl tar \
+            wayland-devel wayland-protocols-devel wlroots-devel scenefx-devel \
+            libxkbcommon-devel libinput-devel pixman-devel pcre2-devel \
+            pango-devel cairo-devel cjson-devel libdrm-devel systemd-devel \
+            gdk-pixbuf2-devel libxcb-devel xcb-util-wm-devel \
+            mesa-libEGL-devel mesa-libGLES-devel libdisplay-info-devel \
+            libliftoff-devel hwdata
+      - name: Build RPM
+        env:
+          ACWM_SOURCE_TARBALL: ${{ github.workspace }}/source/acwm-${{ needs.source.outputs.version }}.tar.gz
+        run: |
+          version="${{ needs.source.outputs.version }}"
+          ACWM_SOURCE_TARBALL="$ACWM_SOURCE_TARBALL" \
+            packaging/rpm/build.sh "$version" "dist/v${{ matrix.format }}" "${{ matrix.format }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm-v${{ matrix.format }}-${{ matrix.arch }}
+          path: dist/v${{ matrix.format }}/*.rpm
+
+  void:
+    name: Void xbps (${{ matrix.arch }})
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    runs-on: ${{ matrix.arch == 'aarch64' && 'depot-ubuntu-24.04-arm-4' || 'depot-ubuntu-24.04-4' }}
+    container: ghcr.io/void-linux/void-glibc-full:latest
+    steps:
+      - name: Install git
+        run: xbps-install -Sy git bash
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - name: Install build dependencies
+        run: |
+          xbps-install -Sy \
+            base-devel pkg-config wayland-devel wayland-protocols \
+            wlroots0.20-devel scenefx-devel libinput-devel libxkbcommon-devel \
+            pixman-devel pcre2-devel pango-devel cairo-devel cJSON-devel \
+            libdrm-devel gdk-pixbuf-devel libxcb-devel \
+            xcb-util-wm-devel curl xz tar gzip
+      - name: Build XBPS package
+        run: |
+          version="${{ needs.source.outputs.version }}"
+          packaging/void/build.sh "$version" dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xbps-${{ matrix.arch }}
+          path: dist/*.xbps
+
+  gentoo:
+    name: Gentoo overlay
+    needs: source
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: source
+          path: source
+      - name: Build overlay
+        run: |
+          version="${{ needs.source.outputs.version }}"
+          packaging/release/build-gentoo-overlay.sh \
+            "$version" "source/acwm-${version}.tar.gz" dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gentoo
+          path: dist/*
+
+  nix:
+    name: Nix package (${{ matrix.arch }})
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    runs-on: ${{ matrix.arch == 'aarch64' && 'depot-ubuntu-24.04-arm-4' || 'depot-ubuntu-24.04-4' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - uses: cachix/install-nix-action@v32
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Build flake package
+        run: nix build .#acwm --print-build-logs
+
+  publish:
+    name: publish draft release
+    needs: [source, rpm, void, gentoo]
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect assets
+        run: |
+          mkdir -p dist
+          find artifacts -type f -exec cp -v {} dist/ \;
+          rm -f dist/SHA256SUMS.*
+          # A checksum-correct Void template for the release.
+          version="${{ needs.source.outputs.version }}"
+          packaging/release/build-void-template.sh \
+            "$version" "dist/acwm-${version}.tar.gz" dist
+          ( cd dist && find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+              | sort -z | xargs -0 sha256sum > /tmp/acwm-SHA256SUMS \
+              && mv /tmp/acwm-SHA256SUMS SHA256SUMS )
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ needs.source.outputs.version }}"
+          gh release create "v${version}" --draft --generate-notes \
+            --title "acwm v${version}" || true
+          gh release upload "v${version}" dist/* --clobber
+          gh release edit "v${version}" --draft=false
