@@ -28,6 +28,7 @@ extern fn handle_cursor_hold_end(listener: [*c]c.struct_wl_listener, data: ?*any
 extern fn keyboard_sync_keymap(data: ?*anyopaque) callconv(.c) c_int;
 extern fn handle_signal(signo: i32) callconv(.c) void;
 extern fn restore_child_signals() callconv(.c) void;
+extern fn acwm_ignore_sigpipe() callconv(.c) void;
 
 var swipe_begin_listener: c.struct_wl_listener = std.mem.zeroes(c.struct_wl_listener);
 var swipe_update_listener: c.struct_wl_listener = std.mem.zeroes(c.struct_wl_listener);
@@ -62,11 +63,7 @@ export fn setup() callconv(.c) void {
     sa.__sigaction_handler.sa_handler = handle_signal;
     _ = c.sigemptyset(&sa.sa_mask);
     for (sig) |s| _ = c.sigaction(s, &sa, null);
-    var sa_pipe = std.mem.zeroes(c.struct_sigaction);
-    sa_pipe.sa_flags = 0;
-    sa_pipe.__sigaction_handler.sa_handler = c.SIG_IGN;
-    _ = c.sigemptyset(&sa_pipe.sa_mask);
-    _ = c.sigaction(c.SIGPIPE, &sa_pipe, null);
+    acwm_ignore_sigpipe();
     _ = c.pthread_atfork(null, null, restore_child_signals);
     c.wlr_log_init(@intCast(c.config.log_level), null);
 
