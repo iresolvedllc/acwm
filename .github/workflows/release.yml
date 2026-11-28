@@ -27,8 +27,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
           fetch-depth: 0
       - name: Version
         id: version
@@ -45,7 +43,7 @@ jobs:
           git archive --format=tar.gz --prefix="acwm-${version}/" \
             -o "dist/acwm-${version}.tar.gz" HEAD
           cp acwm.scm "dist/acwm-${version}.scm"
-          ( cd dist && sha256sum ./* > SHA256SUMS.source )
+          ( cd dist && sha256sum "acwm-${version}.tar.gz" "acwm-${version}.scm" > SHA256SUMS.source )
       - uses: actions/upload-artifact@v4
         with:
           name: source
