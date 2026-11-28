@@ -44,7 +44,7 @@ jobs:
             -o "dist/acwm-${version}.tar.gz" HEAD
           cp acwm.scm "dist/acwm-${version}.scm"
           ( cd dist && sha256sum "acwm-${version}.tar.gz" "acwm-${version}.scm" > SHA256SUMS.source )
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: source
           path: dist/*
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: source
           path: source
@@ -86,7 +86,7 @@ jobs:
           version="${{ needs.source.outputs.version }}"
           ACWM_SOURCE_TARBALL="$ACWM_SOURCE_TARBALL" \
             packaging/rpm/build.sh "$version" "dist/v${{ matrix.format }}" "${{ matrix.format }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: rpm-v${{ matrix.format }}-${{ matrix.arch }}
           path: dist/v${{ matrix.format }}/*.rpm
@@ -118,7 +118,7 @@ jobs:
         run: |
           version="${{ needs.source.outputs.version }}"
           packaging/void/build.sh "$version" dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: xbps-${{ matrix.arch }}
           path: dist/*.xbps
@@ -131,7 +131,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: source
           path: source
@@ -140,7 +140,7 @@ jobs:
           version="${{ needs.source.outputs.version }}"
           packaging/release/build-gentoo-overlay.sh \
             "$version" "source/acwm-${version}.tar.gz" dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: gentoo
           path: dist/*
@@ -172,7 +172,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
       - name: Collect assets
