@@ -30,8 +30,8 @@ features:
     details: acwm-greeter + greetd. acwm is its own login compositor; no SDDM required.
   - title: Tags, not workspaces
     details: Each tag keeps an independent layout. Scroller, master-stack, monocle, dwindle, grid and more.
-  - title: Being ported to Zig
-    details: Module-by-module behind stable C-ABI boundaries, each with unit tests. Follow the roadmap.
+  - title: Zig compositor core
+    details: The whole compositor core is Zig behind the original C ABI, with 736 unit tests and a single zig build.
 ---
 
 ## Quick look

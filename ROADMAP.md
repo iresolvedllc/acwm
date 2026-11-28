@@ -730,7 +730,16 @@ green.
       ready/new-surface when enabled), and the default tag names plus
       `xkb_fallback_rules`. C files guarded with ACWM_ZIG_SERVER and
       ACWM_ZIG_CONFIG_PRESET
-- [ ] `draw/` remainder
+- [x] Remaining helper bodies (slices 95–98): scene-node/`wlr_scene_tree`
+      snapshot recursion with buffer/shadow metadata, wrapper trees and
+      destruction cleanup; exported `last_cursor`/`pointer_locked_applied`;
+      IPC device-type/lookup/layout-string/static-json/all-clients helpers;
+      bind actions (view switching, VT change, virtual output create/
+      destroy, gaps reset, exchange/move/stack exchange); and the
+      `parse_option` dispatcher calling all 18 Zig option groups with the
+      unknown-key error path. C files deleted; only log/util/error-store
+      and sd-bus vtable glue stay C
+- [x] `draw/` remainder: text-node and dim-node are fully Zig; no first-party draw C remains
 - [x] Main runtime/orchestration from `main.c` → `src/main_runtime.zig`:
       nofile limit bump/restore with atfork hooks, SIGCHLD/SIGINT/SIGTERM
       handling, child signal restore, full listener teardown, subsystem
@@ -842,11 +851,13 @@ green.
       entry point. Remaining C is limited to genuinely shared or unported
       glue: `common/log.c` (variadic), `common/util.c` (variadic helpers
       shared with clients), `config/error_store.c` (shared with acwm-msg),
-      `bar/tray_vtable.c` (sd-bus macros), plus the not-yet-ported helper
-      bodies in `animation/common.c` (scene snapshots), `input/pointer.c`
-      (shared cursor globals), `ipc/ipc.c` (IPC helpers), `dispatch/bind.c`
-      (action callbacks) and `config/option_defs.c` (parse_option
-      dispatcher)
+      `bar/tray_vtable.c` (sd-bus macros). The formerly-unported helpers
+      are now Zig too: scene snapshots (`src/animation/snapshot.zig`),
+      cursor globals (`src/input/pointer_input.zig` exports),
+      IPC helpers (`src/ipc/ipc_helpers.zig`), bind action callbacks
+      (`src/dispatch/bind_actions.zig`) and the option dispatcher
+      (`src/config/parse_option.zig`). Only four C files remain, all
+      shared glue for the C companion clients or variadic backends
 - [ ] CI: zig build + zig build test + nix build on the three usual systems
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed
