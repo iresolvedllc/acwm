@@ -302,6 +302,8 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/watcher.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/main.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
@@ -1124,6 +1126,19 @@ pub fn build(b: *std.Build) void {
         compositor.root_module.addObject(cxw_obj);
     }
 
+
+    // Native entry point (replaces main.c's wrapper).
+    {
+        const entry_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/main_entry.zig"),
+        });
+        entry_mod.addImport("cc", c_mod);
+        const entry_obj = b.addObject(.{ .name = "acwm-main-entry", .root_module = entry_mod });
+        compositor.root_module.addObject(entry_obj);
+    }
 
     // Zig twin of config/preset.c constants (slice 92).
     {

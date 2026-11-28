@@ -46,5 +46,5 @@ cd acwm
 zig build
 ```
 
-See [installation](/docs/installation) for dependencies and the meson path,
+See [installation](/docs/installation) for dependencies and the source-build path,
 or read the [introduction](/docs/) for the full feature tour.

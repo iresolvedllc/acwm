@@ -89,17 +89,14 @@ acwm is not packaged by distributions yet. Build from source:
 git clone https://github.com/iresolvedllc/acwm.git
 cd acwm
 
-# Zig build (Zig 0.17):
-zig build --prefix=/usr
-
-# or the meson build:
-meson setup build && ninja -C build && sudo ninja -C build install
+# Zig build (Zig 0.17), installed system-wide:
+sudo zig build --prefix=/usr -Doptimize=ReleaseFast
 ```
 
 Dependencies: `wayland`, `wayland-protocols`, `wlroots 0.20`, `scenefx 0.5`,
 `libinput`, `libxkbcommon`, `pixman`, `pcre2`, `pango`/`cairo`, `cjson`,
 `libdisplay-info`, `hwdata`, `seatd`, and `libsystemd` (bar tray + portal
-backend). Zig 0.17 for the Zig build; meson ≥ 1.x for the meson build.
+backend). Zig 0.17 is the only build system now.
 
 Then copy the default config:
 
