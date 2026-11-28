@@ -1126,7 +1126,6 @@ pub fn build(b: *std.Build) void {
         compositor.root_module.addObject(cxw_obj);
     }
 
-
     // Native entry point (replaces main.c's wrapper).
     {
         const entry_mod = b.createModule(.{
@@ -1787,7 +1786,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/xwayland_primary_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE", "-DXWAYLAND" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1814,7 +1813,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/animation_client_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE", "-DXWAYLAND" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1838,7 +1837,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/layout_overview_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1865,7 +1864,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/main_runtime_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1891,7 +1890,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/switcher_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1917,7 +1916,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/overview_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1971,7 +1970,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/bar_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1994,7 +1993,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/text_input_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2021,7 +2020,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/xdg_output_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2067,7 +2066,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/ext_small_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2168,7 +2167,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/trackpad_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2194,7 +2193,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/tablet_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2220,7 +2219,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/touch_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2243,7 +2242,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/input_device_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }

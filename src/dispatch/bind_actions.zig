@@ -98,9 +98,7 @@ export fn change_vt(arg: [*c]const Arg) callconv(.c) i32 {
 
     if (c.server.selected_monitor != null) {
         c.server.chvt_backup_tag = c.server.selected_monitor.*.pertag.*.curtag;
-        _ = c.strncpy(&c.server.chvt_backup_monitor_name,
-            c.server.selected_monitor.*.wlr_output.*.name,
-            c.server.chvt_backup_monitor_name.len - 1);
+        _ = c.strncpy(&c.server.chvt_backup_monitor_name, c.server.selected_monitor.*.wlr_output.*.name, c.server.chvt_backup_monitor_name.len - 1);
     }
 
     _ = wlr_session_change_vt(c.server.session, arg.*.ui);
@@ -125,8 +123,7 @@ export fn create_virtual_output(arg: [*c]const Arg) callconv(.c) i32 {
         while (pos != head) : (pos = pos.*.next) {
             const m = monitorFromLink(pos);
             if (c.strcmp(m.wlr_output.*.name, arg.*.v) == 0) {
-                acwm_error_impl(true, c.WLR_ERROR, "src/dispatch/bind.c", 125,
-                    "Output '%s' already exists", arg.*.v);
+                acwm_error_impl(true, c.WLR_ERROR, "src/dispatch/bind.c", 125, "Output '%s' already exists", arg.*.v);
                 return 0;
             }
         }
@@ -143,8 +140,7 @@ export fn create_virtual_output(arg: [*c]const Arg) callconv(.c) i32 {
     }
 
     if (arg.*.v != null) {
-        acwm_error_impl(true, c.WLR_INFO, "src/dispatch/bind.c", 142,
-            "Virtual output '%s' created", arg.*.v);
+        acwm_error_impl(true, c.WLR_INFO, "src/dispatch/bind.c", 142, "Virtual output '%s' created", arg.*.v);
     } else {
         acwm_error_impl(true, c.WLR_INFO, "src/dispatch/bind.c", 144, "Virtual output created");
     }
@@ -175,11 +171,9 @@ export fn destroy_all_virtual_output(arg: [*c]const Arg) callconv(.c) i32 {
 export fn reset_gaps(arg: [*c]const Arg) callconv(.c) i32 {
     _ = arg;
     if (c.server.selected_monitor != null and is_special_active(c.server.selected_monitor)) {
-        setgaps(@intCast(c.config.special_gappoh), @intCast(c.config.special_gappov),
-            @intCast(c.config.special_gappih), @intCast(c.config.special_gappiv));
+        setgaps(@intCast(c.config.special_gappoh), @intCast(c.config.special_gappov), @intCast(c.config.special_gappih), @intCast(c.config.special_gappiv));
     } else {
-        setgaps(@intCast(c.config.gappoh), @intCast(c.config.gappov),
-            @intCast(c.config.gappih), @intCast(c.config.gappiv));
+        setgaps(@intCast(c.config.gappoh), @intCast(c.config.gappov), @intCast(c.config.gappih), @intCast(c.config.gappiv));
     }
     return 0;
 }

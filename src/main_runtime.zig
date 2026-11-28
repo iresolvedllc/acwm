@@ -70,23 +70,19 @@ fn restoreNofileLimit() callconv(.c) void {
     if (original_nofile_rlimit.rlim_cur == 0)
         return;
     if (c.setrlimit(c.RLIMIT_NOFILE, &original_nofile_rlimit) != 0)
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 147,
-            "Failed to restore max open files limit: setrlimit(NOFILE) failed");
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 147, "Failed to restore max open files limit: setrlimit(NOFILE) failed");
 }
 
 fn increaseNofileLimit() void {
     if (c.getrlimit(c.RLIMIT_NOFILE, &original_nofile_rlimit) != 0) {
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 154,
-            "Failed to bump max open files limit: getrlimit(NOFILE) failed");
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 154, "Failed to bump max open files limit: getrlimit(NOFILE) failed");
         return;
     }
     var new_rlimit = original_nofile_rlimit;
     new_rlimit.rlim_cur = new_rlimit.rlim_max;
     if (c.setrlimit(c.RLIMIT_NOFILE, &new_rlimit) != 0) {
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 162,
-            "Failed to bump max open files limit: setrlimit(NOFILE) failed");
-        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 164, "Running with %d max open files",
-            @as(c_int, @intCast(original_nofile_rlimit.rlim_cur)));
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/main.c", 162, "Failed to bump max open files limit: setrlimit(NOFILE) failed");
+        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 164, "Running with %d max open files", @as(c_int, @intCast(original_nofile_rlimit.rlim_cur)));
         return;
     }
     _ = c.pthread_atfork(null, null, restoreNofileLimit);
@@ -115,23 +111,20 @@ fn removeAll() void {
     const s = &c.server;
     c.wl_list_remove(&s.ext_workspace_commit_listener.link);
     inline for (.{
-        "print_status_listener", "cursor_axis_listener", "cursor_button_listener",
-        "cursor_frame_listener", "cursor_motion_listener", "cursor_motion_absolute_listener",
-        "cursor_touch_down_listener", "cursor_touch_up_listener", "cursor_touch_cancel_listener",
-        "cursor_touch_motion_listener", "cursor_touch_frame_listener",
-        "tablet_tool_proximity_listener", "tablet_tool_axis_listener",
-        "tablet_tool_button_listener", "tablet_tool_tip_listener", "gpu_reset_listener",
-        "new_idle_inhibitor_listener", "layout_change_listener", "new_input_device_listener",
-        "new_virtual_keyboard_listener", "new_virtual_pointer_listener",
-        "new_pointer_constraint_listener", "new_output_listener", "new_xdg_toplevel_listener",
-        "new_xdg_decoration_listener", "new_xdg_popup_listener", "new_layer_surface_listener",
-        "output_manager_apply_listener", "output_manager_test_listener",
-        "output_power_manager_set_mode_listener", "request_cursor_listener",
-        "request_set_psel_listener", "request_set_sel_listener", "request_set_cursor_shape_listener",
-        "request_start_drag_listener", "start_drag_listener", "new_session_lock_listener",
-        "new_foreign_toplevel_capture_listener", "tearing_new_object_listener",
-        "keyboard_shortcuts_inhibit_new_inhibitor_listener",
-        "ext_image_copy_capture_manager_new_session_listener",
+        "print_status_listener",                             "cursor_axis_listener",                                "cursor_button_listener",
+        "cursor_frame_listener",                             "cursor_motion_listener",                              "cursor_motion_absolute_listener",
+        "cursor_touch_down_listener",                        "cursor_touch_up_listener",                            "cursor_touch_cancel_listener",
+        "cursor_touch_motion_listener",                      "cursor_touch_frame_listener",                         "tablet_tool_proximity_listener",
+        "tablet_tool_axis_listener",                         "tablet_tool_button_listener",                         "tablet_tool_tip_listener",
+        "gpu_reset_listener",                                "new_idle_inhibitor_listener",                         "layout_change_listener",
+        "new_input_device_listener",                         "new_virtual_keyboard_listener",                       "new_virtual_pointer_listener",
+        "new_pointer_constraint_listener",                   "new_output_listener",                                 "new_xdg_toplevel_listener",
+        "new_xdg_decoration_listener",                       "new_xdg_popup_listener",                              "new_layer_surface_listener",
+        "output_manager_apply_listener",                     "output_manager_test_listener",                        "output_power_manager_set_mode_listener",
+        "request_cursor_listener",                           "request_set_psel_listener",                           "request_set_sel_listener",
+        "request_set_cursor_shape_listener",                 "request_start_drag_listener",                         "start_drag_listener",
+        "new_session_lock_listener",                         "new_foreign_toplevel_capture_listener",               "tearing_new_object_listener",
+        "keyboard_shortcuts_inhibit_new_inhibitor_listener", "ext_image_copy_capture_manager_new_session_listener",
     }) |field| c.wl_list_remove(&@field(s, field).link);
     if (s.drm_lease_manager != null)
         c.wl_list_remove(&s.drm_lease_request_listener.link);
@@ -177,15 +170,14 @@ export fn handle_quit_signal(signo: i32) callconv(.c) void {
 }
 
 var env_vars = [_][*c]u8{
-    @constCast("DISPLAY"), @constCast("WAYLAND_DISPLAY"), @constCast("XDG_CURRENT_DESKTOP"),
-    @constCast("XDG_SESSION_TYPE"), @constCast("XCURSOR_THEME"), @constCast("XCURSOR_SIZE"),
+    @constCast("DISPLAY"),                 @constCast("WAYLAND_DISPLAY"), @constCast("XDG_CURRENT_DESKTOP"),
+    @constCast("XDG_SESSION_TYPE"),        @constCast("XCURSOR_THEME"),   @constCast("XCURSOR_SIZE"),
     @constCast("ACWM_INSTANCE_SIGNATURE"), null,
 };
 
 export fn set_activation_env() callconv(.c) void {
     if (c.getenv("DBUS_SESSION_BUS_ADDRESS") == null) {
-        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 299,
-            "Not updating dbus execution environment: DBUS_SESSION_BUS_ADDRESS not set");
+        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 299, "Not updating dbus execution environment: DBUS_SESSION_BUS_ADDRESS not set");
         return;
     }
     c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 303, "Updating dbus execution environment");
@@ -214,8 +206,7 @@ export fn set_activation_env() callconv(.c) void {
 
 export fn unset_activation_env() callconv(.c) void {
     if (c.getenv("DBUS_SESSION_BUS_ADDRESS") == null) {
-        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 343,
-            "Not clearing dbus execution environment: DBUS_SESSION_BUS_ADDRESS not set");
+        c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 343, "Not clearing dbus execution environment: DBUS_SESSION_BUS_ADDRESS not set");
         return;
     }
     c.acwm_error_impl(true, c.WLR_INFO, "src/main.c", 347, "Clearing dbus execution environment");

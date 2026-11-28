@@ -110,12 +110,21 @@ export fn xdg_output_send_details(output: [*c]Output, resource: [*c]c.struct_wl_
         if (build_options.xwayland)
             xwayland_screen_origin(&ox, &oy);
         if (c.config.xwayland_ignore_scale != 0) {
-            x = px; y = py; w = pw; h = ph;
+            x = px;
+            y = py;
+            w = pw;
+            h = ph;
         } else {
-            x = lx - ox; y = ly - oy; w = lw; h = lh;
+            x = lx - ox;
+            y = ly - oy;
+            w = lw;
+            h = lh;
         }
     } else {
-        x = lx; y = ly; w = lw; h = lh;
+        x = lx;
+        y = ly;
+        w = lw;
+        h = lh;
     }
     c.zxdg_output_v1_send_logical_position(resource, x, y);
     c.zxdg_output_v1_send_logical_size(resource, w, h);
@@ -136,8 +145,14 @@ export fn xdg_output_send_details(output: [*c]Output, resource: [*c]c.struct_wl_
 }
 
 export fn xdg_output_logical_changed(output: [*c]Output) callconv(.c) bool {
-    var lx: i32 = 0; var ly: i32 = 0; var lw: i32 = 0; var lh: i32 = 0;
-    var px: i32 = 0; var py: i32 = 0; var pw: i32 = 0; var ph: i32 = 0;
+    var lx: i32 = 0;
+    var ly: i32 = 0;
+    var lw: i32 = 0;
+    var lh: i32 = 0;
+    var px: i32 = 0;
+    var py: i32 = 0;
+    var pw: i32 = 0;
+    var ph: i32 = 0;
     xdg_output_get_values(output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
     if (!output.*.sent)
         return false;
@@ -146,8 +161,14 @@ export fn xdg_output_logical_changed(output: [*c]Output) callconv(.c) bool {
 }
 
 export fn xdg_output_xwayland_changed(output: [*c]Output) callconv(.c) bool {
-    var lx: i32 = 0; var ly: i32 = 0; var lw: i32 = 0; var lh: i32 = 0;
-    var px: i32 = 0; var py: i32 = 0; var pw: i32 = 0; var ph: i32 = 0;
+    var lx: i32 = 0;
+    var ly: i32 = 0;
+    var lw: i32 = 0;
+    var lh: i32 = 0;
+    var px: i32 = 0;
+    var py: i32 = 0;
+    var pw: i32 = 0;
+    var ph: i32 = 0;
     xdg_output_get_values(output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
     const changed = output.*.last_px != px or output.*.last_py != py or
         output.*.last_pw != pw or output.*.last_ph != ph;
@@ -332,11 +353,9 @@ export fn xdg_output_update_all() callconv(.c) void {
 
 export fn xdg_output_init() callconv(.c) void {
     listInit(&xdg_outputs);
-    xdg_output_global = wl_global_create(c.server.display, &zxdg_output_manager_v1_interface,
-        c.ACWM_XDG_OUTPUT_MANAGER_VERSION, null, xdg_output_manager_bind);
+    xdg_output_global = wl_global_create(c.server.display, &zxdg_output_manager_v1_interface, c.ACWM_XDG_OUTPUT_MANAGER_VERSION, null, xdg_output_manager_bind);
     if (xdg_output_global == null)
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/xdg-output.c", 377,
-            "failed to create zxdg_output_manager_v1 global");
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/xdg-output.c", 377, "failed to create zxdg_output_manager_v1 global");
 }
 
 // ---------------------------------------------------------------------------
@@ -427,8 +446,14 @@ test "xdg output values are rotation and scale aware" {
     fakeOutput(&out, &m);
     var output: Output = std.mem.zeroes(Output);
     output.wlr_output = &out;
-    var lx: i32 = 0; var ly: i32 = 0; var lw: i32 = 0; var lh: i32 = 0;
-    var px: i32 = 0; var py: i32 = 0; var pw: i32 = 0; var ph: i32 = 0;
+    var lx: i32 = 0;
+    var ly: i32 = 0;
+    var lw: i32 = 0;
+    var lh: i32 = 0;
+    var px: i32 = 0;
+    var py: i32 = 0;
+    var pw: i32 = 0;
+    var ph: i32 = 0;
     xdg_output_get_values(&output, &lx, &ly, &lw, &lh, &px, &py, &pw, &ph);
     try testing.expectEqual(@as(i32, 100), lx);
     try testing.expectEqual(@as(i32, 50), ly);

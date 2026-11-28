@@ -858,7 +858,9 @@ green.
       (`src/dispatch/bind_actions.zig`) and the option dispatcher
       (`src/config/parse_option.zig`). Only four C files remain, all
       shared glue for the C companion clients or variadic backends
-- [ ] CI: zig build + zig build test + nix build on the three usual systems
+- [x] CI: `.github/workflows/ci.yml` builds `.#acwm` and runs
+      `zig build test` on x86_64-linux and aarch64-linux, plus a
+      `zig fmt --check build.zig src` job; all Zig sources are formatted
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed
 - [ ] Publish docs (website build from `docs/`), tagged releases with

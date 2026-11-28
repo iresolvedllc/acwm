@@ -63,7 +63,6 @@ export fn parse_option(
             return result > 0;
     }
 
-    acwm_error_impl(false, c.WLR_ERROR, "src/config/option_defs.c", line_number,
-        "Unknown keyword: \x1b[1m\x1b[31m%s\x1b[0m", key);
+    acwm_error_impl(false, c.WLR_ERROR, "src/config/option_defs.c", line_number, "Unknown keyword: \x1b[1m\x1b[31m%s\x1b[0m", key);
     return false;
 }

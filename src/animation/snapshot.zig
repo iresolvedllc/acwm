@@ -70,8 +70,7 @@ export fn scene_node_snapshot(
                 return false;
             }
 
-            c.wlr_scene_buffer_set_dest_size(snapshot_buffer,
-                scene_buffer.*.dst_width, scene_buffer.*.dst_height);
+            c.wlr_scene_buffer_set_dest_size(snapshot_buffer, scene_buffer.*.dst_width, scene_buffer.*.dst_height);
             c.wlr_scene_buffer_set_opaque_region(snapshot_buffer, &scene_buffer.*.opaque_region);
             c.wlr_scene_buffer_set_source_box(snapshot_buffer, &scene_buffer.*.src_box);
             c.wlr_scene_buffer_set_transform(snapshot_buffer, scene_buffer.*.transform);
@@ -82,24 +81,19 @@ export fn scene_node_snapshot(
             c.wlr_scene_buffer_set_corner_radii(snapshot_buffer, scene_buffer.*.corners);
 
             if (scene_surface != null and scene_surface.*.surface.*.buffer != null) {
-                c.wlr_scene_buffer_set_buffer(snapshot_buffer,
-                    &scene_surface.*.surface.*.buffer.*.base);
+                c.wlr_scene_buffer_set_buffer(snapshot_buffer, &scene_surface.*.surface.*.buffer.*.base);
             } else {
                 c.wlr_scene_buffer_set_buffer(snapshot_buffer, scene_buffer.*.buffer);
             }
         },
         c.WLR_SCENE_NODE_SHADOW => {
             const scene_shadow = c.wlr_scene_shadow_from_node(node);
-            const snapshot_shadow = c.wlr_scene_shadow_create(snapshot_tree,
-                scene_shadow.*.width, scene_shadow.*.height,
-                scene_shadow.*.corner_radius, scene_shadow.*.blur_sigma,
-                &scene_shadow.*.color);
+            const snapshot_shadow = c.wlr_scene_shadow_create(snapshot_tree, scene_shadow.*.width, scene_shadow.*.height, scene_shadow.*.corner_radius, scene_shadow.*.blur_sigma, &scene_shadow.*.color);
             if (snapshot_shadow == null)
                 return false;
             snapshot_node = &snapshot_shadow.*.node;
 
-            c.wlr_scene_shadow_set_clipped_region(snapshot_shadow,
-                scene_shadow.*.clipped_region);
+            c.wlr_scene_shadow_set_clipped_region(snapshot_shadow, scene_shadow.*.clipped_region);
             c.wlr_scene_node_set_enabled(&snapshot_shadow.*.node, false);
         },
         c.WLR_SCENE_NODE_BLUR => {},

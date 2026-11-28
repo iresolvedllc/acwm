@@ -323,8 +323,7 @@ export fn standalone_keyboard_apply_config(group: [*c]KeyboardGroup, rule: [*c]C
     var keymap = compile_rule_keymap(rule);
     if (keymap == null and rule != null) {
         const name = if (group.*.keyboard.*.base.name != null) group.*.keyboard.*.base.name else @as([*c]u8, @constCast("unknown device"));
-        c.acwm_error_impl(false, c.WLR_ERROR, "src/input/keyboard.c", 365,
-            "Failed to compile devicerule keymap for %s, falling back to the global layout", name);
+        c.acwm_error_impl(false, c.WLR_ERROR, "src/input/keyboard.c", 365, "Failed to compile devicerule keymap for %s, falling back to the global layout", name);
         const context = c.xkb_context_new(c.XKB_CONTEXT_NO_FLAGS);
         if (context != null) {
             keymap = c.xkb_keymap_new_from_names(context, &c.config.xkb_rules, c.XKB_KEYMAP_COMPILE_NO_FLAGS);
@@ -443,11 +442,7 @@ export fn keyboard_group_create() callconv(.c) [*c]KeyboardGroup {
         c.die("failed to create xkb context");
     var keymap = c.xkb_keymap_new_from_names(context, &c.config.xkb_rules, c.XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (keymap == null) {
-        c.acwm_error_impl(false, c.WLR_ERROR, "src/input/keyboard.c", 432,
-            "Failed to compile keymap (layout=\"%s\" variant=\"%s\" options=\"%s\"), falling back to the default layout",
-            if (c.config.xkb_rules.layout != null) c.config.xkb_rules.layout else @as([*c]const u8, @constCast("")),
-            if (c.config.xkb_rules.variant != null) c.config.xkb_rules.variant else @as([*c]const u8, @constCast("")),
-            if (c.config.xkb_rules.options != null) c.config.xkb_rules.options else @as([*c]const u8, @constCast("")));
+        c.acwm_error_impl(false, c.WLR_ERROR, "src/input/keyboard.c", 432, "Failed to compile keymap (layout=\"%s\" variant=\"%s\" options=\"%s\"), falling back to the default layout", if (c.config.xkb_rules.layout != null) c.config.xkb_rules.layout else @as([*c]const u8, @constCast("")), if (c.config.xkb_rules.variant != null) c.config.xkb_rules.variant else @as([*c]const u8, @constCast("")), if (c.config.xkb_rules.options != null) c.config.xkb_rules.options else @as([*c]const u8, @constCast("")));
         keymap = c.xkb_keymap_new_from_names(context, &c.xkb_fallback_rules, c.XKB_KEYMAP_COMPILE_NO_FLAGS);
         if (keymap == null)
             c.die("failed to compile keymap");
@@ -731,8 +726,7 @@ export fn reset_keyboard_layout() callconv(.c) void {
 
     const new_keymap = c.xkb_keymap_new_from_names(context, &c.config.xkb_rules, c.XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (new_keymap == null) {
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/input/keyboard.c", 780,
-            "Failed to compile keymap (invalid layout?), keeping the current keymap");
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/input/keyboard.c", 780, "Failed to compile keymap (invalid layout?), keeping the current keymap");
         c.xkb_context_unref(context);
         return;
     }
@@ -745,8 +739,7 @@ export fn reset_keyboard_layout() callconv(.c) void {
         return;
     }
     if (current >= new_num_layouts) {
-        c.acwm_error_impl(true, c.WLR_INFO, "src/input/keyboard.c", 795,
-            "Current layout index %u out of range for new keymap, resetting to 0", current);
+        c.acwm_error_impl(true, c.WLR_INFO, "src/input/keyboard.c", 795, "Current layout index %u out of range for new keymap, resetting to 0", current);
         current = 0;
     }
 

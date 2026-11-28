@@ -125,8 +125,7 @@ export fn add_workspace_by_tag(tag: i32, m: [*c]Monitor) callconv(.c) void {
     c.wl_list_append(&workspaces, &w.link);
     w.tag = @intCast(tag);
     w.m = m;
-    w.ext_workspace = c.wlr_ext_workspace_handle_v1_create(c.server.ext_workspace_manager, name,
-        c.EXT_WORKSPACE_HANDLE_V1_WORKSPACE_CAPABILITIES_ACTIVATE | c.EXT_WORKSPACE_HANDLE_V1_WORKSPACE_CAPABILITIES_DEACTIVATE);
+    w.ext_workspace = c.wlr_ext_workspace_handle_v1_create(c.server.ext_workspace_manager, name, c.EXT_WORKSPACE_HANDLE_V1_WORKSPACE_CAPABILITIES_ACTIVATE | c.EXT_WORKSPACE_HANDLE_V1_WORKSPACE_CAPABILITIES_DEACTIVATE);
     w.ext_workspace.*.data = w;
     c.wlr_ext_workspace_handle_v1_set_group(w.ext_workspace, m.*.ext_group);
     c.wlr_ext_workspace_handle_v1_set_name(w.ext_workspace, name);
@@ -170,12 +169,14 @@ export fn handle_ext_commit(listener: [*c]c.struct_wl_listener, data: ?*anyopaqu
                 var wpos = workspaces.next;
                 while (wpos != whead) : (wpos = wpos.*.next) {
                     const w = workspaceFromLink(wpos);
-                    if (w.ext_workspace == request.*.unnamed_0.activate.workspace) { workspace = w; break; }
+                    if (w.ext_workspace == request.*.unnamed_0.activate.workspace) {
+                        workspace = w;
+                        break;
+                    }
                 }
                 if (workspace == null or workspace.*.m.*.isoverview != 0) continue;
                 goto_workspace(workspace);
-                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/ext-workspace.c", 187,
-                    "ext activating workspace %d", workspace.*.tag);
+                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/ext-workspace.c", 187, "ext activating workspace %d", workspace.*.tag);
             },
             c.WLR_EXT_WORKSPACE_V1_REQUEST_DEACTIVATE => {
                 if (request.*.unnamed_0.deactivate.workspace == null) continue;
@@ -184,12 +185,14 @@ export fn handle_ext_commit(listener: [*c]c.struct_wl_listener, data: ?*anyopaqu
                 var wpos = workspaces.next;
                 while (wpos != whead) : (wpos = wpos.*.next) {
                     const w = workspaceFromLink(wpos);
-                    if (w.ext_workspace == request.*.unnamed_0.deactivate.workspace) { workspace = w; break; }
+                    if (w.ext_workspace == request.*.unnamed_0.deactivate.workspace) {
+                        workspace = w;
+                        break;
+                    }
                 }
                 if (workspace == null or workspace.*.m.*.isoverview != 0) continue;
                 toggle_workspace(workspace);
-                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/ext-workspace.c", 209,
-                    "ext deactivating workspace %d", workspace.*.tag);
+                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/ext-workspace.c", 209, "ext deactivating workspace %d", workspace.*.tag);
             },
             else => {},
         }
@@ -261,7 +264,10 @@ export fn sync_workspaces_to_tag_num(m: [*c]Monitor) callconv(.c) void {
             var wpos = workspaces.next;
             while (wpos != head) : (wpos = wpos.*.next) {
                 const w = workspaceFromLink(wpos);
-                if (w.m == m and w.tag == @as(u32, @intCast(i))) { exists = true; break; }
+                if (w.m == m and w.tag == @as(u32, @intCast(i))) {
+                    exists = true;
+                    break;
+                }
             }
             if (!exists) add_workspace_by_tag(i, m);
         }
@@ -328,16 +334,14 @@ export fn output_enable_hdr(m: [*c]Monitor, os: *State, enabled: bool, silent: b
     if (!enabled) {
         if (m.*.wlr_output.*.supported_primaries != 0 or m.*.wlr_output.*.supported_transfer_functions != 0) {
             if (!silent)
-                c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/hdr.c", 80,
-                    "Disabling HDR on output %s", m.*.wlr_output.*.name);
+                c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/hdr.c", 80, "Disabling HDR on output %s", m.*.wlr_output.*.name);
             _ = c.wlr_output_state_set_image_description(os, null);
         }
         m.*.is_hdr_enabling = false;
         return;
     }
     if (!silent)
-        c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/hdr.c", 89,
-            "Enabling HDR on output %s", m.*.wlr_output.*.name);
+        c.acwm_error_impl(true, c.WLR_DEBUG, "src/ext-protocol/hdr.c", 89, "Enabling HDR on output %s", m.*.wlr_output.*.name);
     var desc = std.mem.zeroes(c.struct_wlr_output_image_description);
     desc.primaries = c.WLR_COLOR_NAMED_PRIMARIES_BT2020;
     desc.transfer_function = c.WLR_COLOR_TRANSFER_FUNCTION_ST2084_PQ;
@@ -359,8 +363,7 @@ export fn output_state_setup_hdr(m: [*c]Monitor, silent: bool, state: *State) ca
     var hdr_succeeded = false;
     if (!hdr_supported) {
         if (!silent)
-            c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 116,
-                "HDR not supported on output %s: %s", m.*.wlr_output.*.name, unsupported_reason);
+            c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 116, "HDR not supported on output %s: %s", m.*.wlr_output.*.name, unsupported_reason);
         return;
     }
     var depth = c.config.hdr_depth;
@@ -372,18 +375,15 @@ export fn output_state_setup_hdr(m: [*c]Monitor, silent: bool, state: *State) ca
         hdr_succeeded = output_set_render_format(m, @constCast(&formats_10bit), formats_10bit.len, state);
         if (!hdr_succeeded) {
             if (!silent)
-                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 130,
-                    "No 10 bit color formats supported, HDR disabled.");
+                c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 130, "No 10 bit color formats supported, HDR disabled.");
             hdr_succeeded = output_set_render_format(m, @constCast(&formats_8bit), formats_8bit.len, state);
             if (!hdr_succeeded and !silent)
-                c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 135,
-                    "No 8 bit color formats supported!");
+                c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 135, "No 8 bit color formats supported!");
         }
     } else {
         hdr_succeeded = output_set_render_format(m, @constCast(&formats_8bit), formats_8bit.len, state);
         if (!hdr_succeeded and !silent)
-            c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 143,
-                "No 8 bit color formats supported!");
+            c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 143, "No 8 bit color formats supported!");
     }
     output_enable_hdr(m, state, hdr_succeeded, silent);
 }
@@ -395,9 +395,7 @@ export fn togglehdr_output(target: [*c]Monitor, want: bool) callconv(.c) bool {
         return false;
     var reason: ?[*:0]const u8 = null;
     if (want and !output_supports_hdr(target, &reason)) {
-        c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 197,
-            "togglehdr: HDR unavailable on %s: %s", target.*.wlr_output.*.name,
-            if (reason) |r| r else @as([*:0]const u8, "unknown"));
+        c.acwm_error_impl(true, c.WLR_INFO, "src/ext-protocol/hdr.c", 197, "togglehdr: HDR unavailable on %s: %s", target.*.wlr_output.*.name, if (reason) |r| r else @as([*:0]const u8, "unknown"));
         return false;
     }
     const prev_enable = target.*.hdr_enable;
@@ -411,8 +409,7 @@ export fn togglehdr_output(target: [*c]Monitor, want: bool) callconv(.c) bool {
     c.wlr_damage_ring_add_whole(&target.*.scene_output.*.damage_ring);
     target.*.pending.allow_reconfiguration = true;
     if (!c.acwm_scene_output_commit(target.*.scene_output, &target.*.pending)) {
-        c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 225,
-            "togglehdr: commit failed on %s, reverting", target.*.wlr_output.*.name);
+        c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 225, "togglehdr: commit failed on %s, reverting", target.*.wlr_output.*.name);
         target.*.hdr_enable = prev_enable;
         target.*.is_hdr_enabling = prev_enabling;
         c.wlr_output_state_finish(&target.*.pending);
@@ -435,7 +432,10 @@ export fn toggle_hdr(arg: [*c]const c.Arg) callconv(.c) i32 {
             var pos = c.server.monitors.next;
             while (pos != head) : (pos = pos.*.next) {
                 const m = @as([*c]Monitor, @ptrFromInt(@intFromPtr(pos) - @offsetOf(c.Monitor, "link")));
-                if (m.*.wlr_output.*.enabled and m.*.hdr_enable) { want = true; break; }
+                if (m.*.wlr_output.*.enabled and m.*.hdr_enable) {
+                    want = true;
+                    break;
+                }
             }
             want = !want;
         } else {
@@ -453,11 +453,13 @@ export fn toggle_hdr(arg: [*c]const c.Arg) callconv(.c) i32 {
         var pos = c.server.monitors.next;
         while (pos != head) : (pos = pos.*.next) {
             const m = @as([*c]Monitor, @ptrFromInt(@intFromPtr(pos) - @offsetOf(c.Monitor, "link")));
-            if (m.*.wlr_output.*.enabled and c.strcmp(m.*.wlr_output.*.name, arg.*.v) == 0) { target = m; break; }
+            if (m.*.wlr_output.*.enabled and c.strcmp(m.*.wlr_output.*.name, arg.*.v) == 0) {
+                target = m;
+                break;
+            }
         }
         if (target == null) {
-            c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 259,
-                "togglehdr: no enabled output named %s", arg.*.v);
+            c.acwm_error_impl(true, c.WLR_ERROR, "src/ext-protocol/hdr.c", 259, "togglehdr: no enabled output named %s", arg.*.v);
             return 0;
         }
     } else {

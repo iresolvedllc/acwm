@@ -53,8 +53,7 @@ export fn touch_apply_monitor_mapping(touch: [*c]c.struct_wlr_touch) callconv(.c
     if (target == null)
         return;
     c.wlr_cursor_map_input_to_output(c.server.cursor, &touch.*.base, target.*.wlr_output);
-    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/touch.c", 56,
-        "Mapping touch %s to output %s", touch.*.base.name, target.*.wlr_output.*.name);
+    c.acwm_error_impl(true, c.WLR_DEBUG, "src/input/touch.c", 56, "Mapping touch %s to output %s", touch.*.base.name, target.*.wlr_output.*.name);
 }
 
 export fn touch_create(touch: [*c]c.struct_wlr_touch) callconv(.c) void {

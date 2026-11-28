@@ -136,9 +136,7 @@ fn barLayout(m: [*c]Monitor) void {
             c.wlr_scene_rect_set_corner_radii(bar.*.bg, c.corner_radii_all(radius));
         }
     }
-    c.wlr_scene_node_set_position(&bar.*.tree.*.node,
-        m.*.m.x + @as(i32, @intCast(c.config.bar_lr_gap)),
-        m.*.m.y + @as(i32, @intCast(c.config.bar_top_gap)));
+    c.wlr_scene_node_set_position(&bar.*.tree.*.node, m.*.m.x + @as(i32, @intCast(c.config.bar_lr_gap)), m.*.m.y + @as(i32, @intCast(c.config.bar_top_gap)));
 
     var cx: i32 = pad;
     var i: i32 = 0;
@@ -159,8 +157,7 @@ fn barLayout(m: [*c]Monitor) void {
         if (node == null) continue;
         rx -= @intCast(c.config.bar_tray_icon_size);
         if (rx < 0) rx = 0;
-        c.wlr_scene_node_set_position(&node.*.node, rx,
-            @max(0, @divTrunc(height - @as(i32, @intCast(c.config.bar_tray_icon_size)), 2)));
+        c.wlr_scene_node_set_position(&node.*.node, rx, @max(0, @divTrunc(height - @as(i32, @intCast(c.config.bar_tray_icon_size)), 2)));
         rx -= BAR_GAP;
     }
     if (bar.*.battery != null) {
@@ -211,17 +208,11 @@ export fn bar_refresh_tags() callconv(.c) void {
                 barLabelUpdate(label, &text, scale);
                 acwm_jump_label_node_set_focus(label, is_active);
                 if (status == 2) {
-                    acwm_jump_label_node_set_background(label,
-                        c.config.urgentcolor[0], c.config.urgentcolor[1],
-                        c.config.urgentcolor[2], c.config.urgentcolor[3]);
+                    acwm_jump_label_node_set_background(label, c.config.urgentcolor[0], c.config.urgentcolor[1], c.config.urgentcolor[2], c.config.urgentcolor[3]);
                 } else if (is_active) {
-                    acwm_jump_label_node_set_background(label,
-                        c.config.bardata.focus_bg_color[0], c.config.bardata.focus_bg_color[1],
-                        c.config.bardata.focus_bg_color[2], c.config.bardata.focus_bg_color[3]);
+                    acwm_jump_label_node_set_background(label, c.config.bardata.focus_bg_color[0], c.config.bardata.focus_bg_color[1], c.config.bardata.focus_bg_color[2], c.config.bardata.focus_bg_color[3]);
                 } else {
-                    acwm_jump_label_node_set_background(label,
-                        c.config.bardata.bg_color[0], c.config.bardata.bg_color[1],
-                        c.config.bardata.bg_color[2], 0);
+                    acwm_jump_label_node_set_background(label, c.config.bardata.bg_color[0], c.config.bardata.bg_color[1], c.config.bardata.bg_color[2], 0);
                 }
             } else {
                 c.wlr_scene_node_set_enabled(&label.*.scene.*.node, special_used);
@@ -374,13 +365,22 @@ fn barCreate(m: [*c]Monitor) bool {
     const bar = @as(*Bar, @ptrCast(@alignCast(raw)));
     bar.mon = m;
     bar.tree = c.wlr_scene_tree_create(c.server.layers[c.LyrBar]);
-    if (bar.tree == null) { barDestroyInternal(bar); return false; }
+    if (bar.tree == null) {
+        barDestroyInternal(bar);
+        return false;
+    }
     bar.bg = c.wlr_scene_rect_create(bar.tree, 0, 0, &c.config.bar_bg_color);
-    if (bar.bg == null) { barDestroyInternal(bar); return false; }
+    if (bar.bg == null) {
+        barDestroyInternal(bar);
+        return false;
+    }
     bar.tag_count = c.config.tag_num + 1;
     bar.tags = @ptrCast(@alignCast(c.calloc(@intCast(bar.tag_count), @sizeOf([*c]JumpLabel))));
     bar.tag_btns = @ptrCast(@alignCast(c.calloc(@intCast(bar.tag_count), @sizeOf(BarButton))));
-    if (bar.tags == null or bar.tag_btns == null) { barDestroyInternal(bar); return false; }
+    if (bar.tags == null or bar.tag_btns == null) {
+        barDestroyInternal(bar);
+        return false;
+    }
     var i: i32 = 0;
     while (i < bar.tag_count) : (i += 1) {
         var data: c.DecorateDrawData = undefined;
@@ -390,8 +390,7 @@ fn barCreate(m: [*c]Monitor) bool {
         bar.tag_btns[@intCast(i)].type = if (i < c.config.tag_num) c.BarNodeTypeTag else c.BarNodeTypeSpecial;
         bar.tag_btns[@intCast(i)].tag = if (i < c.config.tag_num) i + 1 else 0;
         bar.tag_btns[@intCast(i)].item = null;
-        _ = acwm_scene_node_set(&bar.tags[@intCast(i)].*.scene.*.node,
-            bar.tag_btns[@intCast(i)].type, &bar.tag_btns[@intCast(i)]);
+        _ = acwm_scene_node_set(&bar.tags[@intCast(i)].*.scene.*.node, bar.tag_btns[@intCast(i)].type, &bar.tag_btns[@intCast(i)]);
     }
     barStatusLabelInit(&bar.battery, bar.tree);
     barStatusLabelInit(&bar.clock, bar.tree);
@@ -517,8 +516,14 @@ export fn bar_cleanup() callconv(.c) void {
         bar_monitor_destroy(@ptrFromInt(@intFromPtr(pos) - @offsetOf(c.Monitor, "link")));
         pos = next;
     }
-    if (bar_clock_source != null) { _ = c.wl_event_source_remove(bar_clock_source); bar_clock_source = null; }
-    if (bar_status_source != null) { _ = c.wl_event_source_remove(bar_status_source); bar_status_source = null; }
+    if (bar_clock_source != null) {
+        _ = c.wl_event_source_remove(bar_clock_source);
+        bar_clock_source = null;
+    }
+    if (bar_status_source != null) {
+        _ = c.wl_event_source_remove(bar_status_source);
+        bar_status_source = null;
+    }
     tray_cleanup();
 }
 
