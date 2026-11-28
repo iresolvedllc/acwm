@@ -57,7 +57,7 @@ package
 *Default:*
 
 ```nix
-<derivation acwm-nightly>
+<derivation acwm-0.1.1>
 ```
 
 *Declared by:*
@@ -280,7 +280,7 @@ package
 *Default:*
 
 ```nix
-<derivation acwm-nightly>
+<derivation acwm-0.1.1>
 ```
 
 *Declared by:*
