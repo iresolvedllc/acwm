@@ -216,8 +216,7 @@ fn itemRefreshAsync(item: *TrayItem) void {
         _ = sd_bus_slot_unref(item.props_slot);
         item.props_slot = null;
     }
-    const r = sd_bus_call_method_async(tray_bus, &item.props_slot, item.name, item.path,
-        "org.freedesktop.DBus.Properties", "GetAll", itemPropsDone, item, "s", "org.kde.StatusNotifierItem");
+    const r = sd_bus_call_method_async(tray_bus, &item.props_slot, item.name, item.path, "org.freedesktop.DBus.Properties", "GetAll", itemPropsDone, item, "s", "org.kde.StatusNotifierItem");
     if (r < 0 and item.props_slot != null) {
         _ = sd_bus_slot_unref(item.props_slot);
         item.props_slot = null;
@@ -233,12 +232,22 @@ fn readPixmapVariant(m: ?*Message, item: *TrayItem) c_int {
         var w: i32 = 0;
         var h: i32 = 0;
         r = sd_bus_message_read(m, "ii", &w, &h);
-        if (r < 0) { freePixmaps(pixmaps, count); return r; }
+        if (r < 0) {
+            freePixmaps(pixmaps, count);
+            return r;
+        }
         if (w > 0 and h > 0 and @as(i64, w) * h <= 4096 * 4096) {
             const bytes: usize = @intCast(@as(i64, w) * h * 4);
-            const data = c.malloc(bytes) orelse { freePixmaps(pixmaps, count); return -c.ENOMEM; };
+            const data = c.malloc(bytes) orelse {
+                freePixmaps(pixmaps, count);
+                return -c.ENOMEM;
+            };
             r = sd_bus_message_enter_container(m, c.SD_BUS_TYPE_ARRAY, "y");
-            if (r < 0) { c.free(data); freePixmaps(pixmaps, count); return r; }
+            if (r < 0) {
+                c.free(data);
+                freePixmaps(pixmaps, count);
+                return r;
+            }
             var got: usize = 0;
             var byte: u8 = 0;
             while (sd_bus_message_read(m, "y", &byte) > 0) {
@@ -379,19 +388,20 @@ fn itemListenSignals(item: *TrayItem) void {
     const members = [_][*c]const u8{ "NewIcon", "NewAttentionIcon", "NewStatus", "NewPixmap", "NewTitle" };
     if (item.slots[0] != null) return;
     for (members, 0..) |member, i| {
-        _ = sd_bus_match_signal(tray_bus, &item.slots[i], item.name, item.path,
-            "org.kde.StatusNotifierItem", member, onItemSignal, item);
+        _ = sd_bus_match_signal(tray_bus, &item.slots[i], item.name, item.path, "org.kde.StatusNotifierItem", member, onItemSignal, item);
     }
 }
 
 fn onItemSignal(m: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = m; _ = ret_error;
+    _ = m;
+    _ = ret_error;
     itemRefreshAsync(@ptrCast(@alignCast(userdata.?)));
     return 0;
 }
 
 export fn aw_tray_register_item(m: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = userdata; _ = ret_error;
+    _ = userdata;
+    _ = ret_error;
     if (!items_ready) return 0;
     var param: [*c]const u8 = null;
     if (sd_bus_message_read(m, "s", &param) < 0 or param == null or param[0] == 0)
@@ -408,7 +418,8 @@ export fn aw_tray_register_item(m: ?*Message, userdata: ?*anyopaque, ret_error: 
         path = strdup(param);
     }
     if (service == null or path == null) {
-        c.free(service); c.free(path);
+        c.free(service);
+        c.free(path);
         return 0;
     }
     var item: ?*TrayItem = null;
@@ -438,12 +449,19 @@ export fn aw_tray_register_item(m: ?*Message, userdata: ?*anyopaque, ret_error: 
 }
 
 export fn aw_tray_register_host(m: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = m; _ = userdata; _ = ret_error;
+    _ = m;
+    _ = userdata;
+    _ = ret_error;
     return 0;
 }
 
 export fn aw_tray_get_items(bus: ?*Bus, path: [*c]const u8, iface: [*c]const u8, prop: [*c]const u8, reply: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = bus; _ = path; _ = iface; _ = prop; _ = userdata; _ = ret_error;
+    _ = bus;
+    _ = path;
+    _ = iface;
+    _ = prop;
+    _ = userdata;
+    _ = ret_error;
     var r = sd_bus_message_open_container(reply, c.SD_BUS_TYPE_ARRAY, "s");
     if (r < 0) return r;
     const head: [*c]c.struct_wl_list = @ptrCast(&items);
@@ -461,17 +479,28 @@ export fn aw_tray_get_items(bus: ?*Bus, path: [*c]const u8, iface: [*c]const u8,
 }
 
 export fn aw_tray_get_bool(bus: ?*Bus, path: [*c]const u8, iface: [*c]const u8, prop: [*c]const u8, reply: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = bus; _ = path; _ = iface; _ = prop; _ = userdata; _ = ret_error;
+    _ = bus;
+    _ = path;
+    _ = iface;
+    _ = prop;
+    _ = userdata;
+    _ = ret_error;
     return sd_bus_message_append(reply, "b", @as(c_int, 1));
 }
 
 export fn aw_tray_get_version(bus: ?*Bus, path: [*c]const u8, iface: [*c]const u8, prop: [*c]const u8, reply: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = bus; _ = path; _ = iface; _ = prop; _ = userdata; _ = ret_error;
+    _ = bus;
+    _ = path;
+    _ = iface;
+    _ = prop;
+    _ = userdata;
+    _ = ret_error;
     return sd_bus_message_append(reply, "i", @as(c_int, 1));
 }
 
 fn onNameOwnerChanged(m: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) callconv(.c) c_int {
-    _ = userdata; _ = ret_error;
+    _ = userdata;
+    _ = ret_error;
     if (!items_ready) return 0;
     var name: [*c]const u8 = null;
     var old: [*c]const u8 = null;
@@ -484,7 +513,10 @@ fn onNameOwnerChanged(m: ?*Message, userdata: ?*anyopaque, ret_error: ?*Error) c
     while (pos != head) {
         const next = pos.*.next;
         const item = itemFromLink(pos);
-        if (strcmp(item.name, name) == 0) { itemDestroy(item); removed = true; }
+        if (strcmp(item.name, name) == 0) {
+            itemDestroy(item);
+            removed = true;
+        }
         pos = next;
     }
     if (removed) bar_tray_sync_all();
@@ -501,7 +533,10 @@ fn pixmapFindBest(item: *TrayItem, target: i32, best: *?*TrayPixmap) bool {
         if (found == null or @abs(cur.width - target) < @abs(found.?.width - target))
             found = cur;
     }
-    if (found) |f| { best.* = f; return true; }
+    if (found) |f| {
+        best.* = f;
+        return true;
+    }
     return false;
 }
 
@@ -555,8 +590,7 @@ fn trayRenderIconPixmap(dst: ?*c.cairo_surface_t, item: *TrayItem, target_size: 
     var drawn = false;
     var pm: ?*TrayPixmap = null;
     if (pixmapFindBest(item, target_size, &pm) and pm.?.data != null) {
-        const src = cairo_image_surface_create_for_data(@ptrCast(pm.?.data), @intCast(c.CAIRO_FORMAT_ARGB32),
-            pm.?.width, pm.?.height, pm.?.width * 4);
+        const src = cairo_image_surface_create_for_data(@ptrCast(pm.?.data), @intCast(c.CAIRO_FORMAT_ARGB32), pm.?.width, pm.?.height, pm.?.width * 4);
         if (src != null and cairo_surface_status(src) == @as(c.cairo_status_t, @intCast(c.CAIRO_STATUS_SUCCESS)))
             drawn = paintSurfaceScaled(cr, src, pix);
         if (src != null) cairo_surface_destroy(src);
@@ -581,7 +615,9 @@ fn trayRenderIconPixmap(dst: ?*c.cairo_surface_t, item: *TrayItem, target_size: 
         const dirs = [5][*c]const u8{
             if (home != null) &home_icons else null,
             if (home != null) &data_icons else null,
-            "/usr/share/icons/hicolor", "/usr/share/pixmaps", item.theme_path,
+            "/usr/share/icons/hicolor",
+            "/usr/share/pixmaps",
+            item.theme_path,
         };
         var src: *c.cairo_surface_t = undefined;
         if (themeLookup(dirs, rel, target_size, &src)) {
@@ -616,13 +652,18 @@ export fn tray_sync_bar(bar: [*c]Bar) callconv(.c) void {
         const icon = &bar.*.tray_icons[@intCast(bar.*.tray_icon_count)];
         icon.item = @ptrCast(item);
         const scale: f32 = if (bar.*.mon != null and bar.*.mon.*.wlr_output.*.scale > 0)
-            bar.*.mon.*.wlr_output.*.scale else 1.0;
+            bar.*.mon.*.wlr_output.*.scale
+        else
+            1.0;
         var pix: i32 = @intFromFloat(@as(f32, @floatFromInt(c.config.bar_tray_icon_size)) * scale + 0.5);
         if (pix < 1) pix = 1;
         const buf = trayBufferCreate(pix, pix) orelse continue;
         _ = trayRenderIconPixmap(buf.surface, item, @intCast(c.config.bar_tray_icon_size), scale);
         icon.node = wlr_scene_buffer_create(bar.*.tree, null);
-        if (icon.node == null) { c.wlr_buffer_drop(&buf.base); continue; }
+        if (icon.node == null) {
+            c.wlr_buffer_drop(&buf.base);
+            continue;
+        }
         c.wlr_scene_buffer_set_buffer(icon.node, &buf.base);
         c.wlr_buffer_drop(&buf.base);
         c.wlr_scene_buffer_set_dest_size(icon.node, @intCast(c.config.bar_tray_icon_size), @intCast(c.config.bar_tray_icon_size));
@@ -653,13 +694,14 @@ export fn tray_click(item: ?*anyopaque, button: u32) callconv(.c) void {
     const i = @as(?*TrayItem, @ptrCast(@alignCast(item))) orelse return;
     if (tray_bus == null) return;
     const method: [*c]const u8 = if (button == c.BTN_RIGHT) "SecondaryActivate" else "Activate";
-    _ = sd_bus_call_method_async(tray_bus, null, i.name, i.path, "org.kde.StatusNotifierItem",
-        method, null, null, "ii", @as(c_int, 0), @as(c_int, 0));
+    _ = sd_bus_call_method_async(tray_bus, null, i.name, i.path, "org.kde.StatusNotifierItem", method, null, null, "ii", @as(c_int, 0), @as(c_int, 0));
     _ = sd_bus_flush(tray_bus);
 }
 
 fn trayDispatchReady(fd: c_int, mask: u32, data: ?*anyopaque) callconv(.c) c_int {
-    _ = fd; _ = mask; _ = data;
+    _ = fd;
+    _ = mask;
+    _ = data;
     if (tray_bus == null) return 0;
     while (true) {
         const r = sd_bus_process(tray_bus, null);
@@ -679,20 +721,19 @@ export fn tray_reload() callconv(.c) void {
     if (tray_bus != null or c.config.bar_enable == 0) return;
     var r = sd_bus_default_user(&tray_bus);
     if (r < 0) r = sd_bus_default_system(&tray_bus);
-    if (r < 0) { tray_bus = null; return; }
-    _ = sd_bus_add_object_vtable(tray_bus, null, "/org/freedesktop/StatusNotifierWatcher",
-        "org.kde.StatusNotifierWatcher", aw_tray_vtable_get(), null);
-    _ = sd_bus_add_object_vtable(tray_bus, null, "/StatusNotifierWatcher",
-        "org.kde.StatusNotifierWatcher", aw_tray_vtable_get(), null);
+    if (r < 0) {
+        tray_bus = null;
+        return;
+    }
+    _ = sd_bus_add_object_vtable(tray_bus, null, "/org/freedesktop/StatusNotifierWatcher", "org.kde.StatusNotifierWatcher", aw_tray_vtable_get(), null);
+    _ = sd_bus_add_object_vtable(tray_bus, null, "/StatusNotifierWatcher", "org.kde.StatusNotifierWatcher", aw_tray_vtable_get(), null);
     _ = sd_bus_request_name(tray_bus, "org.kde.StatusNotifierWatcher", 0);
-    _ = sd_bus_match_signal(tray_bus, null, null, "/org/freedesktop/DBus",
-        "org.freedesktop.DBus", "NameOwnerChanged", onNameOwnerChanged, null);
+    _ = sd_bus_match_signal(tray_bus, null, null, "/org/freedesktop/DBus", "org.freedesktop.DBus", "NameOwnerChanged", onNameOwnerChanged, null);
     if (tray_fd_source != null) {
         _ = wl_event_source_remove(tray_fd_source);
         tray_fd_source = null;
     }
-    tray_fd_source = wl_event_loop_add_fd(c.server.event_loop, sd_bus_get_fd(tray_bus),
-        c.WL_EVENT_READABLE, trayDispatchReady, null);
+    tray_fd_source = wl_event_loop_add_fd(c.server.event_loop, sd_bus_get_fd(tray_bus), c.WL_EVENT_READABLE, trayDispatchReady, null);
     _ = trayDispatchReady(0, 0, null);
 }
 

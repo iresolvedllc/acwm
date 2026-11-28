@@ -1,5 +1,7 @@
 {
   lib,
+  autoPatchelfHook,
+  zig,
   libX11,
   libinput,
   libxcb,
@@ -18,17 +20,16 @@
   wayland-scanner,
   libxcb-wm,
   xwayland,
-  meson,
-  ninja,
   scenefx,
   wlroots_0_20,
   libGL,
   enableXWayland ? true,
   debug ? false,
+  version ? "0.1.1",
 }:
 stdenv.mkDerivation {
   pname = "acwm";
-  version = "nightly";
+  inherit version;
 
   src = lib.cleanSourceWith {
     src = ../.;
@@ -37,21 +38,31 @@ stdenv.mkDerivation {
       let
         base = baseNameOf (toString path);
       in
-      (lib.cleanSourceFilter path type) && base != "build" && base != "result";
+      (lib.cleanSourceFilter path type) && base != "build" && base != "result"
+      && base != "zig-out" && base != ".zig-cache";
     name = "source";
   };
 
-  mesonFlags = [
-    (lib.mesonEnable "xwayland" enableXWayland)
-    (lib.mesonBool "asan" debug)
-  ];
-
   nativeBuildInputs = [
-    meson
-    ninja
+    zig
     pkg-config
     wayland-scanner
+    autoPatchelfHook
   ];
+
+  dontConfigure = true;
+  dontInstall = true;
+
+  buildPhase = ''
+    runHook preBuild
+    export ZIG_GLOBAL_CACHE_DIR=$TMPDIR/zig-global-cache
+    export ZIG_LOCAL_CACHE_DIR=$TMPDIR/zig-local-cache
+    zig build --prefix $out \
+      -Doptimize=${if debug then "Debug" else "ReleaseFast"} \
+      -Dversion=${version} \
+      -Dxwayland=${if enableXWayland then "true" else "false"}
+    runHook postBuild
+  '';
 
   buildInputs = [
     libinput

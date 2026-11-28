@@ -58,7 +58,7 @@
             };
           };
           devShells.default = pkgs.mkShell {
-            # Reuse the package's nativeBuildInputs/buildInputs (meson, ninja,
+            # Reuse the package's nativeBuildInputs/buildInputs (zig,
             # pkg-config, wayland-scanner, wlroots, scenefx, ...) so the shell
             # stays in sync with the build derivation.
             inputsFrom = [ acwm ];
@@ -69,15 +69,13 @@
               ccache
               gdb
               git
-              meson
-              ninja
               zig
             ];
 
             shellHook = ''
               echo "acwm dev shell"
-              echo "  zig build              # full C build (compositor + clients)"
-              echo "  meson setup build && meson compile -C build"
+              echo "  zig build              # full build (compositor + clients)"
+              echo "  zig build test         # all Zig unit tests"
             '';
           };
           formatter = pkgs.nixfmt;

@@ -1,8 +1,6 @@
 const std = @import("std");
 const Io = std.Io;
 
-const version = "0.1.0";
-
 const common_cflags = [_][]const u8{
     "-U_FORTIFY_SOURCE",
     "-Wno-unused-function",
@@ -187,8 +185,9 @@ fn serverProtoXml(b: *std.Build, wl_protocol_dir: []const u8, name: []const u8) 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const version = b.option([]const u8, "version", "package version") orelse "0.1.1";
 
-    // version string: "0.1.0(<git hash>)" or "0.1.0(release)"
+    // version string: "0.1.1(<git hash>)" or "0.1.1(release)"
     const commit = capture(b, &.{ "git", "rev-parse", "--short", "HEAD" }) orelse "release";
     const version_define = b.fmt("\"acwm-{s}({s})\"", .{ version, commit });
 
@@ -302,10 +301,12 @@ pub fn build(b: *std.Build) void {
                 continue;
             if (std.mem.eql(u8, p, "src/config/watcher.c"))
                 continue;
+            if (std.mem.eql(u8, p, "src/main.c"))
+                continue;
             src_files.append(b.allocator, dupe(b, p)) catch {};
         }
     }
-    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW", "-DACWM_ZIG_CLIENT_BASIC", "-DACWM_ZIG_CLIENT_STATE", "-DACWM_ZIG_CLIENT_LOOKUP", "-DACWM_ZIG_CLIENT_RULES", "-DACWM_ZIG_CLIENT_INIT", "-DACWM_ZIG_CLIENT_LIFECYCLE", "-DACWM_ZIG_CLIENT_VIEW", "-DACWM_ZIG_CLIENT_TRANSITION", "-DACWM_ZIG_CLIENT_GROUP", "-DACWM_ZIG_CLIENT_XWAYLAND", "-DACWM_ZIG_INPUT_DEVICE", "-DACWM_ZIG_INPUT_TOUCH", "-DACWM_ZIG_INPUT_TABLET", "-DACWM_ZIG_INPUT_TRACKPAD", "-DACWM_ZIG_INPUT_KEYBOARD", "-DACWM_ZIG_POINTER_CONSTRAINTS", "-DACWM_ZIG_POINTER_INPUT", "-DACWM_ZIG_EXT_SMALL", "-DACWM_ZIG_EXT_WORKSPACE_HDR", "-DACWM_ZIG_EXT_XDG_OUTPUT", "-DACWM_ZIG_EXT_TEXT_INPUT", "-DACWM_ZIG_BAR", "-DACWM_ZIG_TRAY", "-DACWM_ZIG_OVERVIEW", "-DACWM_ZIG_SWITCHER", "-DACWM_ZIG_MAIN", "-DACWM_ZIG_MAIN_SETUP", "-DACWM_ZIG_XWAYLAND_PRIMARY", "-DACWM_ZIG_LAYOUT_OVERVIEW" }) });
+    compositor.root_module.addCSourceFiles(.{ .root = b.path("."), .files = src_files.items, .flags = cflags(b, &.{ "-DACWM_ZIG_BAR_OPTION", "-DACWM_ZIG_SESSION_OPTION", "-DACWM_ZIG_LAYOUT_OPTION", "-DACWM_ZIG_INPUT_OPTION", "-DACWM_ZIG_VISUALS_OPTION", "-DACWM_ZIG_DEVICE_OPTION", "-DACWM_ZIG_ANIMATION_OPTION", "-DACWM_ZIG_SCROLLER_OPTION", "-DACWM_ZIG_MISC_OPTION", "-DACWM_ZIG_JUMLABEL_OPTION", "-DACWM_ZIG_GAPS_OPTION", "-DACWM_ZIG_ARRAY_OPTION", "-DACWM_ZIG_MONITOR_RULE", "-DACWM_ZIG_RULES_OPTION", "-DACWM_ZIG_WINDOW_RULE", "-DACWM_ZIG_DEVICE_RULE", "-DACWM_ZIG_DIRECTIVES_OPTION", "-DACWM_ZIG_BIND_OPTION", "-DACWM_ZIG_OPTION_DEFAULTS", "-DACWM_ZIG_IPC_BUILDERS", "-DACWM_ZIG_IPC_WATCH", "-DACWM_ZIG_IPC_SERVER", "-DACWM_ZIG_LAYOUT_VERTICAL", "-DACWM_ZIG_LAYOUT_DWINDLE", "-DACWM_ZIG_LAYOUT_HORIZONTAL", "-DACWM_ZIG_LAYOUT_SCROLL", "-DACWM_ZIG_ARRANGE_HUB", "-DACWM_ZIG_ARRANGE_RESIZE", "-DACWM_ZIG_TOML_PARSE", "-DACWM_ZIG_TEXT_NODE", "-DACWM_ZIG_BIND_TAGVIEW", "-DACWM_ZIG_BIND_FOCUS", "-DACWM_ZIG_BIND_LAYOUT", "-DACWM_ZIG_BIND_MOVE", "-DACWM_ZIG_BIND_VIEW", "-DACWM_ZIG_BIND_TAIL", "-DACWM_ZIG_BIND_OVERVIEW", "-DACWM_ZIG_UTIL", "-DACWM_ZIG_SCENE_NODE", "-DACWM_ZIG_DIM_NODE", "-DACWM_ZIG_ANIMATION_COMMON", "-DACWM_ZIG_ANIMATION_TAG", "-DACWM_ZIG_TAB", "-DACWM_ZIG_IDLE", "-DACWM_ZIG_MISC", "-DACWM_ZIG_ANIMATION_LAYER", "-DACWM_ZIG_LAYER", "-DACWM_ZIG_MONITOR_QUERY", "-DACWM_ZIG_MONITOR_OUTPUT", "-DACWM_ZIG_MONITOR_LIFECYCLE", "-DACWM_ZIG_MONITOR_OPS", "-DACWM_ZIG_MONITOR_NEW", "-DACWM_ZIG_CLIENT_BASIC", "-DACWM_ZIG_CLIENT_STATE", "-DACWM_ZIG_CLIENT_LOOKUP", "-DACWM_ZIG_CLIENT_RULES", "-DACWM_ZIG_CLIENT_INIT", "-DACWM_ZIG_CLIENT_LIFECYCLE", "-DACWM_ZIG_CLIENT_VIEW", "-DACWM_ZIG_CLIENT_TRANSITION", "-DACWM_ZIG_CLIENT_GROUP", "-DACWM_ZIG_CLIENT_XWAYLAND", "-DACWM_ZIG_INPUT_DEVICE", "-DACWM_ZIG_INPUT_TOUCH", "-DACWM_ZIG_INPUT_TABLET", "-DACWM_ZIG_INPUT_TRACKPAD", "-DACWM_ZIG_INPUT_KEYBOARD", "-DACWM_ZIG_POINTER_CONSTRAINTS", "-DACWM_ZIG_POINTER_INPUT", "-DACWM_ZIG_EXT_SMALL", "-DACWM_ZIG_EXT_WORKSPACE_HDR", "-DACWM_ZIG_EXT_XDG_OUTPUT", "-DACWM_ZIG_EXT_TEXT_INPUT", "-DACWM_ZIG_BAR", "-DACWM_ZIG_TRAY", "-DACWM_ZIG_OVERVIEW", "-DACWM_ZIG_SWITCHER", "-DACWM_ZIG_MAIN", "-DACWM_ZIG_MAIN_SETUP", "-DACWM_ZIG_XWAYLAND_PRIMARY", "-DACWM_ZIG_LAYOUT_OVERVIEW", "-DACWM_ZIG_ANIM_CLIENT_A", "-DACWM_ZIG_ANIM_CLIENT_B", "-DACWM_ZIG_ANIM_CLIENT_C", "-DACWM_ZIG_ANIM_CLIENT_D", "-DACWM_ZIG_ANIM_CLIENT_E", "-DACWM_ZIG_CONFIG_PRESET", "-DACWM_ZIG_SERVER" }) });
 
     // Zig twin of value_parse.c: exports the same C symbols, so the rest of
     // the C tree calls it unchanged.
@@ -1124,6 +1125,115 @@ pub fn build(b: *std.Build) void {
         compositor.root_module.addObject(cxw_obj);
     }
 
+    // Native entry point (replaces main.c's wrapper).
+    {
+        const entry_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/main_entry.zig"),
+        });
+        entry_mod.addImport("cc", c_mod);
+        const entry_obj = b.addObject(.{ .name = "acwm-main-entry", .root_module = entry_mod });
+        compositor.root_module.addObject(entry_obj);
+    }
+
+    // Zig twin of the option dispatcher (slice 98).
+    {
+        const popt_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/parse_option.zig"),
+        });
+        popt_mod.addImport("cc", c_mod);
+        const popt_obj = b.addObject(.{ .name = "acwm-parse-option", .root_module = popt_mod });
+        compositor.root_module.addObject(popt_obj);
+    }
+
+    // Zig twin of the remaining bind action callbacks (slice 97).
+    {
+        const bca_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/dispatch/bind_actions.zig"),
+        });
+        bca_mod.addImport("cc", c_mod);
+        const bca_obj = b.addObject(.{ .name = "acwm-bind-actions", .root_module = bca_mod });
+        compositor.root_module.addObject(bca_obj);
+    }
+
+    // Zig twin of the remaining IPC helpers (slice 96).
+    {
+        const ipch_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/ipc/ipc_helpers.zig"),
+        });
+        ipch_mod.addImport("cc", c_mod);
+        const ipch_obj = b.addObject(.{ .name = "acwm-ipc-helpers", .root_module = ipch_mod });
+        compositor.root_module.addObject(ipch_obj);
+    }
+
+    // Zig twin of animation/common.c scene snapshots (slice 95).
+    {
+        const snap_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/animation/snapshot.zig"),
+        });
+        snap_mod.addImport("cc", c_mod);
+        const snap_obj = b.addObject(.{ .name = "acwm-animation-snapshot", .root_module = snap_mod });
+        compositor.root_module.addObject(snap_obj);
+    }
+
+    // Zig twin of config/preset.c constants (slice 92).
+    {
+        const preset_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/preset.zig"),
+        });
+        preset_mod.addImport("cc", c_mod);
+        const preset_obj = b.addObject(.{ .name = "acwm-config-preset", .root_module = preset_mod });
+        compositor.root_module.addObject(preset_obj);
+    }
+
+    // Zig twin of common/server.c listener table (slice 92).
+    {
+        const srv_opts = b.addOptions();
+        srv_opts.addOption(bool, "xwayland", xwayland);
+        const srv_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/common/server.zig"),
+        });
+        srv_mod.addImport("cc", c_mod);
+        srv_mod.addImport("build_options", srv_opts.createModule());
+        const srv_obj = b.addObject(.{ .name = "acwm-server-data", .root_module = srv_mod });
+        compositor.root_module.addObject(srv_obj);
+    }
+
+    // Zig twin of animation/client.c setup + effects (slice 87).
+    {
+        const aca_opts = b.addOptions();
+        aca_opts.addOption(bool, "xwayland", xwayland);
+        const aca_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/animation/client.zig"),
+        });
+        aca_mod.addImport("cc", c_mod);
+        aca_mod.addImport("build_options", aca_opts.createModule());
+        const aca_obj = b.addObject(.{ .name = "acwm-animation-client", .root_module = aca_mod });
+        compositor.root_module.addObject(aca_obj);
+    }
 
     // Zig twin of the overview layout/packing (slice 86).
     {
@@ -1171,6 +1281,7 @@ pub fn build(b: *std.Build) void {
     {
         const mrt_opts = b.addOptions();
         mrt_opts.addOption(bool, "xwayland", xwayland);
+        mrt_opts.addOption([]const u8, "version", version);
         const mrt_mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
@@ -1229,6 +1340,16 @@ pub fn build(b: *std.Build) void {
         tray_mod.addImport("build_options", tray_opts.createModule());
         const tray_obj = b.addObject(.{ .name = "acwm-tray", .root_module = tray_mod });
         compositor.root_module.addObject(tray_obj);
+    } else {
+        const tray_stub_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/bar/tray_stub.zig"),
+        });
+        tray_stub_mod.addImport("cc", c_mod);
+        const tray_stub_obj = b.addObject(.{ .name = "acwm-tray-stub", .root_module = tray_stub_mod });
+        compositor.root_module.addObject(tray_stub_obj);
     }
 
     // Zig twin of the built-in bar (slice 79).
@@ -1675,7 +1796,34 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/xwayland_primary_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE", "-DXWAYLAND" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
+        const run_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_tests.step);
+    }
+
+    {
+        // animation/client.c setup + effects: scene/client stubs.
+        const test_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/animation/client.zig"),
+        });
+        test_mod.addImport("cc", c_mod);
+        test_mod.addIncludePath(b.path("."));
+        test_mod.addIncludePath(b.path("include"));
+        for (pkgIncludes(b, &.{ "wlroots-0.20", "scenefx-0.5", "xkbcommon", "pangocairo", "cairo", "wayland-server", "pixman-1", "libinput", "libcjson", "xcb", "xcb-icccm" })) |dir| {
+            test_mod.addIncludePath(.{ .cwd_relative = dir });
+        }
+        const aca_test_opts = b.addOptions();
+        aca_test_opts.addOption(bool, "xwayland", xwayland);
+        test_mod.addImport("build_options", aca_test_opts.createModule());
+        const unit_tests = b.addTest(.{ .root_module = test_mod });
+        unit_tests.root_module.addCSourceFile(.{
+            .file = b.path("tests/animation_client_stub.c"),
+            .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE", "-DXWAYLAND" },
+        });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1699,7 +1847,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/layout_overview_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1720,13 +1868,14 @@ pub fn build(b: *std.Build) void {
         }
         const mr_test_opts = b.addOptions();
         mr_test_opts.addOption(bool, "xwayland", xwayland);
+        mr_test_opts.addOption([]const u8, "version", version);
         test_mod.addImport("build_options", mr_test_opts.createModule());
         const unit_tests = b.addTest(.{ .root_module = test_mod });
         unit_tests.root_module.addCSourceFile(.{
             .file = b.path("tests/main_runtime_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1752,7 +1901,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/switcher_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1778,7 +1927,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/overview_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1832,7 +1981,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/bar_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1855,7 +2004,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/text_input_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1882,7 +2031,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/xdg_output_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -1928,7 +2077,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/ext_small_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2029,7 +2178,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/trackpad_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2055,7 +2204,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/tablet_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2081,7 +2230,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/touch_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }
@@ -2104,7 +2253,7 @@ pub fn build(b: *std.Build) void {
             .file = b.path("tests/input_device_stub.c"),
             .flags = &.{ "-I.", "-DWLR_USE_UNSTABLE" },
         });
-        applyPkgConfig(b, unit_tests, &.{ "wayland-server" });
+        applyPkgConfig(b, unit_tests, &.{"wayland-server"});
         const run_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_tests.step);
     }

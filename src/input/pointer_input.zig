@@ -12,8 +12,8 @@ const Bar = c.AcwmBarDecoration;
 const Box = c.struct_wlr_box;
 const LastCursor = c.LastCursor;
 
-extern var last_cursor: LastCursor;
-extern var pointer_locked_applied: bool;
+export var last_cursor: LastCursor = std.mem.zeroes(LastCursor);
+export var pointer_locked_applied: bool = false;
 
 extern fn pointer_surface_scale(cl: [*c]Client) callconv(.c) f64;
 extern fn pointer_client_warp_box(cl: [*c]Client) callconv(.c) Box;
@@ -329,12 +329,16 @@ export fn pointer_begin_move_resize(cl: [*c]Client, mode: u32, x: f64, y: f64, e
                     var warp_y = y;
                     if ((resize_edge & (c.WLR_EDGE_LEFT | c.WLR_EDGE_RIGHT)) != 0) {
                         grab_x = if ((resize_edge & c.WLR_EDGE_RIGHT) != 0)
-                            cl.*.geom.x + cl.*.geom.width else cl.*.geom.x;
+                            cl.*.geom.x + cl.*.geom.width
+                        else
+                            cl.*.geom.x;
                         warp_x = @floatFromInt(grab_x);
                     }
                     if ((resize_edge & (c.WLR_EDGE_TOP | c.WLR_EDGE_BOTTOM)) != 0) {
                         grab_y = if ((resize_edge & c.WLR_EDGE_BOTTOM) != 0)
-                            cl.*.geom.y + cl.*.geom.height else cl.*.geom.y;
+                            cl.*.geom.y + cl.*.geom.height
+                        else
+                            cl.*.geom.y;
                         warp_y = @floatFromInt(grab_y);
                     }
                     c.wlr_cursor_warp_closest(c.server.cursor, null, warp_x, warp_y);
@@ -343,8 +347,7 @@ export fn pointer_begin_move_resize(cl: [*c]Client, mode: u32, x: f64, y: f64, e
                 c.server.grab_offset_y = grab_y;
                 c.wlr_cursor_set_xcursor(c.server.cursor, c.server.cursor_manager, resizeCursorName(resize_edge, true));
             } else {
-                c.wlr_cursor_set_xcursor(c.server.cursor, c.server.cursor_manager,
-                    if (edge != 0) resizeCursorName(edge, false) else "grab");
+                c.wlr_cursor_set_xcursor(c.server.cursor, c.server.cursor_manager, if (edge != 0) resizeCursorName(edge, false) else "grab");
             }
         },
         else => {},
@@ -371,8 +374,7 @@ export fn pointer_end_grab_client(follow_pointer: bool) callconv(.c) void {
     var target_mon = if (follow_pointer)
         monitor_at_point(c.server.cursor.*.x, c.server.cursor.*.y)
     else
-        monitor_at_point(@floatFromInt(gc.*.geom.x + @divTrunc(gc.*.geom.width, 2)),
-            @floatFromInt(gc.*.geom.y + @divTrunc(gc.*.geom.height, 2)));
+        monitor_at_point(@floatFromInt(gc.*.geom.x + @divTrunc(gc.*.geom.width, 2)), @floatFromInt(gc.*.geom.y + @divTrunc(gc.*.geom.height, 2)));
     if (target_mon == null)
         target_mon = gc.*.mon;
     set_selected_monitor(target_mon);
@@ -439,8 +441,7 @@ export fn pointer_process_motion(time: u32, device: [*c]c.struct_wlr_input_devic
     var should_lock = false;
 
     if (time != 0) {
-        c.wlr_relative_pointer_manager_v1_send_relative_motion(c.server.relative_pointer_manager, c.server.seat,
-            @as(u64, time) * 1000, ddx, ddy, dx_unaccel, dy_unaccel);
+        c.wlr_relative_pointer_manager_v1_send_relative_motion(c.server.relative_pointer_manager, c.server.seat, @as(u64, time) * 1000, ddx, ddy, dx_unaccel, dy_unaccel);
 
         if (c.server.cursor_mode != c.CurResize and c.server.cursor_mode != c.CurMove) {
             var constraint: [*c]c.struct_wlr_pointer_constraint_v1 = null;
@@ -534,8 +535,7 @@ export fn pointer_process_motion(time: u32, device: [*c]c.struct_wlr_input_devic
         sy = c.server.cursor.*.y - @as(f64, @floatFromInt(if (l != null) l.*.scene.*.node.y else w.*.geom.y));
     }
 
-    c.wlr_scene_node_set_position(&c.server.drag_icon.*.node,
-        @intFromFloat(@round(c.server.cursor.*.x)), @intFromFloat(@round(c.server.cursor.*.y)));
+    c.wlr_scene_node_set_position(&c.server.drag_icon.*.node, @intFromFloat(@round(c.server.cursor.*.x)), @intFromFloat(@round(c.server.cursor.*.y)));
 
     if (c.server.group_bar_drag_pending) {
         const gdx = c.server.cursor.*.x - c.server.group_bar_drag_x;
@@ -635,8 +635,7 @@ export fn handle_cursor_motion(listener: [*c]c.struct_wl_listener, data: ?*anyop
     ipc_notify_device_event(&event.*.pointer.*.base);
     if (check_trackpad_disabled(event.*.pointer))
         return;
-    pointer_process_motion(event.*.time_msec, &event.*.pointer.*.base, event.*.delta_x, event.*.delta_y,
-        event.*.unaccel_dx, event.*.unaccel_dy);
+    pointer_process_motion(event.*.time_msec, &event.*.pointer.*.base, event.*.delta_x, event.*.delta_y, event.*.unaccel_dx, event.*.unaccel_dy);
     toggle_hotarea(@intFromFloat(c.server.cursor.*.x), @intFromFloat(c.server.cursor.*.y));
 }
 
@@ -752,17 +751,13 @@ export fn pointer_hide_cursor(data: ?*anyopaque) callconv(.c) i32 {
 
 export fn pointer_warp_to_client(cl: [*c]const Client) callconv(.c) void {
     if (INSIDEMON(cl)) {
-        c.wlr_cursor_warp_closest(c.server.cursor, null,
-            @as(f64, @floatFromInt(cl.*.geom.x)) + @as(f64, @floatFromInt(cl.*.geom.width)) / 2.0,
-            @as(f64, @floatFromInt(cl.*.geom.y)) + @as(f64, @floatFromInt(cl.*.geom.height)) / 2.0);
+        c.wlr_cursor_warp_closest(c.server.cursor, null, @as(f64, @floatFromInt(cl.*.geom.x)) + @as(f64, @floatFromInt(cl.*.geom.width)) / 2.0, @as(f64, @floatFromInt(cl.*.geom.y)) + @as(f64, @floatFromInt(cl.*.geom.height)) / 2.0);
         pointer_process_motion(0, null, 0, 0, 0, 0);
     }
 }
 
 export fn pointer_warp_to_monitor(m: [*c]Monitor) callconv(.c) void {
-    c.wlr_cursor_warp_closest(c.server.cursor, null,
-        @as(f64, @floatFromInt(m.*.w.x)) + @as(f64, @floatFromInt(m.*.w.width)) / 2.0,
-        @as(f64, @floatFromInt(m.*.w.y)) + @as(f64, @floatFromInt(m.*.w.height)) / 2.0);
+    c.wlr_cursor_warp_closest(c.server.cursor, null, @as(f64, @floatFromInt(m.*.w.x)) + @as(f64, @floatFromInt(m.*.w.width)) / 2.0, @as(f64, @floatFromInt(m.*.w.y)) + @as(f64, @floatFromInt(m.*.w.height)) / 2.0);
     c.wlr_cursor_set_xcursor(c.server.cursor, c.server.cursor_manager, "default");
     pointer_cursor_activity();
 }
@@ -826,8 +821,7 @@ export fn pointer_place_drag_tile(cl: [*c]Client) callconv(.c) void {
             const tag = get_client_tag_idx(cl);
             const insert_before = closest.*.drop_direction == c.LEFT or closest.*.drop_direction == c.UP;
             const split_h = closest.*.drop_direction == c.LEFT or closest.*.drop_direction == c.RIGHT;
-            dwindle_insert(&cl.*.mon.*.pertag.*.dwindle_root[tag], cl, closest,
-                c.config.dwindle_split_ratio, insert_before, split_h, c.config.dwindle_drop_simple_split == 0);
+            dwindle_insert(&cl.*.mon.*.pertag.*.dwindle_root[tag], cl, closest, c.config.dwindle_split_ratio, insert_before, split_h, c.config.dwindle_drop_simple_split == 0);
             client_set_floating(cl, 0);
             return;
         }

@@ -199,6 +199,5 @@ You will need to build `wlroots` and `scenefx` manually as well.
    ```bash
    git clone https://github.com/iresolvedllc/acwm.git
    cd acwm
-   meson build -Dprefix=/usr
-   sudo ninja -C build install
+   sudo zig build --prefix=/usr -Doptimize=ReleaseFast
    ```
