@@ -834,7 +834,19 @@ green.
       the interpreter/rpath, and source filtering for `zig-out`/
       `.zig-cache`. The built compositor and all companion clients run
       from the store
-- [ ] Delete meson and the remaining ported C twins
+- [x] Delete meson and the fully-ported C sources: `meson.build`,
+      `meson_options.txt` and the old `build/` tree are gone; the Zig build
+      is the only build system. Removed 53 compositor C files whose symbols
+      now live in Zig (all guarded modules, config twins, layout/animation
+      ports, main.c). A Zig `src/main_entry.zig` now provides the native
+      entry point. Remaining C is limited to genuinely shared or unported
+      glue: `common/log.c` (variadic), `common/util.c` (variadic helpers
+      shared with clients), `config/error_store.c` (shared with acwm-msg),
+      `bar/tray_vtable.c` (sd-bus macros), plus the not-yet-ported helper
+      bodies in `animation/common.c` (scene snapshots), `input/pointer.c`
+      (shared cursor globals), `ipc/ipc.c` (IPC helpers), `dispatch/bind.c`
+      (action callbacks) and `config/option_defs.c` (parse_option
+      dispatcher)
 - [ ] CI: zig build + zig build test + nix build on the three usual systems
 - [ ] awfixeros switch: flake input → acwm, `modules/acwm.nix`, gnome-keyring
       → oo7, drop `packages/mango` copy, pinned SDDM entry removed

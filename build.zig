@@ -1140,6 +1140,58 @@ pub fn build(b: *std.Build) void {
         compositor.root_module.addObject(entry_obj);
     }
 
+    // Zig twin of the option dispatcher (slice 98).
+    {
+        const popt_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/config/parse_option.zig"),
+        });
+        popt_mod.addImport("cc", c_mod);
+        const popt_obj = b.addObject(.{ .name = "acwm-parse-option", .root_module = popt_mod });
+        compositor.root_module.addObject(popt_obj);
+    }
+
+    // Zig twin of the remaining bind action callbacks (slice 97).
+    {
+        const bca_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/dispatch/bind_actions.zig"),
+        });
+        bca_mod.addImport("cc", c_mod);
+        const bca_obj = b.addObject(.{ .name = "acwm-bind-actions", .root_module = bca_mod });
+        compositor.root_module.addObject(bca_obj);
+    }
+
+    // Zig twin of the remaining IPC helpers (slice 96).
+    {
+        const ipch_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/ipc/ipc_helpers.zig"),
+        });
+        ipch_mod.addImport("cc", c_mod);
+        const ipch_obj = b.addObject(.{ .name = "acwm-ipc-helpers", .root_module = ipch_mod });
+        compositor.root_module.addObject(ipch_obj);
+    }
+
+    // Zig twin of animation/common.c scene snapshots (slice 95).
+    {
+        const snap_mod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("src/animation/snapshot.zig"),
+        });
+        snap_mod.addImport("cc", c_mod);
+        const snap_obj = b.addObject(.{ .name = "acwm-animation-snapshot", .root_module = snap_mod });
+        compositor.root_module.addObject(snap_obj);
+    }
+
     // Zig twin of config/preset.c constants (slice 92).
     {
         const preset_mod = b.createModule(.{

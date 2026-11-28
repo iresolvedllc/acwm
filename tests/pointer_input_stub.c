@@ -18,8 +18,6 @@
 
 Config config = {0};
 struct AcwmServer server = {0};
-struct LastCursor last_cursor;
-bool pointer_locked_applied = false;
 
 void wl_list_init(struct wl_list *l) { l->next = l; l->prev = l; }
 void wl_list_insert(struct wl_list *l, struct wl_list *e) {

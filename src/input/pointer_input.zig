@@ -12,8 +12,8 @@ const Bar = c.AcwmBarDecoration;
 const Box = c.struct_wlr_box;
 const LastCursor = c.LastCursor;
 
-extern var last_cursor: LastCursor;
-extern var pointer_locked_applied: bool;
+export var last_cursor: LastCursor = std.mem.zeroes(LastCursor);
+export var pointer_locked_applied: bool = false;
 
 extern fn pointer_surface_scale(cl: [*c]Client) callconv(.c) f64;
 extern fn pointer_client_warp_box(cl: [*c]Client) callconv(.c) Box;
